@@ -1,0 +1,56 @@
+{
+    "SupplierId": {
+        "S": "supplier123"
+    },
+    "SupplierName": {
+        "S": "ABC Inc."
+    },
+    "SupplierDesc": {
+        "S": "Tech company specializing in software development"
+    },
+    "Industry": {
+        "S": "Technology"
+    },
+    "SupplierContacts": {
+        "M": {
+            "contact1@example.com": {
+                "M": {
+                    "SupplierEmail": {
+                        "S": "contact1@example.com"
+                    },
+                    "SupplierContactName": {
+                        "S": "John Doe"
+                    },
+                    "SupplierPh": {
+                        "S": "1234567890"
+                    },
+                    "IsPrimary": {
+                        "BOOL": true
+                    }
+                }
+            },
+            "contact2@example.com": {
+                "M": {
+                    "SupplierEmail": {
+                        "S": "contact2@example.com"
+                    },
+                    "SupplierContactName": {
+                        "S": "Jane Smith"
+                    },
+                    "SupplierPh": {
+                        "S": "9876543210"
+                    },
+                    "IsPrimary": {
+                        "BOOL": false
+                    }
+                }
+            }
+        }
+    },
+    "SupplierCreationDate": {
+        "S": "2024-04-23"
+    },
+    "SupplierStageId": {
+        "S": "STG01"
+    }
+}

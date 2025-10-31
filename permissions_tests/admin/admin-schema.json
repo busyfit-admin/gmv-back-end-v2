@@ -1,0 +1,128 @@
+{
+    "AdminPortal": {
+        "entityTypes": {
+            "ManageCompanies": {
+                "memberOfTypes": [],
+                "shape": {
+                    "attributes": {},
+                    "type": "Record"
+                }
+            },
+            "ManageSubDomains": {
+                "memberOfTypes": [],
+                "shape": {
+                    "attributes": {},
+                    "type": "Record"
+                }
+            },
+            "Role": {
+                "memberOfTypes": [],
+                "shape": {
+                    "type": "Record",
+                    "attributes": {}
+                }
+            },
+            "User": {
+                "memberOfTypes": [
+                    "Role"
+                ],
+                "shape": {
+                    "attributes": {},
+                    "type": "Record"
+                }
+            }
+        },
+        "actions": {
+            "GetCompanyDetails": {
+                "memberOf": [],
+                "appliesTo": {
+                    "resourceTypes": [
+                        "ManageCompanies"
+                    ],
+                    "context": {
+                        "type": "Record",
+                        "attributes": {}
+                    },
+                    "principalTypes": [
+                        "Role"
+                    ]
+                }
+            },
+            "PostCompanyDetails": {
+                "memberOf": [],
+                "appliesTo": {
+                    "context": {
+                        "type": "Record",
+                        "attributes": {}
+                    },
+                    "principalTypes": [
+                        "Role"
+                    ],
+                    "resourceTypes": [
+                        "ManageCompanies"
+                    ]
+                }
+            },
+            "DeleteCompanyDetails": {
+                "memberOf": [],
+                "appliesTo": {
+                    "context": {
+                        "type": "Record",
+                        "attributes": {}
+                    },
+                    "principalTypes": [
+                        "Role"
+                    ],
+                    "resourceTypes": [
+                        "ManageCompanies"
+                    ]
+                }
+            },
+            "GetSubDomains": {
+                "appliesTo": {
+                    "context": {
+                        "type": "Record",
+                        "attributes": {}
+                    },
+                    "resourceTypes": [
+                        "ManageSubDomains"
+                    ],
+                    "principalTypes": [
+                        "Role"
+                    ]
+                },
+                "memberOf": []
+            },
+            "PostSubDomains": {
+                "memberOf": [],
+                "appliesTo": {
+                    "context": {
+                        "type": "Record",
+                        "attributes": {}
+                    },
+                    "principalTypes": [
+                        "Role"
+                    ],
+                    "resourceTypes": [
+                        "ManageSubDomains"
+                    ]
+                }
+            },
+            "DeleteSubDomains": {
+                "memberOf": [],
+                "appliesTo": {
+                    "context": {
+                        "type": "Record",
+                        "attributes": {}
+                    },
+                    "principalTypes": [
+                        "Role"
+                    ],
+                    "resourceTypes": [
+                        "ManageSubDomains"
+                    ]
+                }
+            }
+        }
+    }
+}

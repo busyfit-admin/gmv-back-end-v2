@@ -1,0 +1,17 @@
+{
+    "SupplierId": {
+        "S": "testSupplierId4"
+    },
+    "SupplierName": {
+        "S": "CBI Company"
+    },
+    "Industry": {
+        "S": "Retail"
+    },
+    "SupplierCreationDate": {
+        "S": "2024-04-04"
+    },
+    "SupplierStageId": {
+        "S": "STG08"
+    }
+}

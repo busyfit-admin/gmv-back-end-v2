@@ -1,0 +1,62 @@
+[
+    {
+        "CognitoId": "cognito_id_456",
+        "UserName": "alice@example.com",
+        "EmailId": "alice@example.com",
+        "ExternalId": "67890",
+        "DisplayName": "Alice Smith",
+        "PhoneNumber": "9876543210",
+        "LoginType": "password",
+        "Active": "Yes",
+        "IsManager": "No",
+        "TopLevelGroupId": "2",
+        "TopLevelGroupName": "Users",
+        "TopLevelGroupDesc": "Regular Users",
+        "Location": "London"
+    },
+    {
+        "CognitoId": "cognito_id_789",
+        "UserName": "bob@example.com",
+        "EmailId": "bob@example.com",
+        "ExternalId": "54321",
+        "DisplayName": "Bob Johnson",
+        "PhoneNumber": "5555555555",
+        "LoginType": "password",
+        "Active": "No",
+        "IsManager": "No",
+        "TopLevelGroupId": "3",
+        "TopLevelGroupName": "Guests",
+        "TopLevelGroupDesc": "Guest Users",
+        "Location": "Paris"
+    },
+    {
+        "CognitoId": "cognito_id_123",
+        "UserName": "john@example.com",
+        "EmailId": "john@example.com",
+        "ExternalId": "12345",
+        "DisplayName": "John Doe",
+        "PhoneNumber": "1234567890",
+        "LoginType": "password",
+        "Active": "Yes",
+        "IsManager": "No",
+        "TopLevelGroupId": "1",
+        "TopLevelGroupName": "Admins",
+        "TopLevelGroupDesc": "Administrators",
+        "Location": "New York"
+    },
+    {
+        "CognitoId": "cognito_id_101",
+        "UserName": "sarah@example.com",
+        "EmailId": "sarah@example.com",
+        "ExternalId": "98765",
+        "DisplayName": "Sarah Lee",
+        "PhoneNumber": "1112223333",
+        "LoginType": "password",
+        "Active": "Yes",
+        "IsManager": "Yes",
+        "TopLevelGroupId": "4",
+        "TopLevelGroupName": "Managers",
+        "TopLevelGroupDesc": "Management Team",
+        "Location": "Berlin"
+    }
+]

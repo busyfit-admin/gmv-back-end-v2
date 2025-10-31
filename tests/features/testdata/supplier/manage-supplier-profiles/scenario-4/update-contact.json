@@ -1,0 +1,7 @@
+{
+    "SupplierId": "test-supplier-id-8888",
+    "ContactName": "Jane Doe2",
+    "ContactEmail": "jane.doe@example2.com",
+    "ContactPh": "987-654-3333",
+    "IsPrimary": false
+}

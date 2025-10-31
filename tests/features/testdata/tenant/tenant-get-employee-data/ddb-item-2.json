@@ -1,0 +1,41 @@
+{
+    "CognitoId": {
+        "S": "cognito_id_456"
+    },
+    "UserName": {
+        "S": "alice@example.com"
+    },
+    "EmailId": {
+        "S": "alice@example.com"
+    },
+    "ExternalId": {
+        "S": "67890"
+    },
+    "DisplayName": {
+        "S": "Alice Smith"
+    },
+    "PhoneNumber": {
+        "S": "9876543210"
+    },
+    "LoginType": {
+        "S": "password"
+    },
+    "Active": {
+        "S": "Yes"
+    },
+    "IsManager": {
+        "S": "No"
+    },
+    "TopLevelGroupId": {
+        "S": "2"
+    },
+    "TopLevelGroupName": {
+        "S": "Users"
+    },
+    "TopLevelGroupDesc": {
+        "S": "Regular Users"
+    },
+    "Location": {
+        "S": "London"
+    }
+}

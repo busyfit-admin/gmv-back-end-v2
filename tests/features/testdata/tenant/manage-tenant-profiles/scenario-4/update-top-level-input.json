@@ -1,0 +1,7 @@
+{
+    "TenantId": "test-tenant-id-9999",
+    "TenantName": "Updated Company Name",
+    "TenantDesc": "An updated description for the company.",
+    "Industry": "Finance",
+    "EnvType": "Development"
+}

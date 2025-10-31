@@ -1,0 +1,23 @@
+{
+    "TenantId": "tenant123",
+    "TenantName": "ABC Inc.",
+    "TenantDesc": "Tech company specializing in software development",
+    "Industry": "Technology",
+    "TenantContacts": {
+        "contact1@example.com": {
+            "TenantEmail": "contact1@example.com",
+            "TenantContactName": "John Doe",
+            "TenantPh": "1234567890",
+            "IsPrimary": true
+        },
+        "contact2@example.com": {
+            "TenantEmail": "contact2@example.com",
+            "TenantContactName": "Jane Smith",
+            "TenantPh": "9876543210",
+            "IsPrimary": false
+        }
+    },
+    "TenantCreationDate": "2024-04-23",
+    "TenantStageId": "STG01",
+    "TenantStageName": "InitialOnboarding"
+}

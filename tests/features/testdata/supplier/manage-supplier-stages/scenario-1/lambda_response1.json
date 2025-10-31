@@ -1,0 +1,91 @@
+{
+    "InitialOnboarding": {
+        "OverallStatus": "Completed",
+        "CommentsCount": 2,
+        "FollowUpDetails": [
+            {
+                "Comment": "Stage 1 is completed successfully.",
+                "CommentBy": "Admin",
+                "UpdateTimeStamp": "2024-04-20T10:00:00Z"
+            },
+            {
+                "Comment": "This stage went smoothly.",
+                "CommentBy": "Admin",
+                "UpdateTimeStamp": "2024-04-20T10:30:00Z"
+            }
+        ]
+    },
+    "OnboardingDemo": {
+        "OverallStatus": "Completed",
+        "CommentsCount": 0,
+        "FollowUpDetails": [
+            {
+                "Comment": "Stage 2 is completed successfully.",
+                "CommentBy": "Admin",
+                "UpdateTimeStamp": "2024-04-20T10:00:00Z"
+            },
+            {
+                "Comment": "This stage went smoothly.",
+                "CommentBy": "Admin",
+                "UpdateTimeStamp": "2024-04-20T10:30:00Z"
+            }
+        ]
+    },
+    "TrialSetup": {
+        "OverallStatus": "Completed",
+        "CommentsCount": 2,
+        "FollowUpDetails": [
+            {
+                "Comment": "Stage 3 is completed successfully.",
+                "CommentBy": "Admin",
+                "UpdateTimeStamp": "2024-04-20T10:00:00Z"
+            },
+            {
+                "Comment": "This stage went smoothly.",
+                "CommentBy": "Admin",
+                "UpdateTimeStamp": "2024-04-20T10:30:00Z"
+            }
+        ]
+    },
+    "TrialInProg": {
+        "OverallStatus": "INPROG",
+        "CommentsCount": 2,
+        "FollowUpDetails": [
+            {
+                "Comment": "Stage 4 is currently in prog.",
+                "CommentBy": "Admin",
+                "UpdateTimeStamp": "2024-04-20T10:00:00Z"
+            }
+        ]
+    },
+    "Trail_Discontinued": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "PreProvisioningChecks": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Provisioning": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Active": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Inactive": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Deactivated": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    }
+}

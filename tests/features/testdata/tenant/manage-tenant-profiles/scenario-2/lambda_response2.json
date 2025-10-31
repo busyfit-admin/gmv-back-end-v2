@@ -1,0 +1,17 @@
+{
+    "TenantId": "tenant456",
+    "TenantName": "XYZ Corp",
+    "TenantDesc": "Manufacturing company specializing in automotive parts",
+    "Industry": "Manufacturing",
+    "TenantContacts": {
+        "contact1@xyzcorp.com": {
+            "TenantEmail": "contact1@xyzcorp.com",
+            "TenantContactName": "Alice Johnson",
+            "TenantPh": "1112223333",
+            "IsPrimary": true
+        }
+    },
+    "TenantCreationDate": "2024-04-22",
+    "TenantStageId": "STG08",
+    "TenantStageName": "Active"
+}

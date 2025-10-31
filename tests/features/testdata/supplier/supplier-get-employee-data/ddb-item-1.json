@@ -1,0 +1,41 @@
+{
+    "CognitoId": {
+        "S": "cognito_id_123"
+    },
+    "UserName": {
+        "S": "john@example.com"
+    },
+    "EmailId": {
+        "S": "john@example.com"
+    },
+    "ExternalId": {
+        "S": "12345"
+    },
+    "DisplayName": {
+        "S": "John Doe"
+    },
+    "PhoneNumber": {
+        "S": "1234567890"
+    },
+    "LoginType": {
+        "S": "password"
+    },
+    "Active": {
+        "S": "Yes"
+    },
+    "IsManager": {
+        "S": "No"
+    },
+    "TopLevelGroupId": {
+        "S": "1"
+    },
+    "TopLevelGroupName": {
+        "S": "Admins"
+    },
+    "TopLevelGroupDesc": {
+        "S": "Administrators"
+    },
+    "Location": {
+        "S": "New York"
+    }
+}

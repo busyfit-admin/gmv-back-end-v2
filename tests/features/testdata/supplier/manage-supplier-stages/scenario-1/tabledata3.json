@@ -1,0 +1,44 @@
+{
+    "SupplierId": {
+        "S": "testsupplierId1"
+    },
+    "StageId": {
+        "S": "STG03"
+    },
+    "StageStatus": {
+        "S": "Completed"
+    },
+    "CommentsCount": {
+        "N": "2"
+    },
+    "StageComments": {
+        "L": [
+            {
+                "M": {
+                    "Comment": {
+                        "S": "Stage 3 is completed successfully."
+                    },
+                    "CommentBy": {
+                        "S": "Admin"
+                    },
+                    "UpdateTimeStamp": {
+                        "S": "2024-04-20T10:00:00Z"
+                    }
+                }
+            },
+            {
+                "M": {
+                    "Comment": {
+                        "S": "This stage went smoothly."
+                    },
+                    "CommentBy": {
+                        "S": "Admin"
+                    },
+                    "UpdateTimeStamp": {
+                        "S": "2024-04-20T10:30:00Z"
+                    }
+                }
+            }
+        ]
+    }
+}

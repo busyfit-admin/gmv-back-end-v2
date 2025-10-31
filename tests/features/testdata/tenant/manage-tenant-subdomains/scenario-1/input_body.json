@@ -1,0 +1,5 @@
+{
+    "TenantId": "test-tenant-id-1234",
+    "SubDomain": "subdomain.example.com",
+    "EnvName": "DEV"
+}

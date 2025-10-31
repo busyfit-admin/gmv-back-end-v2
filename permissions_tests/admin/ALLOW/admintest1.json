@@ -1,0 +1,6 @@
+{
+    "principal": "AdminPortal::Role::\"admin\"",
+    "action": "AdminPortal::Action::\"GET\"",
+    "resource": "AdminPortal::Endpoint::\"/manageCompanies\"",
+    "context": {}
+}

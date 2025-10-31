@@ -1,0 +1,5 @@
+{
+    "SupplierId": "test-supplier-id-1234",
+    "SubDomain": "subdomain.example.com",
+    "EnvName": "DEV"
+}

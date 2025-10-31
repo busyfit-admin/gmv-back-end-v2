@@ -1,0 +1,26 @@
+{
+    "SubDomain": {
+        "S": "infosys.subdomain.com"
+    },
+    "TenantId": {
+        "S": "test-tenant-id-456"
+    },
+    "Status": {
+        "S": "STACK_DEPLOYED"
+    },
+    "EnvName": {
+        "S": "DEV"
+    },
+    "TenantStack": {
+        "S": "test-tenant-stack"
+    },
+    "TenantUserPoolId": {
+        "S": "us-west-2_ABCDE123"
+    },
+    "AdminUsers": {
+        "SS": [
+            "admin1@example.com",
+            "admin2@example.com"
+        ]
+    }
+}

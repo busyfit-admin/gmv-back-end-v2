@@ -1,0 +1,14 @@
+{
+    "SubDomain": {
+        "S": "wipro.subdomain.com"
+    },
+    "TenantId": {
+        "S": "test-tenant-id-456"
+    },
+    "Status": {
+        "S": "STACK_INPROG"
+    },
+    "EnvName": {
+        "S": "PROD"
+    }
+}

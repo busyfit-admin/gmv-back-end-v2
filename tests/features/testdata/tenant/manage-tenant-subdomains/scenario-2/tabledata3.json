@@ -1,0 +1,14 @@
+{
+    "SubDomain": {
+        "S": "infosys3.subdomain.com"
+    },
+    "TenantId": {
+        "S": "infosys-123"
+    },
+    "Status": {
+        "S": "STACK_INPROG"
+    },
+    "EnvName": {
+        "S": "PROD"
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "SupplierId": {
+        "S": "testSupplierId1"
+    },
+    "SupplierName": {
+        "S": "XY Company"
+    },
+    "Industry": {
+        "S": "Automotive"
+    },
+    "SupplierCreationDate": {
+        "S": "2024-04-01"
+    },
+    "SupplierStageId": {
+        "S": "STG01"
+    }
+}

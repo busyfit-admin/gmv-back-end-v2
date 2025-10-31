@@ -1,0 +1,7 @@
+{
+    "SupplierId": "test-supplier-id-9999",
+    "SupplierName": "Updated Company Name",
+    "SupplierDesc": "An updated description for the company.",
+    "Industry": "Finance",
+    "EnvType": "Development"
+}

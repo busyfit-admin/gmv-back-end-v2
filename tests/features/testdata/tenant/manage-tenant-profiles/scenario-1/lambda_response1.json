@@ -1,0 +1,38 @@
+{
+    "OnboardingInProg": [
+        {
+            "TenantId": "testtenantId1",
+            "TenantName": "XY Company",
+            "Industry": "Automotive",
+            "TenantCreationDate": "2024-04-01",
+            "TenantStageId": "STG01",
+            "TenantStageName": "InitialOnboarding"
+        },
+        {
+            "TenantId": "testtenantId2",
+            "TenantName": "AB Company",
+            "Industry": "Retail",
+            "TenantCreationDate": "2024-04-02",
+            "TenantStageId": "STG03",
+            "TenantStageName": "TrialSetup"
+        },
+        {
+            "TenantId": "testtenantId3",
+            "TenantName": "CD Company",
+            "Industry": "Retail",
+            "TenantCreationDate": "2024-04-03",
+            "TenantStageId": "STG05",
+            "TenantStageName": "Trail_Discontinued"
+        }
+    ],
+    "Active": [
+        {
+            "TenantId": "testtenantId4",
+            "TenantName": "CBI Company",
+            "Industry": "Retail",
+            "TenantCreationDate": "2024-04-04",
+            "TenantStageId": "STG08",
+            "TenantStageName": "Active"
+        }
+    ]
+}

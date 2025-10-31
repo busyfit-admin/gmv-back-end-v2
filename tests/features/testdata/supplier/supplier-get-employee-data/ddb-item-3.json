@@ -1,0 +1,41 @@
+{
+    "CognitoId": {
+        "S": "cognito_id_789"
+    },
+    "UserName": {
+        "S": "bob@example.com"
+    },
+    "EmailId": {
+        "S": "bob@example.com"
+    },
+    "ExternalId": {
+        "S": "54321"
+    },
+    "DisplayName": {
+        "S": "Bob Johnson"
+    },
+    "PhoneNumber": {
+        "S": "5555555555"
+    },
+    "LoginType": {
+        "S": "password"
+    },
+    "Active": {
+        "S": "No"
+    },
+    "IsManager": {
+        "S": "No"
+    },
+    "TopLevelGroupId": {
+        "S": "3"
+    },
+    "TopLevelGroupName": {
+        "S": "Guests"
+    },
+    "TopLevelGroupDesc": {
+        "S": "Guest Users"
+    },
+    "Location": {
+        "S": "Paris"
+    }
+}

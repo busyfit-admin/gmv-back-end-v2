@@ -1,0 +1,10 @@
+{
+    "statusCode": 200,
+    "headers": {
+        "Access-Control-Allow-Headers": "X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Requested-With,X-Auth-Token,Referer,User-Agent,Origin,Content-Type,Authorization,Accept,Access-Control-Allow-Methods,Access-Control-Allow-Origin,Access-Control-Allow-Headers",
+        "Access-Control-Allow-Methods": "*",
+        "Access-Control-Allow-Origin": "*"
+    },
+    "multiValueHeaders": null,
+    "body": "{\"RuleId\":\"\",\"RuleName\":\"test3\",\"RuleDesc\":\"\",\"RuleFor\":\"\",\"RuleRewardType\":\"\",\"RuleRewardAmount\":\"\",\"RuleStartDate\":\"\",\"RuleEndDate\":\"\",\"RuleFrequency\":\"\",\"RuleActive\":\"\"}"
+}

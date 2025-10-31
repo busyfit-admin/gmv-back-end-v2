@@ -1,0 +1,38 @@
+{
+  "OnboardingInProg": [
+    {
+      "SupplierId": "testSupplierId1",
+      "SupplierName": "XY Company",
+      "Industry": "Automotive",
+      "SupplierCreationDate": "2024-04-01",
+      "SupplierStageId": "STG01",
+      "SupplierStageName": "InitialOnboarding"
+    },
+    {
+      "SupplierId": "testSupplierId2",
+      "SupplierName": "AB Company",
+      "Industry": "Retail",
+      "SupplierCreationDate": "2024-04-02",
+      "SupplierStageId": "STG03",
+      "SupplierStageName": "TrialSetup"
+    },
+    {
+      "SupplierId": "testSupplierId3",
+      "SupplierName": "CD Company",
+      "Industry": "Retail",
+      "SupplierCreationDate": "2024-04-03",
+      "SupplierStageId": "STG05",
+      "SupplierStageName": "Trail_Discontinued"
+    }
+  ],
+  "Active": [
+    {
+      "SupplierId": "testSupplierId4",
+      "SupplierName": "CBI Company",
+      "Industry": "Retail",
+      "SupplierCreationDate": "2024-04-04",
+      "SupplierStageId": "STG08",
+      "SupplierStageName": "Active"
+    }
+  ]
+}

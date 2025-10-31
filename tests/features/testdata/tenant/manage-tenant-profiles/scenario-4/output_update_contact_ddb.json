@@ -1,0 +1,59 @@
+{
+    "TenantId": {
+        "S": "test-tenant-id-8888"
+    },
+    "EnvType": {
+        "S": "Production"
+    },
+    "Industry": {
+        "S": "Technology"
+    },
+    "TenantContacts": {
+        "M": {
+            "jane.doe@example2.com": {
+                "M": {
+                    "IsPrimary": {
+                        "BOOL": false
+                    },
+                    "TenantContactName": {
+                        "S": "Jane Doe2"
+                    },
+                    "TenantEmail": {
+                        "S": "jane.doe@example2.com"
+                    },
+                    "TenantPh": {
+                        "S": "987-654-3333"
+                    }
+                }
+            },
+            "john.doe@example.com": {
+                "M": {
+                    "IsPrimary": {
+                        "BOOL": true
+                    },
+                    "TenantContactName": {
+                        "S": "John Doe"
+                    },
+                    "TenantEmail": {
+                        "S": "john.doe@example.com"
+                    },
+                    "TenantPh": {
+                        "S": "123-456-7890"
+                    }
+                }
+            }
+        }
+    },
+    "TenantCreationDate": {
+        "S": "2024-04-26T02:45:44.214Z"
+    },
+    "TenantDesc": {
+        "S": "A sample description for the sample company."
+    },
+    "TenantName": {
+        "S": "Sample Company"
+    },
+    "TenantStageId": {
+        "S": "STG01"
+    }
+}

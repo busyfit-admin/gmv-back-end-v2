@@ -1,0 +1,17 @@
+{
+    "SupplierId": {
+        "S": "testSupplierId3"
+    },
+    "SupplierName": {
+        "S": "CD Company"
+    },
+    "Industry": {
+        "S": "Retail"
+    },
+    "SupplierCreationDate": {
+        "S": "2024-04-03"
+    },
+    "SupplierStageId": {
+        "S": "STG05"
+    }
+}

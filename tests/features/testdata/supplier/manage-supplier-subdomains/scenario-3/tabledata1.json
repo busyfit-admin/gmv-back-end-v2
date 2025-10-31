@@ -1,0 +1,26 @@
+{
+    "SubDomain": {
+        "S": "abc.subdomain.com"
+    },
+    "SupplierId": {
+        "S": "test-supplier-id-456"
+    },
+    "Status": {
+        "S": "STACK_DEPLOYED"
+    },
+    "EnvName": {
+        "S": "UAT"
+    },
+    "SupplierStack": {
+        "S": "test-supplier-stack-staging"
+    },
+    "SupplierUserPoolId": {
+        "S": "us-west-2_XYZ789"
+    },
+    "AdminUsers": {
+        "SS": [
+            "admin3@example.com",
+            "admin4@example.com"
+        ]
+    }
+}

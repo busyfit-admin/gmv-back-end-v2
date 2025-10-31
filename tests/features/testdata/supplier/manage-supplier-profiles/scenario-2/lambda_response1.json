@@ -1,0 +1,23 @@
+{
+    "SupplierId": "supplier123",
+    "SupplierName": "ABC Inc.",
+    "SupplierDesc": "Tech company specializing in software development",
+    "Industry": "Technology",
+    "SupplierContacts": {
+        "contact1@example.com": {
+            "SupplierEmail": "contact1@example.com",
+            "SupplierContactName": "John Doe",
+            "SupplierPh": "1234567890",
+            "IsPrimary": true
+        },
+        "contact2@example.com": {
+            "SupplierEmail": "contact2@example.com",
+            "SupplierContactName": "Jane Smith",
+            "SupplierPh": "9876543210",
+            "IsPrimary": false
+        }
+    },
+    "SupplierCreationDate": "2024-04-23",
+    "SupplierStageId": "STG01",
+    "SupplierStageName": "InitialOnboarding"
+}

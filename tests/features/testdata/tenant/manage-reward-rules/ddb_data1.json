@@ -1,0 +1,32 @@
+{
+    "RuleName": {
+        "S": "test2"
+    },
+    "RuleActive": {
+        "S": ""
+    },
+    "RuleDesc": {
+        "S": ""
+    },
+    "RuleEndDate": {
+        "S": ""
+    },
+    "RuleFor": {
+        "S": ""
+    },
+    "RuleFrequency": {
+        "S": ""
+    },
+    "RuleId": {
+        "S": ""
+    },
+    "RuleRewardAmount": {
+        "S": ""
+    },
+    "RuleRewardType": {
+        "S": ""
+    },
+    "RuleStartDate": {
+        "S": ""
+    }
+}

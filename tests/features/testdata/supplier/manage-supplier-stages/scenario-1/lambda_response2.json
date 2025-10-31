@@ -1,0 +1,52 @@
+{
+    "InitialOnboarding": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "OnboardingDemo": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "TrialSetup": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "TrialInProg": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Trail_Discontinued": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "PreProvisioningChecks": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Provisioning": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Active": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Inactive": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    },
+    "Deactivated": {
+        "OverallStatus": "UNDEFINED",
+        "CommentsCount": 0,
+        "FollowUpDetails": []
+    }
+}

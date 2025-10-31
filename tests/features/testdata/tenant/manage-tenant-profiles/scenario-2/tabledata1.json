@@ -1,0 +1,56 @@
+{
+    "TenantId": {
+        "S": "tenant123"
+    },
+    "TenantName": {
+        "S": "ABC Inc."
+    },
+    "TenantDesc": {
+        "S": "Tech company specializing in software development"
+    },
+    "Industry": {
+        "S": "Technology"
+    },
+    "TenantContacts": {
+        "M": {
+            "contact1@example.com": {
+                "M": {
+                    "TenantEmail": {
+                        "S": "contact1@example.com"
+                    },
+                    "TenantContactName": {
+                        "S": "John Doe"
+                    },
+                    "TenantPh": {
+                        "S": "1234567890"
+                    },
+                    "IsPrimary": {
+                        "BOOL": true
+                    }
+                }
+            },
+            "contact2@example.com": {
+                "M": {
+                    "TenantEmail": {
+                        "S": "contact2@example.com"
+                    },
+                    "TenantContactName": {
+                        "S": "Jane Smith"
+                    },
+                    "TenantPh": {
+                        "S": "9876543210"
+                    },
+                    "IsPrimary": {
+                        "BOOL": false
+                    }
+                }
+            }
+        }
+    },
+    "TenantCreationDate": {
+        "S": "2024-04-23"
+    },
+    "TenantStageId": {
+        "S": "STG01"
+    }
+}

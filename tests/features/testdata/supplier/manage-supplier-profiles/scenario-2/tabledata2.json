@@ -1,0 +1,40 @@
+{
+    "SupplierId": {
+        "S": "supplier456"
+    },
+    "SupplierName": {
+        "S": "XYZ Corp"
+    },
+    "SupplierDesc": {
+        "S": "Manufacturing company specializing in automotive parts"
+    },
+    "Industry": {
+        "S": "Manufacturing"
+    },
+    "SupplierContacts": {
+        "M": {
+            "contact1@xyzcorp.com": {
+                "M": {
+                    "SupplierEmail": {
+                        "S": "contact1@xyzcorp.com"
+                    },
+                    "SupplierContactName": {
+                        "S": "Alice Johnson"
+                    },
+                    "SupplierPh": {
+                        "S": "1112223333"
+                    },
+                    "IsPrimary": {
+                        "BOOL": true
+                    }
+                }
+            }
+        }
+    },
+    "SupplierCreationDate": {
+        "S": "2024-04-22"
+    },
+    "SupplierStageId": {
+        "S": "STG08"
+    }
+}

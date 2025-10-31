@@ -1,0 +1,43 @@
+{
+    "SupplierId": {
+        "S": "test-supplier-id-9999"
+    },
+    "EnvType": {
+        "S": "Production"
+    },
+    "Industry": {
+        "S": "Technology"
+    },
+    "SupplierContacts": {
+        "M": {
+            "john.doe@example.com": {
+                "M": {
+                    "IsPrimary": {
+                        "BOOL": true
+                    },
+                    "SupplierContactName": {
+                        "S": "John Doe"
+                    },
+                    "SupplierEmail": {
+                        "S": "john.doe@example.com"
+                    },
+                    "SupplierPh": {
+                        "S": "123-456-7890"
+                    }
+                }
+            }
+        }
+    },
+    "SupplierCreationDate": {
+        "S": "2024-04-26T02:45:44.214Z"
+    },
+    "SupplierDesc": {
+        "S": "A sample description for the sample company."
+    },
+    "SupplierName": {
+        "S": "Sample Company"
+    },
+    "SupplierStageId": {
+        "S": "STG01"
+    }
+}

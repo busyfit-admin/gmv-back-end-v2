@@ -1,0 +1,41 @@
+{
+    "CognitoId": {
+        "S": "cognito_id_101"
+    },
+    "UserName": {
+        "S": "sarah@example.com"
+    },
+    "EmailId": {
+        "S": "sarah@example.com"
+    },
+    "ExternalId": {
+        "S": "98765"
+    },
+    "DisplayName": {
+        "S": "Sarah Lee"
+    },
+    "PhoneNumber": {
+        "S": "1112223333"
+    },
+    "LoginType": {
+        "S": "password"
+    },
+    "Active": {
+        "S": "Yes"
+    },
+    "IsManager": {
+        "S": "Yes"
+    },
+    "TopLevelGroupId": {
+        "S": "4"
+    },
+    "TopLevelGroupName": {
+        "S": "Managers"
+    },
+    "TopLevelGroupDesc": {
+        "S": "Management Team"
+    },
+    "Location": {
+        "S": "Berlin"
+    }
+}

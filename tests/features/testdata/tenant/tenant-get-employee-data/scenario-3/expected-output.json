@@ -1,0 +1,15 @@
+{
+    "CognitoId": "cognito_id_789",
+    "UserName": "bob@example.com",
+    "EmailId": "bob@example.com",
+    "ExternalId": "54321",
+    "DisplayName": "Bob Johnson",
+    "PhoneNumber": "5555555555",
+    "LoginType": "password",
+    "Active": "No",
+    "IsManager": "No",
+    "TopLevelGroupId": "3",
+    "TopLevelGroupName": "Guests",
+    "TopLevelGroupDesc": "Guest Users",
+    "Location": "Paris"
+}

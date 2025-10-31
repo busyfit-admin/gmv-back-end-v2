@@ -1,0 +1,26 @@
+{
+    "SubDomain": {
+        "S": "infosys.subdomain.com"
+    },
+    "SupplierId": {
+        "S": "infosys-123"
+    },
+    "Status": {
+        "S": "STACK_DEPLOYED"
+    },
+    "EnvName": {
+        "S": "development"
+    },
+    "SupplierStack": {
+        "S": "test-supplier-stack"
+    },
+    "SupplierUserPoolId": {
+        "S": "us-west-2_ABCDE123"
+    },
+    "AdminUsers": {
+        "SS": [
+            "admin1@example.com",
+            "admin2@example.com"
+        ]
+    }
+}

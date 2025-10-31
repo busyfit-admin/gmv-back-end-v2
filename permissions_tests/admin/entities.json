@@ -1,0 +1,18 @@
+[
+    {
+        "uid": {
+            "type": "AdminPortal::Role",
+            "id": "admin"
+        },
+        "parents": [],
+        "attrs": {}
+    },
+    {
+        "uid": {
+            "type": "AdminPortal::Endpoint",
+            "id": "/manageCompanies"
+        },
+        "parents": [],
+        "attrs": {}
+    }
+]

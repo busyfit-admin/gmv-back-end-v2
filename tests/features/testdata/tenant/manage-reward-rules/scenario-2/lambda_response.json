@@ -1,0 +1,65 @@
+{
+    "TopLevelRewardSettings": {
+        "RewardTypeStatus": {
+            "RD00": {
+                "RewardTypeId": "RD00",
+                "RewardName": "General Rewards",
+                "RewardDesc": "General Rewards are applicable for all types of resources in marketplace",
+                "Active": true
+            },
+            "RD01": {
+                "RewardTypeId": "RD01",
+                "RewardName": "Health Rewards",
+                "RewardDesc": "Rewards are applicable for only health related resources in marketplace",
+                "Active": true
+            },
+            "RD02": {
+                "RewardTypeId": "RD02",
+                "RewardName": "Skill Development Rewards",
+                "RewardDesc": "Rewards are applicable for skill development resources in marketplace",
+                "Active": false
+            },
+            "RD03": {
+                "RewardTypeId": "RD03",
+                "RewardName": "Employee Support Rewards",
+                "RewardDesc": "Rewards are applicable for employee support resources in marketplace",
+                "Active": true
+            },
+            "RD04": {
+                "RewardTypeId": "RD04",
+                "RewardName": "Climate Rewards",
+                "RewardDesc": "Rewards are applicable for climate friendly resources in marketplace",
+                "Active": false
+            }
+        },
+        "RewardUnits": {
+            "Points": "10",
+            "EqualAmount": "1",
+            "CurrencyType": "INR"
+        }
+    },
+    "RewardRules": {
+        "Active": [],
+        "Draft": [
+            {
+                "RuleId": "rr-0000cccc",
+                "RuleName": "HealthRewards-01",
+                "RuleForImplementation": "Everyone",
+                "RuleRewardPoints": "10000",
+                "RuleRewardType": "RD01",
+                "RuleWhenImplementation": "Yearly",
+                "RuleStartDate": "01-01-2024",
+                "RuleEndDate": "01-01-2035",
+                "RuleStatus": "Draft",
+                "RuleLastUpdated": "01-01-2024"
+            }
+        ]
+    },
+    "RewardUpdateLogs": [
+        {
+            "RewardRuleLogData": "A Reward Rule : rr-0000cccc has been Created by Admin",
+            "RewardRuleLogUpdateDate": "01-01-2024",
+            "RewardRuleUpdateBy": "Admin"
+        }
+    ]
+}

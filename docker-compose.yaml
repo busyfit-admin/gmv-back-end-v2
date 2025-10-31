@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  saas-api:
+    build: .
+    container_name: saas-integrated-apis
+    volumes:
+      - .:/app
+    working_dir: /app
+    tty: true

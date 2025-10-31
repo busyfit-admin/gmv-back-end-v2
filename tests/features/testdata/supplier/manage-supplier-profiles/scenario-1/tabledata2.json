@@ -1,0 +1,17 @@
+{
+    "SupplierId": {
+        "S": "testSupplierId2"
+    },
+    "SupplierName": {
+        "S": "AB Company"
+    },
+    "Industry": {
+        "S": "Retail"
+    },
+    "SupplierCreationDate": {
+        "S": "2024-04-02"
+    },
+    "SupplierStageId": {
+        "S": "STG03"
+    }
+}

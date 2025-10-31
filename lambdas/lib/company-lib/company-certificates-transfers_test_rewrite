@@ -1,0 +1,259 @@
+// package Companylib
+
+// import (
+// 	"bytes"
+// 	"context"
+// 	"fmt"
+// 	"log"
+// 	"testing"
+
+// 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+// 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+// 	awsclients "github.com/busyfit-admin/saas-integrated-apis/lambdas/lib/clients"
+// 	"github.com/busyfit-admin/saas-integrated-apis/lambdas/lib/utils"
+// 	"github.com/stretchr/testify/assert"
+// )
+
+// func Test_AssignCertificate_Success(t *testing.T) {
+// 	logBuffer := &bytes.Buffer{}
+
+// 	t.Run("It should successfully assign a certificate when criteria is valid", func(t *testing.T) {
+// 		// Mock DynamoDB client
+// 		ddbClient := awsclients.MockDynamodbClient{
+// 			QueryOutputs: []dynamodb.QueryOutput{
+// 				{
+// 					Count: 1,
+// 					Items: []map[string]types.AttributeValue{
+// 						{
+// 							"CertificateId": &types.AttributeValueMemberS{Value: "certificate-123"},
+// 							"IsActive":      &types.AttributeValueMemberS{Value: "Active"},
+// 							"Criteria":      &types.AttributeValueMemberS{Value: "criteria-1"},
+// 							"Threshold":     &types.AttributeValueMemberN{Value: "100"},
+// 						},
+// 					},
+// 				},
+// 			},
+// 			QueryErrors: []error{nil},
+// 			UpdateItemOutputs: []dynamodb.UpdateItemOutput{
+// 				{},
+// 			},
+// 			UpdateItemErrors: []error{nil},
+// 			PutItemOutputs: []dynamodb.PutItemOutput{
+// 				{},
+// 			},
+// 			PutItemErrors: []error{nil},
+// 		}
+
+// 		// Create TenantCertificateTransferService
+// 		svc := TenantCertificateTransferService{
+// 			ctx:                           context.TODO(),
+// 			dynamodbClient:                &ddbClient,
+// 			logger:                        log.New(logBuffer, "TEST:", 0),
+// 			CertificatesTransferLogsTable: "test-CertificatesTransferLogsTable",
+// 			TenantCertificatesTable:       "test-TenantCertificatesTable",
+// 			TenantCertificatesTable_CriteriaThresholdIndex: "Criteria-Threshold-Index",
+// 			EmployeesTable: "test-EmployeesTable",
+// 		}
+
+// 		// Certificate Assign Input
+// 		input := CertificateAssignInput{
+// 			From:      "source-entity",
+// 			DestID:    "dest-entity",
+// 			Criteria:  "criteria-1",
+// 			Threshold: 100,
+// 		}
+
+// 		// Test the AssignCertificate function
+// 		err := svc.PerformCertificateAssignment(input)
+
+// 		// Verify outputs
+// 		assert.NoError(t, err)
+// 		assert.Contains(t, logBuffer.String(), "Certificate assignment successful for: dest-entity")
+// 	})
+
+// 	t.Run("It should handle certificate assignment failure when criteria is invalid", func(t *testing.T) {
+// 		// Mock DynamoDB client with invalid criteria
+// 		ddbClient := awsclients.MockDynamodbClient{
+// 			QueryOutputs: []dynamodb.QueryOutput{
+// 				{Count: 0}, // No matching certificate
+// 			},
+// 			QueryErrors: []error{nil},
+// 		}
+
+// 		// Create TenantCertificateTransferService
+// 		svc := TenantCertificateTransferService{
+// 			ctx:                     context.TODO(),
+// 			dynamodbClient:          &ddbClient,
+// 			logger:                  log.New(logBuffer, "TEST:", 0),
+// 			TenantCertificatesTable: "test-TenantCertificatesTable",
+// 			TenantCertificatesTable_CriteriaThresholdIndex: "Criteria-Threshold-Index",
+// 			EmployeesTable: "test-EmployeesTable",
+// 		}
+
+// 		// Certificate Assign Input
+// 		input := CertificateAssignInput{
+// 			From:      "source-entity",
+// 			DestID:    "dest-entity",
+// 			Criteria:  "invalid-criteria",
+// 			Threshold: 999,
+// 		}
+
+// 		// Test the AssignCertificate function
+// 		err := svc.AssignCertificate(input)
+
+// 		// Verify no error, but check log for "Certificate Not active" (since no match found)
+// 		assert.NoError(t, err)
+// 		assert.Contains(t, logBuffer.String(), "Certificate Not active for the input provided")
+// 	})
+// }
+
+// func Test_CheckValidity(t *testing.T) {
+// 	logBuffer := &bytes.Buffer{}
+
+// 	t.Run("It should return valid certificate details when the criteria is active", func(t *testing.T) {
+// 		// Mock DynamoDB client
+// 		ddbClient := awsclients.MockDynamodbClient{
+// 			QueryOutputs: []dynamodb.QueryOutput{
+// 				{
+// 					Count: 1,
+// 					Items: []map[string]types.AttributeValue{
+// 						{
+// 							"CertificateId": &types.AttributeValueMemberS{Value: "certificate-123"},
+// 							"IsActive":      &types.AttributeValueMemberS{Value: "Active"},
+// 							"Criteria":      &types.AttributeValueMemberS{Value: "criteria-1"},
+// 							"Threshold":     &types.AttributeValueMemberN{Value: "100"},
+// 						},
+// 					},
+// 				},
+// 			},
+// 			QueryErrors: []error{nil},
+// 		}
+
+// 		// Create TenantCertificateTransferService
+// 		svc := TenantCertificateTransferService{
+// 			ctx:                     context.TODO(),
+// 			dynamodbClient:          &ddbClient,
+// 			logger:                  log.New(logBuffer, "TEST:", 0),
+// 			TenantCertificatesTable: "test-TenantCertificatesTable",
+// 			TenantCertificatesTable_CriteriaThresholdIndex: "Criteria-Threshold-Index",
+// 		}
+
+// 		// Certificate Assign Input
+// 		input := CertificateAssignInput{
+// 			Criteria:  "criteria-1",
+// 			Threshold: 100,
+// 		}
+
+// 		// Test CheckValidity function
+// 		status, certificateId, err := svc.CheckValidity(input)
+
+// 		// Verify the outputs
+// 		assert.NoError(t, err)
+// 		assert.True(t, status)
+// 		assert.Equal(t, "certificate-123", certificateId)
+// 	})
+
+// 	t.Run("It should return false if the certificate is not active", func(t *testing.T) {
+// 		// Mock DynamoDB client with inactive certificate
+// 		ddbClient := awsclients.MockDynamodbClient{
+// 			QueryOutputs: []dynamodb.QueryOutput{
+// 				{
+// 					Count: 1,
+// 					Items: []map[string]types.AttributeValue{
+// 						{
+// 							"CertificateId": &types.AttributeValueMemberS{Value: "certificate-123"},
+// 							"IsActive":      &types.AttributeValueMemberS{Value: "Inactive"},
+// 							"Criteria":      &types.AttributeValueMemberS{Value: "criteria-1"},
+// 							"Threshold":     &types.AttributeValueMemberN{Value: "100"},
+// 						},
+// 					},
+// 				},
+// 			},
+// 			QueryErrors: []error{nil},
+// 		}
+
+// 		// Create TenantCertificateTransferService
+// 		svc := TenantCertificateTransferService{
+// 			ctx:                     context.TODO(),
+// 			dynamodbClient:          &ddbClient,
+// 			logger:                  log.New(logBuffer, "TEST:", 0),
+// 			TenantCertificatesTable: "test-TenantCertificatesTable",
+// 			TenantCertificatesTable_CriteriaThresholdIndex: "Criteria-Threshold-Index",
+// 		}
+
+// 		// Certificate Assign Input
+// 		input := CertificateAssignInput{
+// 			Criteria:  "criteria-1",
+// 			Threshold: 100,
+// 		}
+
+// 		// Test CheckValidity function
+// 		status, certificateId, err := svc.CheckValidity(input)
+
+// 		// Verify the outputs
+// 		assert.NoError(t, err)
+// 		assert.False(t, status)
+// 		assert.Equal(t, "", certificateId)
+// 	})
+// }
+
+// func Test_PutCertificateToEmployee(t *testing.T) {
+// 	logBuffer := &bytes.Buffer{}
+
+// 	t.Run("It should successfully update the employee certificates", func(t *testing.T) {
+// 		// Mock DynamoDB client
+// 		ddbClient := awsclients.MockDynamodbClient{
+// 			UpdateItemOutputs: []dynamodb.UpdateItemOutput{
+// 				{},
+// 			},
+// 			UpdateItemErrors: []error{nil},
+// 		}
+
+// 		// Create TenantCertificateTransferService
+// 		svc := TenantCertificateTransferService{
+// 			ctx:            context.TODO(),
+// 			dynamodbClient: &ddbClient,
+// 			logger:         log.New(logBuffer, "TEST:", 0),
+// 			EmployeesTable: "test-EmployeesTable",
+// 		}
+
+// 		// Test PutCertificateToEmployee function
+// 		certificateData := EmployeeCertificates{
+// 			CertificatesId: "certificate-123",
+// 			DateAwarded:    utils.GenerateTimestamp(),
+// 		}
+// 		err := svc.PutCertificateToEmployee(certificateData, "dest-entity")
+
+// 		// Verify the outputs
+// 		assert.NoError(t, err)
+// 	})
+
+// 	t.Run("It should return an error if DynamoDB update fails", func(t *testing.T) {
+// 		// Mock DynamoDB client with error
+// 		ddbClient := awsclients.MockDynamodbClient{
+// 			UpdateItemOutputs: []dynamodb.UpdateItemOutput{
+// 				{},
+// 			},
+// 			UpdateItemErrors: []error{fmt.Errorf("DDB Update Error")},
+// 		}
+
+// 		// Create TenantCertificateTransferService
+// 		svc := TenantCertificateTransferService{
+// 			ctx:            context.TODO(),
+// 			dynamodbClient: &ddbClient,
+// 			logger:         log.New(logBuffer, "TEST:", 0),
+// 			EmployeesTable: "test-EmployeesTable",
+// 		}
+
+// 		// Test PutCertificateToEmployee function
+// 		certificateData := EmployeeCertificates{
+// 			CertificatesId: "certificate-123",
+// 			DateAwarded:    utils.GenerateTimestamp(),
+// 		}
+// 		err := svc.PutCertificateToEmployee(certificateData, "dest-entity")
+
+// 		// Verify the error
+// 		assert.Error(t, err)
+// 		assert.Contains(t, err.Error(), "DDB Update Error")
+// 	})
+// }

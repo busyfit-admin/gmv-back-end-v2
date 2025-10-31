@@ -1,0 +1,14 @@
+{
+    "SubDomain": {
+        "S": "subdomain.example.com"
+    },
+    "SupplierId": {
+        "S": "test-supplier-id-1234"
+    },
+    "EnvName": {
+        "S": "DEV"
+    },
+    "Status": {
+        "S": "STACK_INPROG"
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "SupplierId": "testsupplierId2",
+    "StageName": "Active",
+    "StageStatus": "Pending",
+    "Comment": "Stage is pending for approval",
+    "CommentBy": "Admin"
+}

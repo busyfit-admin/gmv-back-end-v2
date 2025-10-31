@@ -1,0 +1,35 @@
+[
+    {
+        "SubDomain": "infosys.subdomain.com",
+        "SupplierId": "infosys-123",
+        "Status": "STACK_DEPLOYED",
+        "EnvName": "development",
+        "SupplierStack": "",
+        "SupplierUserPoolId": "us-west-2_ABCDE123",
+        "AdminUsers": [
+            "admin1@example.com",
+            "admin2@example.com"
+        ]
+    },
+    {
+        "SubDomain": "infosys2.subdomain.com",
+        "SupplierId": "infosys-123",
+        "Status": "STACK_DEPLOYED",
+        "EnvName": "staging",
+        "SupplierStack": "",
+        "SupplierUserPoolId": "us-west-2_XYZ789",
+        "AdminUsers": [
+            "admin3@example.com",
+            "admin4@example.com"
+        ]
+    },
+    {
+        "SubDomain": "infosys3.subdomain.com",
+        "SupplierId": "infosys-123",
+        "Status": "STACK_INPROG",
+        "EnvName": "PROD",
+        "SupplierStack": "",
+        "SupplierUserPoolId": "",
+        "AdminUsers": null
+    }
+]

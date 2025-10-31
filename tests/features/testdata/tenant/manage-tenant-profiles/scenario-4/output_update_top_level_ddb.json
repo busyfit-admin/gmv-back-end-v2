@@ -1,0 +1,43 @@
+{
+    "TenantId": {
+        "S": "test-tenant-id-9999"
+    },
+    "EnvType": {
+        "S": "Development"
+    },
+    "Industry": {
+        "S": "Finance"
+    },
+    "TenantContacts": {
+        "M": {
+            "john.doe@example.com": {
+                "M": {
+                    "IsPrimary": {
+                        "BOOL": true
+                    },
+                    "TenantContactName": {
+                        "S": "John Doe"
+                    },
+                    "TenantEmail": {
+                        "S": "john.doe@example.com"
+                    },
+                    "TenantPh": {
+                        "S": "123-456-7890"
+                    }
+                }
+            }
+        }
+    },
+    "TenantCreationDate": {
+        "S": "2024-04-26T02:45:44.214Z"
+    },
+    "TenantDesc": {
+        "S": "An updated description for the company."
+    },
+    "TenantName": {
+        "S": "Updated Company Name"
+    },
+    "TenantStageId": {
+        "S": "STG01"
+    }
+}

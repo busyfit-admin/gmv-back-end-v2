@@ -1,0 +1,9 @@
+{
+    "TenantName": "Sample Company",
+    "TenantDesc": "A sample description for the sample company.",
+    "Industry": "Technology",
+    "EnvType": "Production",
+    "PrimaryContactName": "John Doe",
+    "PrimaryContactEmail": "john.doe@example.com",
+    "PrimaryContactPh": "123-456-7890"
+}

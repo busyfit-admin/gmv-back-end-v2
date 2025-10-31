@@ -1,0 +1,17 @@
+{
+    "TenantId": {
+        "S": "testtenantId3"
+    },
+    "TenantName": {
+        "S": "CD Company"
+    },
+    "Industry": {
+        "S": "Retail"
+    },
+    "TenantCreationDate": {
+        "S": "2024-04-03"
+    },
+    "TenantStageId": {
+        "S": "STG05"
+    }
+}
