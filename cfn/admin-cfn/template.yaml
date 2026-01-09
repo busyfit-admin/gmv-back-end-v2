@@ -1,0 +1,739 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Admin Portal related APIs.
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The runtime environment of this stack
+  DataStack:
+    Type: String
+    Description: Data Stack
+  CognitoUserPool:
+    Type: String
+    Description: Admin Cognito UserPool
+  MapBurstLimit:
+    Type: Number
+    Default: 100
+  MapRateLimit:
+    Type: Number
+    Default: 100
+  MapThrottlingLimit:
+    Type: Number
+    Default: 100
+  MapThrottlingBurstLimit:
+    Type: Number
+    Default: 100
+
+Conditions:
+  # If the build is not on Deployment branch this condition is true.
+  IsTestBuild: !Not
+    - !Or
+      - !Equals [!Ref Environment, "dev"]
+      - !Equals [!Ref Environment, "uat"]
+      - !Equals [!Ref Environment, "prod"]
+
+Mappings:
+  AccountMappings:
+    "231252353945": # dev
+      APSouthDomainName: dev.admin.testrewardsapp.com
+      APSouthHostedZoneId: Z01979001TN53YZO46PPV
+
+Resources:
+  #  ---------------- SSM Parameters ----------------
+
+  SupplierDetailsTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/supplier-details-table
+      Type: String
+      Value: SupplierDetailsTable
+
+  SupplierSubDomainTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/supplier-subdomain-table
+      Type: String
+      Value: SupplierSubdomainsTable
+
+  SupplierStagesTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/supplier-stages-table
+      Type: String
+      Value: SupplierStagesTable
+
+  TenantDetailsTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/tenant-details-table
+      Type: String
+      Value: TenantDetailsTable
+
+  TenantSubDomainTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/tenant-subdomain-table
+      Type: String
+      Value: TenantSubdomainsTable
+
+  TenantStagesTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/tenant-stages-table
+      Type: String
+      Value: TenantStagesTable
+
+  CardsCreationTrackerTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/cards-tracker-table
+      Type: String
+      Value: CardsCreationTrackerTable
+
+  CardsTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/cards-table
+      Type: String
+      Value: CardsTable
+
+  CardsMetaDataTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/cards-meta-data
+      Type: String
+      Value: CardsMetaDataTable
+
+  AdminCognitoUserPool:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/cognito/admin-cognito-userpool
+      Type: String
+      Value: !Ref CognitoUserPool
+
+  GISTablePrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/prefixes/ddb/GIS-Table-table
+      Type: String
+      Value: GISTable
+
+  # -------------- API gateway --------------
+  AdminAPIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      OpenApiVersion: "3.0"
+      Domain:
+        CertificateArn: !Ref AdminDomainACM
+        DomainName: !If
+          - IsTestBuild
+          - !Sub
+            - ${Environment}.${DomainName}
+            - DomainName:
+                !FindInMap [
+                  AccountMappings,
+                  !Ref "AWS::AccountId",
+                  APSouthDomainName,
+                ]
+          - !FindInMap [
+              AccountMappings,
+              !Ref "AWS::AccountId",
+              APSouthDomainName,
+            ]
+        Route53:
+          HostedZoneId:
+            !FindInMap [
+              AccountMappings,
+              !Ref "AWS::AccountId",
+              APSouthHostedZoneId,
+            ]
+        EndpointConfiguration: REGIONAL
+      Cors:
+        AllowMethods: "'POST, GET, PATCH'"
+        AllowHeaders: "'lat,lng,radius,x-api-key, get_type, patch_type, tenantid,TenantId,Tenantid, CardId, cardId, Groupid, GroupId, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method,Content-Type, Origin, Access-Control-Allow-Origin, Access-Control-Max-Age'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+      EndpointConfiguration:
+        Type: REGIONAL
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: "../../swagger-docs/admin/admin-apis.yaml"
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          DataTraceEnabled: true
+          LoggingLevel: INFO
+          MetricsEnabled: true
+          ThrottlingRateLimit: !Ref MapThrottlingLimit
+          ThrottlingBurstLimit: !Ref MapThrottlingBurstLimit
+      # Auth:
+      #   ApiKeyRequired: true
+      TracingEnabled: true
+
+  AdminAPIGatewayUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    # Adding AdminAPIGatewayStage in order to create UsagePlan after stage is created
+    # referring to AdminAPIGatewayStage (<api-name>Stage) which is the default name creation for stage in AWS
+    DependsOn:
+      - AdminAPIGatewayStage
+    Properties:
+      ApiStages:
+        - ApiId: !Ref AdminAPIGateway
+          Stage: !Ref Environment
+      Description: Usage plan for this API
+      # Update throttle settings based on env
+      Throttle:
+        RateLimit: !Ref MapBurstLimit
+        BurstLimit: !Ref MapRateLimit
+
+  AdminAPIGatewayUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    DependsOn:
+      - AdminAPIGatewayStage
+    Properties:
+      KeyId: !Ref AdminAPIGatewayApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref AdminAPIGatewayUsagePlan
+
+  AdminAPIGatewayApiKey:
+    Type: "AWS::ApiGateway::ApiKey"
+    DependsOn:
+      - AdminAPIGatewayUsagePlan
+      - AdminAPIGatewayStage
+    Properties:
+      Enabled: true
+      StageKeys:
+        - RestApiId: !Ref AdminAPIGateway
+          StageName: !Ref Environment
+      Value:
+        !Join [
+          "",
+          [
+            "{{resolve:secretsmanager:",
+            !Ref GenerateSecretKey,
+            ":SecretString:apikey}}",
+          ],
+        ]
+
+  GenerateSecretKey:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub SecretKeyAdminAPI/${Environment}
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "getapikey"}'
+        ExcludePunctuation: true
+        GenerateStringKey: "apikey"
+        PasswordLength: 21
+
+  AdminDomainACM:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsTestBuild
+        - !Sub
+          - ${Environment}.${DomainName}
+          - DomainName:
+              !FindInMap [
+                AccountMappings,
+                !Ref "AWS::AccountId",
+                APSouthDomainName,
+              ]
+        - !FindInMap [AccountMappings, !Ref "AWS::AccountId", APSouthDomainName]
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsTestBuild
+            - !Sub
+              - ${Environment}.${DomainName}
+              - DomainName:
+                  !FindInMap [
+                    AccountMappings,
+                    !Ref "AWS::AccountId",
+                    APSouthDomainName,
+                  ]
+            - !FindInMap [
+                AccountMappings,
+                !Ref "AWS::AccountId",
+                APSouthDomainName,
+              ]
+          HostedZoneId:
+            !FindInMap [
+              AccountMappings,
+              !Ref "AWS::AccountId",
+              APSouthHostedZoneId,
+            ]
+
+  # ------------- Manage Supplier Profiles Lambda -------------
+
+  ManageSupplierProfileLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage Supplier profiles"
+      Role: !GetAtt ManageSupplierProfileLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/admin-lambdas/manage-supplier-profiles/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          SUPPLIER_DETAILS_TABLE: !If
+            - IsTestBuild
+            - !Sub
+              - ${TableNamePrefix}-test-${DataStack}
+              - { TableNamePrefix: !GetAtt SupplierDetailsTablePrefix.Value }
+            - !Sub
+              - ${TableNamePrefix}-${Environment}-${DataStack}
+              - { TableNamePrefix: !GetAtt SupplierDetailsTablePrefix.Value }
+          SUPPLIER_DETAILS_INDEX_SUPPLIERSTAGEID: !Sub
+            - ${TableNamePrefix}-Index-SupplierStageId
+            - { TableNamePrefix: !GetAtt SupplierDetailsTablePrefix.Value }
+
+  ManageSupplierProfileLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ManageSupplierProfileLambdaRole-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:ExecuteStatement
+                  - dynamodb:PartiQLSelect
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${SupplierDetailsTablePrefix.Value}*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+
+  ManageSupplierProfileLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageSupplierProfileLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${AdminAPIGateway}/*
+
+  # ------------- Manage Tenants Profiles Lambda -------------
+
+  ManageTenantProfileLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage tenant profiles"
+      Role: !GetAtt ManageTenantProfileLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/admin-lambdas/manage-tenant-profiles/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TENANT_DETAILS_TABLE: !If
+            - IsTestBuild
+            - !Sub
+              - ${TableNamePrefix}-test-${DataStack}
+              - { TableNamePrefix: !GetAtt TenantDetailsTablePrefix.Value }
+            - !Sub
+              - ${TableNamePrefix}-${Environment}-${DataStack}
+              - { TableNamePrefix: !GetAtt TenantDetailsTablePrefix.Value }
+          TENANT_DETAILS_INDEX_TENANTSTAGEID: !Sub
+            - ${TableNamePrefix}-Index-TenantStageId
+            - { TableNamePrefix: !GetAtt TenantDetailsTablePrefix.Value }
+
+  ManageTenantProfileLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ManageTenantProfileLambdaRole-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:ExecuteStatement
+                  - dynamodb:PartiQLSelect
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TenantDetailsTablePrefix.Value}*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+
+  ManageTenantProfileLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageTenantProfileLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${AdminAPIGateway}/*
+
+  # ------------- Manage Tenants Stages Lambda -------------
+
+  ManageTenantStagesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage tenant Stages"
+      Role: !GetAtt ManageTenantStagesLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/admin-lambdas/manage-tenant-stages/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TENANT_STAGES_TABLE: !If
+            - IsTestBuild
+            - !Sub
+              - ${TableNamePrefix}-test-${DataStack}
+              - { TableNamePrefix: !GetAtt TenantStagesTablePrefix.Value }
+            - !Sub
+              - ${TableNamePrefix}-${Environment}-${DataStack}
+              - { TableNamePrefix: !GetAtt TenantStagesTablePrefix.Value }
+          TENANT_STAGES_INDEX_TENANTID: !Sub
+            - ${TableNamePrefix}-Index-TenantId
+            - { TableNamePrefix: !GetAtt TenantStagesTablePrefix.Value }
+
+  ManageTenantStagesLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ManageTenantStagesRole-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:Scan
+                  - dynamodb:PutItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TenantStagesTablePrefix.Value}-*
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TenantStagesTablePrefix.Value}-*/*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+
+  ManageTenantStagesInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageTenantStagesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${AdminAPIGateway}/*
+
+  # ------------- Manage Tenant Sub Domains Lambda -------------
+
+  ManageTenantSubDomainsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Architectures:
+        - x86_64
+      CodeUri: ../../lambdas/admin-lambdas/manage-tenant-sub-domains/
+      Description: "To handle GET/POST/PATCH operations for managing Tenant subdomains"
+      Role: !GetAtt ManageTenantSubDomainsLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Timeout: 300
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TENANT_SUBDOMAIN_TABLE: !If
+            - IsTestBuild
+            - !Sub
+              - ${TableNamePrefix}-test-${DataStack}
+              - { TableNamePrefix: !GetAtt TenantSubDomainTablePrefix.Value }
+            - !Sub
+              - ${TableNamePrefix}-${Environment}-${DataStack}
+              - { TableNamePrefix: !GetAtt TenantSubDomainTablePrefix.Value }
+          TENANT_SUBDOMAIN_INDEX_SUBDOMAIN: !Sub
+            - ${TableNamePrefix}-Index-SubDomain
+            - { TableNamePrefix: !GetAtt TenantSubDomainTablePrefix.Value }
+          TENANT_SUBDOMAIN_INDEX_TENANTID: !Sub
+            - ${TableNamePrefix}-Index-TenantId
+            - { TableNamePrefix: !GetAtt TenantSubDomainTablePrefix.Value }
+
+  ManageTenantSubDomainsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub Manage-SubDomains-Lambda-Role-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/SubdomainsLambda/"
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:DescribeStream
+                  - dynamodb:ListStreams
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TenantSubDomainTablePrefix.Value}-*
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TenantSubDomainTablePrefix.Value}-*/*
+              - Effect: Allow
+                Action:
+                  - cognito-idp:AdminCreateUser
+                  - cognito-idp:AdminUpdateUserAttributes
+                  - cognito-idp:AdminGetUser
+                Resource: "*" # allow updates to the provided userPoolId
+
+  ManageTenantSubDomainsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageTenantSubDomainsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${AdminAPIGateway}/*
+
+  # ------------- Manage Supplier Stages Lambda -------------
+
+  ManageSupplierStagesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage supplier stages"
+      Role: !GetAtt ManageSupplierStagesLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/admin-lambdas/manage-supplier-stages/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          SUPPLIER_STAGES_TABLE: !If
+            - IsTestBuild
+            - !Sub
+              - ${TableNamePrefix}-test-${DataStack}
+              - { TableNamePrefix: !GetAtt SupplierStagesTablePrefix.Value }
+            - !Sub
+              - ${TableNamePrefix}-${Environment}-${DataStack}
+              - { TableNamePrefix: !GetAtt SupplierStagesTablePrefix.Value }
+          SUPPLIER_STAGES_INDEX_SUPPLIERID: !Sub
+            - ${TableNamePrefix}-Index-SupplierId
+            - { TableNamePrefix: !GetAtt SupplierStagesTablePrefix.Value }
+
+  ManageSupplierStagesLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ManageSupplierStagesRole-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:Scan
+                  - dynamodb:PutItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${SupplierStagesTablePrefix.Value}-*
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${SupplierStagesTablePrefix.Value}-*/*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+
+  ManageSupplierStagesInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageSupplierStagesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${AdminAPIGateway}/*
+
+  # ------------- Manage Supplier Sub Domains Lambda -------------
+
+  ManageSupplierSubDomainsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Architectures:
+        - x86_64
+      CodeUri: ../../lambdas/admin-lambdas/manage-supplier-subdomain/
+      Description: "To handle GET/POST/PATCH operations for managing Supplier subdomains"
+      Role: !GetAtt ManageSupplierSubDomainsLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Timeout: 300
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          SUPPLIER_SUBDOMAIN_TABLE: !If
+            - IsTestBuild
+            - !Sub
+              - ${TableNamePrefix}-test-${DataStack}
+              - { TableNamePrefix: !GetAtt SupplierSubDomainTablePrefix.Value }
+            - !Sub
+              - ${TableNamePrefix}-${Environment}-${DataStack}
+              - { TableNamePrefix: !GetAtt SupplierSubDomainTablePrefix.Value }
+          SUPPLIER_SUBDOMAIN_INDEX_SUBDOMAIN: !Sub
+            - ${TableNamePrefix}-Index-SubDomain
+            - { TableNamePrefix: !GetAtt SupplierSubDomainTablePrefix.Value }
+          SUPPLIER_SUBDOMAIN_INDEX_SUPPLIERID: !Sub
+            - ${TableNamePrefix}-Index-SupplierId
+            - { TableNamePrefix: !GetAtt SupplierSubDomainTablePrefix.Value }
+
+  ManageSupplierSubDomainsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub Manage-SupplierSubDomains-Lambda-Role-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/SupplierSubdomainsLambda/"
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:DescribeStream
+                  - dynamodb:ListStreams
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${SupplierSubDomainTablePrefix.Value}-*
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${SupplierSubDomainTablePrefix.Value}-*/*
+              - Effect: Allow
+                Action:
+                  - cognito-idp:AdminCreateUser
+                  - cognito-idp:AdminUpdateUserAttributes
+                  - cognito-idp:AdminGetUser
+                Resource: "*" # allow updates to the provided userPoolId
+
+  ManageSupplierSubDomainsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageSupplierSubDomainsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${AdminAPIGateway}/*
+

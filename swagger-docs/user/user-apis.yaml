@@ -1,0 +1,68 @@
+openapi: 3.0.0
+info:
+  title: "User Portal APIs"
+  description: User API POC
+  version: 1.0.1
+x-amazon-apigateway-request-validators:
+  all:
+    validateRequestBody: true
+x-amazon-apigateway-request-validator: all
+paths:
+  /v1/update-rewards:
+    post:
+      summary: Post request to create company Profile
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateRewardsLambda.Arn}/invocations # unlink the (UpdateRewardsLambda) lambda
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+components:
+  schemas:
+    Userrequestbody:
+      description: User request body of POST API
+      type: object
+      properties:
+        UserInput1:
+          type: string
+          description: User description of input1
+        UserInput2:
+          type: string
+          description: User description of input2
+    Userresponse:
+      description: User response of the API
+      type: object
+      properties:
+        UserRequiredField:
+          type: string
+          description: User description of UserRequiredField
+        field2:
+          type: string
+        field3:
+          type: object
+    errorbody:
+      type: object
+      properties:
+        errorText:
+          type: string
+
+securityDefinitions:
+  UserPool:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "cognito_user_pools"
+    x-amazon-apigateway-authorizer:
+      type: "cognito_user_pools"
+      providerARNs:
+        - Fn::Sub: ${CognitoUserPool}

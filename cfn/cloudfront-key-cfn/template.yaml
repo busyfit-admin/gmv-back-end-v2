@@ -1,0 +1,230 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront Public Key Generator - Creates RSA 2048 key pair for CloudFront signed URLs'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name (dev, test, prod)
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+Resources:
+  # Lambda execution role for the key generator
+  KeyGeneratorLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub CloudFrontKeyGenerator-${Environment}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: KeyGeneratorPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:CreateSecret
+                  - secretsmanager:PutSecretValue
+                  - secretsmanager:DeleteSecret
+                  - secretsmanager:UpdateSecret
+                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:cloudfront-private-key-${Environment}-*
+              - Effect: Allow
+                Action:
+                  - cloudfront:CreatePublicKey
+                  - cloudfront:GetPublicKey
+                  - cloudfront:DeletePublicKey
+                Resource: '*'
+
+  # Lambda function to generate RSA key pair
+  KeyGeneratorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub cloudfront-key-generator-${Environment}
+      Runtime: python3.11
+      Handler: index.handler
+      Role: !GetAtt KeyGeneratorLambdaRole.Arn
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import cfnresponse
+          from cryptography.hazmat.primitives.asymmetric import rsa
+          from cryptography.hazmat.primitives import serialization
+          from cryptography.hazmat.backends import default_backend
+          
+          def handler(event, context):
+              print(f"Event: {json.dumps(event)}")
+              
+              response_data = {}
+              physical_id = event.get('PhysicalResourceId', 'CloudFrontKeyPair')
+              
+              try:
+                  request_type = event['RequestType']
+                  environment = event['ResourceProperties']['Environment']
+                  
+                  secrets_client = boto3.client('secretsmanager')
+                  cloudfront_client = boto3.client('cloudfront')
+                  
+                  if request_type == 'Create':
+                      # Generate RSA 2048 key pair
+                      print("Generating RSA 2048 key pair...")
+                      private_key = rsa.generate_private_key(
+                          public_exponent=65537,
+                          key_size=2048,
+                          backend=default_backend()
+                      )
+                      
+                      # Get private key in PEM format
+                      private_pem = private_key.private_bytes(
+                          encoding=serialization.Encoding.PEM,
+                          format=serialization.PrivateFormat.TraditionalOpenSSL,
+                          encryption_algorithm=serialization.NoEncryption()
+                      ).decode('utf-8')
+                      
+                      # Get public key in PEM format
+                      public_key = private_key.public_key()
+                      public_pem = public_key.public_bytes(
+                          encoding=serialization.Encoding.PEM,
+                          format=serialization.PublicFormat.SubjectPublicKeyInfo
+                      ).decode('utf-8')
+                      
+                      print("Keys generated successfully")
+                      
+                      # Store private key in Secrets Manager
+                      secret_name = f'cloudfront-private-key-{environment}'
+                      print(f"Storing private key in Secrets Manager: {secret_name}")
+                      
+                      secrets_client.create_secret(
+                          Name=secret_name,
+                          Description=f'CloudFront Private Key for {environment}',
+                          SecretString=json.dumps({
+                              'private_key': private_pem,
+                              'public_key': public_pem
+                          })
+                      )
+                      
+                      # Create CloudFront Public Key
+                      print("Creating CloudFront Public Key...")
+                      public_key_response = cloudfront_client.create_public_key(
+                          PublicKeyConfig={
+                              'CallerReference': f'cloudfront-key-{environment}-{context.aws_request_id}',
+                              'Name': f'CloudFrontPublicKey-{environment}',
+                              'EncodedKey': public_pem,
+                              'Comment': f'Public key for CloudFront signed URLs - {environment}'
+                          }
+                      )
+                      
+                      public_key_id = public_key_response['PublicKey']['Id']
+                      print(f"CloudFront Public Key created: {public_key_id}")
+                      
+                      response_data['PublicKeyId'] = public_key_id
+                      response_data['SecretArn'] = f"arn:aws:secretsmanager:{boto3.session.Session().region_name}:{context.invoked_function_arn.split(':')[4]}:secret:{secret_name}"
+                      physical_id = public_key_id
+                      
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data, physical_id)
+                      
+                  elif request_type == 'Update':
+                      # For updates, return the existing public key ID
+                      response_data['PublicKeyId'] = physical_id
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data, physical_id)
+                      
+                  elif request_type == 'Delete':
+                      # Delete CloudFront Public Key
+                      try:
+                          print(f"Deleting CloudFront Public Key: {physical_id}")
+                          key_response = cloudfront_client.get_public_key(Id=physical_id)
+                          etag = key_response['ETag']
+                          cloudfront_client.delete_public_key(Id=physical_id, IfMatch=etag)
+                          print("CloudFront Public Key deleted")
+                      except Exception as e:
+                          print(f"Error deleting public key: {str(e)}")
+                      
+                      # Delete secret
+                      try:
+                          secret_name = f'cloudfront-private-key-{environment}'
+                          print(f"Deleting secret: {secret_name}")
+                          secrets_client.delete_secret(
+                              SecretId=secret_name,
+                              ForceDeleteWithoutRecovery=True
+                          )
+                          print("Secret deleted")
+                      except Exception as e:
+                          print(f"Error deleting secret: {str(e)}")
+                      
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data, physical_id)
+                      
+              except Exception as e:
+                  print(f"Error: {str(e)}")
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {'Error': str(e)}, physical_id)
+
+      Layers:
+        - !Ref CryptographyLayer
+
+  # Lambda Layer with cryptography library
+  CryptographyLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: !Sub cryptography-layer-${Environment}
+      Description: Cryptography library for RSA key generation
+      Content:
+        S3Bucket: !Sub cloudfront-key-lambda-layers-${AWS::AccountId}-${Environment}
+        S3Key: cryptography-layer.zip
+      CompatibleRuntimes:
+        - python3.11
+
+  # Custom resource to trigger the key generation
+  CloudFrontKeyPair:
+    Type: Custom::CloudFrontKeyPair
+    Properties:
+      ServiceToken: !GetAtt KeyGeneratorFunction.Arn
+      Environment: !Ref Environment
+
+  # Store the public key ID in SSM Parameter Store for easy reference
+  PublicKeyIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /cloudfront/public-key-id/${Environment}
+      Type: String
+      Value: !GetAtt CloudFrontKeyPair.PublicKeyId
+      Description: CloudFront Public Key ID for signed URLs
+
+  # Store the secret ARN in SSM Parameter Store
+  PrivateKeySecretArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /cloudfront/private-key-secret-arn/${Environment}
+      Type: String
+      Value: !GetAtt CloudFrontKeyPair.SecretArn
+      Description: ARN of the Secrets Manager secret containing the CloudFront private key
+
+Outputs:
+  PublicKeyId:
+    Description: CloudFront Public Key ID
+    Value: !GetAtt CloudFrontKeyPair.PublicKeyId
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicKeyId
+
+  PrivateKeySecretArn:
+    Description: ARN of the secret containing the private key
+    Value: !GetAtt CloudFrontKeyPair.SecretArn
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateKeySecretArn
+
+  PublicKeyIdParameterName:
+    Description: SSM Parameter name containing the Public Key ID
+    Value: !Sub /cloudfront/public-key-id/${Environment}
+
+  PrivateKeySecretArnParameterName:
+    Description: SSM Parameter name containing the Secret ARN
+    Value: !Sub /cloudfront/private-key-secret-arn/${Environment}
