@@ -22,12 +22,23 @@ def extract_user_data(event):
     """Extract user data from Cognito event."""
     user_attributes = event['request']['userAttributes']
     
+    # Extract first and last name
+    given_name = user_attributes.get('given_name', '')
+    family_name = user_attributes.get('family_name', '')
+    
+    # Build full name from given_name and family_name if name is not provided
+    name = user_attributes.get('name', '')
+    if not name and (given_name or family_name):
+        name = f"{given_name} {family_name}".strip()
+    
     return {
         'cognito_username': event['userName'],
         'cognito_id': user_attributes.get('sub'),
         'email': user_attributes.get('email', ''),
         'user_name': user_attributes.get('custom:userName', event['userName']),
-        'name': user_attributes.get('name', ''),
+        'name': name,
+        'given_name': given_name,
+        'family_name': family_name,
         'e_id': user_attributes.get('custom:E_ID', ''),
         'phone_number': user_attributes.get('phone_number', '')
     }
@@ -43,6 +54,8 @@ def create_user_in_ddb(user_data, source='Cognito-PostConfirmation'):
         'CognitoId': user_data['cognito_id'],
         'EmailId': user_data['email'],
         'DisplayName': user_data['name'] or user_data['user_name'],
+        'FirstName': user_data['given_name'],
+        'LastName': user_data['family_name'],
         'E_ID': user_data['e_id'],
         'PhoneNumber': user_data['phone_number'],
         'Status': 'Active',
@@ -77,6 +90,12 @@ def update_user_in_ddb(user_data):
             if user_data['name']:
                 update_expression += ", DisplayName = :name"
                 expression_values[':name'] = user_data['name']
+            if user_data['given_name']:
+                update_expression += ", FirstName = :firstname"
+                expression_values[':firstname'] = user_data['given_name']
+            if user_data['family_name']:
+                update_expression += ", LastName = :lastname"
+                expression_values[':lastname'] = user_data['family_name']
             if user_data['phone_number']:
                 update_expression += ", PhoneNumber = :phone"
                 expression_values[':phone'] = user_data['phone_number']

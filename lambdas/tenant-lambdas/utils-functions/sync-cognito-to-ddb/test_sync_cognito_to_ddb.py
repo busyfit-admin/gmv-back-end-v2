@@ -36,6 +36,8 @@ class TestExtractUserData(unittest.TestCase):
                     'email': 'test@example.com',
                     'custom:userName': 'TestUser',
                     'name': 'Test User',
+                    'given_name': 'Test',
+                    'family_name': 'User',
                     'custom:E_ID': 'EMP001',
                     'phone_number': '+1234567890'
                 }
@@ -48,6 +50,8 @@ class TestExtractUserData(unittest.TestCase):
         self.assertEqual(result['cognito_id'], '123-456-789')
         self.assertEqual(result['email'], 'test@example.com')
         self.assertEqual(result['name'], 'Test User')
+        self.assertEqual(result['given_name'], 'Test')
+        self.assertEqual(result['family_name'], 'User')
         self.assertEqual(result['e_id'], 'EMP001')
         self.assertEqual(result['phone_number'], '+1234567890')
     
@@ -68,8 +72,30 @@ class TestExtractUserData(unittest.TestCase):
         self.assertEqual(result['cognito_username'], 'testuser')
         self.assertEqual(result['email'], 'test@example.com')
         self.assertEqual(result['name'], '')
+        self.assertEqual(result['given_name'], '')
+        self.assertEqual(result['family_name'], '')
         self.assertEqual(result['e_id'], '')
         self.assertEqual(result['phone_number'], '')
+    
+    def test_extract_builds_name_from_first_last(self):
+        """Test that name is built from given_name and family_name if name is not provided."""
+        event = {
+            'userName': 'testuser',
+            'request': {
+                'userAttributes': {
+                    'sub': '123-456-789',
+                    'email': 'test@example.com',
+                    'given_name': 'John',
+                    'family_name': 'Doe'
+                }
+            }
+        }
+        
+        result = extract_user_data(event)
+        
+        self.assertEqual(result['given_name'], 'John')
+        self.assertEqual(result['family_name'], 'Doe')
+        self.assertEqual(result['name'], 'John Doe')
 
 
 class TestCreateUserInDDB(unittest.TestCase):
@@ -83,6 +109,8 @@ class TestCreateUserInDDB(unittest.TestCase):
             'cognito_id': '123-456',
             'email': 'test@example.com',
             'name': 'Test User',
+            'given_name': 'Test',
+            'family_name': 'User',
             'user_name': 'testuser',
             'e_id': 'EMP001',
             'phone_number': '+1234567890'
@@ -98,6 +126,8 @@ class TestCreateUserInDDB(unittest.TestCase):
         
         self.assertEqual(item['UserName'], 'testuser')
         self.assertEqual(item['CognitoId'], '123-456')
+        self.assertEqual(item['FirstName'], 'Test')
+        self.assertEqual(item['LastName'], 'User')
         self.assertEqual(item['EmailId'], 'test@example.com')
         self.assertEqual(item['Status'], 'Active')
         self.assertIn('CreatedAt', item)
@@ -121,6 +151,8 @@ class TestUpdateUserInDDB(unittest.TestCase):
             'cognito_username': 'testuser',
             'email': 'test@example.com',
             'name': 'Updated Name',
+            'given_name': 'Updated',
+            'family_name': 'Name',
             'phone_number': '+9876543210',
             'e_id': 'EMP002'
         }
@@ -145,11 +177,13 @@ class TestUpdateUserInDDB(unittest.TestCase):
             'cognito_username': 'newuser',
             'email': 'new@example.com',
             'name': 'New User',
+            'given_name': 'New',
+            'family_name': 'User',
             'phone_number': '',
             'e_id': ''
         }
         
-        # Mock user not found
+        # Mock user not found        # Mock user not found
         mock_table.get_item.return_value = {}
         
         result = update_user_in_ddb(user_data)
