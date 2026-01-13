@@ -204,8 +204,6 @@ Resources:
           Id: "TargetFunction-For-userPool"
         - Arn: !GetAtt UpdateEmployeeGroupsLambda.Arn
           Id: "TargetFunction-For-UpdateEmployeeGroupsLambda"
-        - Arn: !GetAtt UpdateTenantTeamsTableLambda.Arn
-          Id: "TargetFunction-For-UpdateTenantTeamsTableLambda"
 
   InvokeTenantEngagementLambdaRule:
     Type: AWS::Events::Rule
@@ -593,27 +591,35 @@ Resources:
       BillingMode: "PAY_PER_REQUEST"
 
   # -- Tenant Teams table -
-  TenantTeamsTable:
+  # This table stores team information with user memberships
+  # PK: TeamId (e.g., TEAM#uuid)
+  # SK: METADATA or USER#username
+  # GSI1: UserName-TeamId for querying all teams for a user
+  TenantTeamsTableV2:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub TenantTeamsTable-${Environment}
+      TableName: !Sub TenantTeamsTableV2-${Environment}
       AttributeDefinitions:
-        - AttributeName: EntityId
+        - AttributeName: PK
           AttributeType: S
-        - AttributeName: RelatedEntityId
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
           AttributeType: S
       KeySchema:
-        - AttributeName: EntityId
+        - AttributeName: PK
           KeyType: HASH
-        - AttributeName: RelatedEntityId
+        - AttributeName: SK
           KeyType: RANGE
       BillingMode: "PAY_PER_REQUEST"
       GlobalSecondaryIndexes:
-        - IndexName: RelatedEntityId-EntityId_Index
+        - IndexName: GSI1
           KeySchema:
-            - AttributeName: "RelatedEntityId"
+            - AttributeName: "GSI1PK"
               KeyType: "HASH"
-            - AttributeName: "EntityId"
+            - AttributeName: "GSI1SK"
               KeyType: "RANGE"
           Projection:
             ProjectionType: "ALL"
@@ -1827,69 +1833,6 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
-  # ---------- update-tenantTeams-table from employee data table lambda ----------
-
-  UpdateTenantTeamsTableLambda:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: bootstrap
-      Runtime: provided.al2
-      Architectures:
-        - x86_64
-      CodeUri: ../../lambdas/tenant-lambdas/teams-module/update-tenantTeams-table/
-      Description: "Updates Tenant Teams Information"
-      Role: !GetAtt UpdateTenantTeamsTableLambdaRole.Arn
-      Timeout: 300
-      Tracing: Active
-      Environment:
-        Variables:
-          Environment: !Ref Environment
-          TENANT_TEAMS_TABLE: !Ref TenantTeamsTable
-
-  UpdateTenantTeamsTableLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub UpdateTenantTeamsTable-${Environment}
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Path: "/TenantLambda/"
-      Policies:
-        - PolicyName: LambdaExecution
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - cloudwatch:PutMetricData
-                Resource: "*"
-              - Effect: Allow
-                Action:
-                  - cloudwatch:PutMetricData
-                Resource: "*"
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
-                Resource: !GetAtt TenantTeamsTable.Arn
-              - Effect: Allow
-                Action:
-                  - events:PutEvents
-                Resource: "*"
-
-  UpdateTenantTeamsTableLambdaInvokePermissions:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt UpdateTenantTeamsTableLambda.Arn
-      Principal: events.amazonaws.com
-      SourceArn: !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${InvokeCreateUserDataLambdaRule}
 
   # --------------- Rewards Management and related resources --------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2554,37 +2497,128 @@ Resources:
 
   # --------------- Tenant Teams Related functions --------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------
+  # ---------- Lambda to list user teams ----------
 
-  # ---------- Lambda to manage tenant teams ----------
-
-  ManageTenantTeamsLambda:
+  ListUserTeamsLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Description: "Tenant Lambda for managing teams"
-      Role: !GetAtt ManageTenantTeamsLambdaRole.Arn
+      Description: "Lambda to list all teams for a user and current team"
+      Role: !GetAtt TeamsV2LambdaRole.Arn
       Handler: bootstrap
       Runtime: provided.al2
       Architectures:
         - x86_64
       Timeout: 300
-      CodeUri: ../../lambdas/tenant-lambdas/teams-module/manage-tenant-teams/
+      CodeUri: ../../lambdas/tenant-lambdas/teams-module/list-user-teams/
       Tracing: Active
       Environment:
         Variables:
           Environment: !Ref Environment
-          TENANT_TEAMS_TABLE: !Ref TenantTeamsTable
-          TENANT_TEAM_INDEX_TEAMS: RelatedEntityId-EntityId_Index
-          EMPLOYEES_TABLE: !Ref EmployeeDataTable
-          EMPLOYEES_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
-          # cdn related
-          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
-          PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
-          CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
 
-  ManageTenantTeamsLambdaRole:
+  ListUserTeamsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ListUserTeamsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to create team ----------
+
+  CreateTeamLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to create a new team with creator as admin"
+      Role: !GetAtt TeamsV2LambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/teams-module/create-team/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  CreateTeamLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CreateTeamLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage team operations ----------
+
+  ManageTeamOperationsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage team operations: deactivate, add users, assign admins"
+      Role: !GetAtt TeamsV2LambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/teams-module/manage-team-operations/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManageTeamOperationsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageTeamOperationsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to set current team ----------
+
+  SetCurrentTeamLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to set the user's current team"
+      Role: !GetAtt TeamsV2LambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/teams-module/set-current-team/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  SetCurrentTeamLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt SetCurrentTeamLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Shared IAM Role for Teams V2 Lambdas ----------
+
+  TeamsV2LambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ManageTenantTeams-Lambda-Role-${Environment}
+      RoleName: !Sub TeamsV2-Lambda-Role-${Environment}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -2592,7 +2626,7 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
-      Path: "/"
+      Path: "/TeamsV2/"
       Policies:
         - PolicyName: LambdaExecution
           PolicyDocument:
@@ -2607,47 +2641,29 @@ Resources:
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - dynamodb:GetRecords
-                  - dynamodb:GetShardIterator
-                  - dynamodb:DescribeStream
-                  - dynamodb:ListStreams
-                  - dynamodb:UpdateItem
-                  - dynamodb:DeleteItem
-                  - dynamodb:GetItem
-                  - dynamodb:PutItem
-                  - dynamodb:Query
-                  - dynamodb:BatchWrite
-                  - dynamodb:BatchWriteItem
-                  - dynamodb:PartiQLSelect
-                  - dynamodb:PartiQLUpdate
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - dynamodb:*
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
                 Resource:
+                  - !GetAtt TenantTeamsTableV2.Arn
+                  - !Sub ${TenantTeamsTableV2.Arn}/index/*
                   - !GetAtt EmployeeDataTable.Arn
                   - !Sub ${EmployeeDataTable.Arn}/index/*
-                  - !GetAtt TenantTeamsTable.Arn
-                  - !Sub ${TenantTeamsTable.Arn}/index/*
               - Effect: Allow
                 Action:
-                  - secretsmanager:GetSecretValue
-                Resource: !GetAtt PrivateKeySecretsCloudfront.Value
-              - Effect: Allow
-                Action:
-                  - cloudfront:* # Adding the internItem action
-                Resource: !Sub
-                  - arn:aws:cloudfront::${AccountId}:distribution/${CdnId}
-                  - CdnId: !Ref CDNforTenantsS3Store
-                    AccountId: !Ref AWS::AccountId
-
-  ManageTenantTeamsLambdaInvokePermissions:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt ManageTenantTeamsLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+                  - dynamodb:TransactWriteItems
+                Resource:
+                  - !GetAtt TenantTeamsTableV2.Arn
+                  - !GetAtt EmployeeDataTable.Arn
 
   # --------------- Feeds, Events, appreciations and Certificates related functions --------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2687,7 +2703,7 @@ Resources:
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
           # Teams related Environment Variables
-          TENANT_TEAMS_TABLE: !Ref TenantTeamsTable
+          TENANT_TEAMS_TABLE: !Ref TenantTeamsTableV2
           # Rewards Transfer SQS Queue
           REWARD_TRANSFER_SQS_QUEUE: !Ref RewardTransferFifoQueue
 

@@ -110,6 +110,8 @@ type EmployeeDynamodbData struct {
 	CertificatesData map[string]EmployeeCertificates `json:"CertificatesData,omitempty" dynamodbav:"CertificatesData"`
 
 	RolesData map[string]bool `json:"RolesData,omitempty" dynamodbav:"RolesData"`
+
+	CurrentTeamId string `json:"CurrentTeamId,omitempty" dynamodbav:"CurrentTeamId"` // Currently logged-in team
 }
 
 type EmployeeRewards struct {
