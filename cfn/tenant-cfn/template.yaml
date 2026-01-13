@@ -9,6 +9,14 @@ Parameters:
   Environment:
     Type: String
     Description: The runtime environment of this stack
+  CloudFrontPublicKeyIdParam:
+    Type: String
+    Description: CloudFront Public Key ID from cloudfront-key stack
+    Default: ""
+  CloudFrontPrivateKeySecretArn:
+    Type: String
+    Description: ARN of the Secrets Manager secret containing the CloudFront private key
+    Default: ""
   MapBurstLimit:
     Type: Number
     Default: 100
@@ -29,14 +37,57 @@ Conditions:
       - !Equals [!Ref Environment, "dev"]
       - !Equals [!Ref Environment, "uat"]
       - !Equals [!Ref Environment, "prod"]
+  # Check if CloudFront keys are provided
+  UseProvidedCloudFrontKeys: !Not [!Equals [!Ref CloudFrontPublicKeyIdParam, ""]]
 
 Mappings:
+  # ============================================================================
+  # Account-specific configurations for domain names and Cognito settings
+  # ============================================================================
+  # 
+  # Before deployment, configure the following for each AWS account/environment:
+  # 
+  # 1. Route 53 Setup (Required):
+  #    - Create or import domain in Route 53
+  #    - Get Hosted Zone ID: aws route53 list-hosted-zones
+  #    - Update nameservers at domain registrar if using external domain
+  #    - Wait for DNS propagation (24-48 hours)
+  # 
+  # 2. Update this mapping with:
+  #    - Your AWS Account ID (get via: aws sts get-caller-identity)
+  #    - APSouthDomainName: Your domain/subdomain for API Gateway
+  #    - APSouthHostedZoneId: Your Route 53 Hosted Zone ID (without /hostedzone/ prefix)
+  #    - TenantClientTokenValidityHRS: Cognito access token validity (hours)
+  #    - TenantClientAuthSessionValidityMin: Cognito auth session validity (minutes)
+  # 
+  # Example domain setup:
+  #   - dev environment:  dev.your-domain.com
+  #   - uat environment:  uat.your-domain.com
+  #   - prod environment: www.your-domain.com or your-domain.com
+  # 
+  # See docs/101/DEPLOYMENT_GUIDE.md for complete setup instructions
+  # ============================================================================
+  
   AccountMappings:
-    "231252353945": # dev
-      APSouthDomainName: dev.company.testrewardsapp.com # need to change the url
-      APSouthHostedZoneId: Z074248724SPYLLD7799K
+    "622778846370": # dev account
+      APSouthDomainName: mvp-dev.4cl-tech.com.au
+      APSouthHostedZoneId: Z07064771YL69HXR2PLAL
       TenantClientTokenValidityHRS: 10
       TenantClientAuthSessionValidityMin: 5
+    
+    # Add additional AWS accounts/environments below:
+    # 
+    # "YOUR_UAT_ACCOUNT_ID": # uat account
+    #   APSouthDomainName: uat.your-domain.com
+    #   APSouthHostedZoneId: Z08123456EXAMPLE
+    #   TenantClientTokenValidityHRS: 12
+    #   TenantClientAuthSessionValidityMin: 10
+    # 
+    # "YOUR_PROD_ACCOUNT_ID": # prod account
+    #   APSouthDomainName: www.your-domain.com
+    #   APSouthHostedZoneId: Z09123456EXAMPLE
+    #   TenantClientTokenValidityHRS: 24
+    #   TenantClientAuthSessionValidityMin: 15
 
 Resources:
   #  ---------- 1. General SSM Parameters ------------------------------------------------------
@@ -123,13 +174,16 @@ Resources:
       Type: String
       Value: GISTable
 
-  # Public Key is created manually and the value is referred to it accordingly.
+  # Public Key ID - use parameter if provided, otherwise use default
   CloudFrontPublicKeyId:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub /${AWS::StackName}/cloudfront/public-key-id
       Type: String
-      Value: KJSZ8RHPSJO2B
+      Value: !If
+        - UseProvidedCloudFrontKeys
+        - !Ref CloudFrontPublicKeyIdParam
+        - KJSZ8RHPSJO2B
 
   # ---------- 2. EVB Rules ----------------------------------------------------------------
   # ------------------------------------------------------------------------------------------
@@ -371,8 +425,6 @@ Resources:
         - AttributeName: "UserName"
           KeyType: "HASH"
       BillingMode: "PAY_PER_REQUEST"
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE
       GlobalSecondaryIndexes:
         - IndexName: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
           KeySchema:
@@ -924,23 +976,43 @@ Resources:
     Properties:
       UserPoolName: !Sub Tenant-UserPool-${Environment}
       AdminCreateUserConfig:
-        AllowAdminCreateUserOnly: True # change to true (not sure have to discuss)
+        AllowAdminCreateUserOnly: false # change to true (not sure have to discuss)
       DeletionProtection: INACTIVE # Change to Active for PROD Deployments
       UsernameAttributes:
         - email
       EmailConfiguration:
         EmailSendingAccount: COGNITO_DEFAULT
+      AutoVerifiedAttributes:
+        - email
       Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+        - Name: given_name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: family_name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
         - Name: userName
           AttributeDataType: String
           Mutable: true
+          Required: false
         - Name: E_ID
           AttributeDataType: String
           Mutable: true
+          Required: false
         - Name: phone_number
           AttributeDataType: String
           Mutable: true
-          Required: true
+          Required: false
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -948,6 +1020,10 @@ Resources:
           RequireLowercase: true
           RequireNumbers: true
           RequireSymbols: false
+      LambdaConfig:
+        PostConfirmation: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
+        PreAuthentication: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
+        PreTokenGeneration: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
 
   TenantProfileCognitoClient:
     Type: AWS::Cognito::UserPoolClient
@@ -967,6 +1043,71 @@ Resources:
           TenantClientAuthSessionValidityMin,
         ]
       GenerateSecret: false
+
+  # ---------- Lambda to Sync Cognito Users to DynamoDB ----------
+
+  SyncCognitoUserToDynamoDBLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub SyncCognitoUserToDynamoDB-${Environment}
+      Runtime: python3.11
+      Handler: sync_cognito_to_ddb.handler
+      Timeout: 30
+      CodeUri: ../../lambdas/tenant-lambdas/utils-functions/sync-cognito-to-ddb/
+      Role: !GetAtt SyncCognitoUserToDynamoDBLambdaRole.Arn
+      Tracing: Active
+      Environment:
+        Variables:
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+
+  SyncCognitoUserToDynamoDBLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub SyncCognitoUserToDynamoDB-Role-${Environment}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                Resource: !GetAtt EmployeeDataTable.Arn
+
+  CognitoPostConfirmationLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SyncCognitoUserToDynamoDBLambda
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt TenantCognitoUserPool.Arn
+
+  CognitoPreAuthenticationLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SyncCognitoUserToDynamoDBLambda
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt TenantCognitoUserPool.Arn
+
+  CognitoPreTokenGenerationLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SyncCognitoUserToDynamoDBLambda
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt TenantCognitoUserPool.Arn
 
   # ------------------------------------------------------------------------------------------------------------------------------------------------
   # --------------- 6.Lambda Modules with business logic --------------------------------------------------------------------------------------------------
@@ -1005,12 +1146,12 @@ Resources:
                   - s3:PutObject
                   - s3:ListBucket
                 Resource:
-                  - !Sub arn:aws:s3:::daas-tenant-employee-data-files-${Environment}/*
+                  - !Sub arn:aws:s3:::daas-tenant-employee-data-${AWS::AccountId}-${Environment}/*
 
   TenantCreateUsersBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub daas-tenant-employee-data-files-${Environment}
+      BucketName: !Sub daas-tenant-employee-data-${AWS::AccountId}-${Environment}
       LifecycleConfiguration:
         Rules:
           - Id: DeleteAfter30Days
@@ -1020,7 +1161,7 @@ Resources:
   OnboardingBucketingPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Sub daas-tenant-employee-data-files-${Environment}
+      Bucket: !Sub daas-tenant-employee-data-${AWS::AccountId}-${Environment}
       PolicyDocument:
         Id: LambdaPermissions
         Statement:
@@ -1030,7 +1171,7 @@ Resources:
               AWS: !GetAtt OnboardingLambdaRole.Arn
             Action: s3:GetObject
             Resource:
-              - !Sub arn:aws:s3:::daas-tenant-employee-data-files-${Environment}/*
+              - !Sub arn:aws:s3:::daas-tenant-employee-data-${AWS::AccountId}-${Environment}/*
 
   # -- Onboarding Lambda Related Resources ----------
 
@@ -1105,7 +1246,7 @@ Resources:
                   - s3:getObject
                   - s3:putObject
                 Resource:
-                  - !Sub arn:aws:s3:::daas-tenant-employee-data-files-${Environment}/*
+                  - !Sub arn:aws:s3:::daas-tenant-employee-data-${AWS::AccountId}-${Environment}/*
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
 
@@ -1115,7 +1256,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt OnboardingLambda.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !Sub arn:aws:s3:::daas-tenant-employee-data-files-${Environment}
+      SourceArn: !Sub arn:aws:s3:::daas-tenant-employee-data-${AWS::AccountId}-${Environment}
       SourceAccount: !Ref "AWS::AccountId"
 
   # -------  Create-UserPool-Info-Lambda  -------
@@ -1258,14 +1399,14 @@ Resources:
                   - cloudwatch:PutMetricData
                 Resource: "*"
 
-  EventSourceDDBStreamForDDBTeamsStreamsForwarder:
-    Type: AWS::Lambda::EventSourceMapping
-    Properties:
-      BatchSize: 100
-      Enabled: True
-      EventSourceArn: !GetAtt EmployeeDataTable.StreamArn
-      FunctionName: !GetAtt DDBTeamsStreamsForwarderLambda.Arn
-      StartingPosition: LATEST
+  # EventSourceDDBStreamForDDBTeamsStreamsForwarder:
+  #   Type: AWS::Lambda::EventSourceMapping
+  #   Properties:
+  #     BatchSize: 100
+  #     Enabled: True
+  #     EventSourceArn: !GetAtt EmployeeDataTable.StreamArn
+  #     FunctionName: !GetAtt DDBTeamsStreamsForwarderLambda.Arn
+  #     StartingPosition: LATEST
 
   EventSourceDDBStream:
     Type: AWS::Lambda::EventSourceMapping
@@ -1276,13 +1417,13 @@ Resources:
       FunctionName: !GetAtt DDBTeamsStreamsForwarderLambda.Arn
       StartingPosition: LATEST
 
-  DDBStreamsLambdaInvokePermissionsEmployeeDataTable:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref DDBTeamsStreamsForwarderLambda
-      Principal: dynamodb.amazonaws.com
-      SourceArn: !GetAtt EmployeeDataTable.Arn
+  # DDBStreamsLambdaInvokePermissionsEmployeeDataTable:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     Action: lambda:InvokeFunction
+  #     FunctionName: !Ref DDBTeamsStreamsForwarderLambda
+  #     Principal: dynamodb.amazonaws.com
+  #     SourceArn: !GetAtt EmployeeDataTable.Arn
 
   DDBStreamsLambdaInvokePermissionsEngagementTable:
     Type: AWS::Lambda::Permission
@@ -1462,7 +1603,7 @@ Resources:
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
           # CDN related variables
-          SECRETS_CND_PK_ARN: !Ref PrivateKeySecretsCloudfront
+          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
           PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
           CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
 
@@ -1504,7 +1645,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: !Ref PrivateKeySecretsCloudfront
+                Resource: !GetAtt PrivateKeySecretsCloudfront.Value
               - Effect: Allow
                 Action:
                   - cloudfront:* # Adding the internItem action
@@ -1544,7 +1685,7 @@ Resources:
           EMPLOYEE_GROUPS_TABLE: !Ref EmployeeGroupsTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
           # CDN related variables
-          SECRETS_CND_PK_ARN: !Ref PrivateKeySecretsCloudfront
+          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
           PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
           CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
 
@@ -1583,7 +1724,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: !Ref PrivateKeySecretsCloudfront
+                Resource: !GetAtt PrivateKeySecretsCloudfront.Value
               - Effect: Allow
                 Action:
                   - cloudfront:* # Adding the internItem action
@@ -1621,7 +1762,7 @@ Resources:
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
           CARDS_META_DATA_TABLE: !Ref CardsMetaDataTable
           # CDN related variables
-          SECRETS_CND_PK_ARN: !Ref PrivateKeySecretsCloudfront
+          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
           PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
           CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
           # Contents Bucket Name
@@ -1663,7 +1804,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: !Ref PrivateKeySecretsCloudfront
+                Resource: !GetAtt PrivateKeySecretsCloudfront.Value
               - Effect: Allow
                 Action:
                   - cloudfront:* # Adding the internItem action
@@ -2085,7 +2226,7 @@ Resources:
         Variables:
           Environment: !Ref Environment
           # CDN Services
-          SECRETS_CND_PK_ARN: !Ref PrivateKeySecretsCloudfront
+          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
           PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
           CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
           #  Cards Table and Index
@@ -2436,7 +2577,7 @@ Resources:
           EMPLOYEES_TABLE: !Ref EmployeeDataTable
           EMPLOYEES_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
           # cdn related
-          SECRETS_CND_PK_ARN: !Ref PrivateKeySecretsCloudfront
+          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
           PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
           CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
 
@@ -2491,7 +2632,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: !Ref PrivateKeySecretsCloudfront
+                Resource: !GetAtt PrivateKeySecretsCloudfront.Value
               - Effect: Allow
                 Action:
                   - cloudfront:* # Adding the internItem action
@@ -2537,7 +2678,7 @@ Resources:
           TENANT_ENGAGEMENT_ENTITY_ID_INDEX: !GetAtt DDBTenantEngagementTableEngagementIdIndex.Value
           TENANT_ENGAGEMENT_TIMESTAMP_INDEX: !GetAtt DDBTenantEngagementTableTimeStampIndex.Value
           # CDN related variables
-          SECRETS_CND_PK_ARN: !Ref PrivateKeySecretsCloudfront
+          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
           PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
           CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
           # Content Service related Environment Variables
@@ -2581,7 +2722,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: !Ref PrivateKeySecretsCloudfront
+                Resource: !GetAtt PrivateKeySecretsCloudfront.Value
               - Effect: Allow
                 Action:
                   - cloudfront:* # Adding the internItem action
@@ -2640,7 +2781,7 @@ Resources:
           # Content Service related Environment Variables
           S3_BUCKET: !Ref TenantContentsBucket
           # CDN Related Environment Variables
-          SECRETS_CND_PK_ARN: !Ref PrivateKeySecretsCloudfront
+          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
           PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
           CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
           # SQS queue for certificates
@@ -2698,7 +2839,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: !Ref PrivateKeySecretsCloudfront
+                Resource: !GetAtt PrivateKeySecretsCloudfront.Value
               - Effect: Allow
                 Action:
                   - sqs:*
@@ -2904,7 +3045,7 @@ Resources:
                   - s3:PutObject
                   - s3:ListBucket
                 Resource:
-                  - !Sub arn:aws:s3:::tenant-contents-${Environment}/*
+                  - !Sub arn:aws:s3:::tenant-contents-${AWS::AccountId}-${Environment}/*
               - Effect: Allow
                 Action:
                   - cloudwatch:PutMetricData
@@ -3157,7 +3298,7 @@ Resources:
   TenantContentsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub tenant-contents-${Environment}
+      BucketName: !Sub tenant-contents-${AWS::AccountId}-${Environment}
 
   S3CDNBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -3172,11 +3313,11 @@ Resources:
             Principal:
               Service: "cloudfront.amazonaws.com"
             Action: "s3:GetObject"
-            Resource: !Sub "arn:aws:s3:::tenant-contents-${Environment}/*"
+            Resource: !Sub "arn:aws:s3:::tenant-contents-${AWS::AccountId}-${Environment}/*"
             Condition:
               StringEquals:
                 AWS:SourceArn: !Sub
-                  - arn:aws:cloudfront::${AccountId}:distribution/${CdnId}
+                  - arn:aws:cloudfront::${AWS::AccountId}:distribution/${CdnId}
                   - CdnId: !Ref CDNforTenantsS3Store
                     AccountId: !Ref AWS::AccountId
 
@@ -3186,12 +3327,16 @@ Resources:
       CloudFrontOriginAccessIdentityConfig:
         Comment: "Identity for accessing Cards S3 bucket"
 
-  # using openssl to generate a 2048 publickey and a privatekey from the publickey
+  # Reference to private key secret - use provided ARN if available, otherwise create new secret
   PrivateKeySecretsCloudfront:
-    Type: AWS::SecretsManager::Secret
+    Type: AWS::SSM::Parameter
     Properties:
-      Description: Private Key for accessing data from cloudfront
-      Name: !Sub /cloudfront/keys/private-key-images-${Environment}
+      Name: !Sub /${AWS::StackName}/cloudfront/private-key-secret-arn
+      Type: String
+      Value: !If
+        - UseProvidedCloudFrontKeys
+        - !Ref CloudFrontPrivateKeySecretArn
+        - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/cloudfront/keys/private-key-images-${Environment}
 
   TenantKeyGroup:
     Type: AWS::CloudFront::KeyGroup
