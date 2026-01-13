@@ -1,10 +1,15 @@
-AWS_REGION=ap-south-1
+AWS_REGION=ap-southeast-2
 ENVIRONMENT?=dev
 TEMPLATE := template.yaml
 STACK_NAME := tenant-portal-apis-$(ENVIRONMENT)
+CLOUDFRONT_KEY_STACK := cloudfront-public-key-stack-$(ENVIRONMENT)
 
 #Data Stack
 DATA_STACK=A
+
+# CloudFront Keys - will be fetched from cloudfront-key stack if it exists
+CLOUDFRONT_PUBLIC_KEY_ID ?= $(shell aws cloudformation describe-stacks --stack-name $(CLOUDFRONT_KEY_STACK) --region ap-southeast-2 --query 'Stacks[0].Outputs[?OutputKey==`PublicKeyId`].OutputValue' --output text 2>/dev/null || echo "")
+CLOUDFRONT_PRIVATE_KEY_SECRET_ARN ?= $(shell aws cloudformation describe-stacks --stack-name $(CLOUDFRONT_KEY_STACK) --region ap-southeast-2 --query 'Stacks[0].Outputs[?OutputKey==`PrivateKeySecretArn`].OutputValue' --output text 2>/dev/null || echo "")
 
 
 #UserPool Setting
@@ -34,7 +39,11 @@ deploy:
 	$(eval GITSHA := $(shell git rev-parse --short=7 HEAD ) )
 	$(eval AWS_ACCOUNT := $(shell aws sts get-caller-identity --query Account --output text ) )
 	$(eval CFN_BUCKET := artifactory-$(AWS_REGION)-$(AWS_ACCOUNT))
-	echo Deploying to environment $(ENVIRONMENT) from bucket $(CFN_BUCKET) and CognitoUserPool $(COGNITO_USERPOOL)
+	$(eval CLOUDFRONT_PARAMS := $(if $(CLOUDFRONT_PUBLIC_KEY_ID),CloudFrontPublicKeyIdParam=$(CLOUDFRONT_PUBLIC_KEY_ID),))
+	$(eval CLOUDFRONT_SECRET_PARAMS := $(if $(CLOUDFRONT_PRIVATE_KEY_SECRET_ARN),CloudFrontPrivateKeySecretArn=$(CLOUDFRONT_PRIVATE_KEY_SECRET_ARN),))
+	@echo "Deploying to environment $(ENVIRONMENT) from bucket $(CFN_BUCKET)"
+	@echo "CloudFront Public Key ID: $(CLOUDFRONT_PUBLIC_KEY_ID)"
+	@echo "CloudFront Private Key Secret ARN: $(CLOUDFRONT_PRIVATE_KEY_SECRET_ARN)"
 	aws cloudformation package \
 		--template-file $(TEMPLATE) \
 		--s3-bucket $(CFN_BUCKET) \
@@ -49,6 +58,8 @@ deploy:
 			$$( cat params-$(ENVIRONMENT).txt 2>/dev/null ) \
 			GitSha=${GITSHA}\
 			DataStack=${DATA_STACK}\
+			$(CLOUDFRONT_PARAMS) \
+			$(CLOUDFRONT_SECRET_PARAMS) \
 		--no-fail-on-empty-changeset \
 		--tags app:governance:department=$(DEPARTMENT) \
 			app:governance:project=$(PROJECT) \
