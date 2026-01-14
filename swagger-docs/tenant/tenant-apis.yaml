@@ -317,9 +317,6 @@ paths:
             statusCode: "200"
       security:
         - UserPool: []
-
-  /v1/manage-tenant-teams:
-    get:
       summary: To get the information of the tenant teams
       consumes:
         - application/json
@@ -330,61 +327,7 @@ paths:
         httpMethod: POST
         passthroughBehavior: WHEN_NO_MATCH
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantTeamsLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    post:
-      summary: To get the information of the tenant teams
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantTeamsLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    patch:
-      summary: To get the information of the tenant teams
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantTeamsLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    delete:
-      summary: To get the information of the tenant teams
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantTeamsLambda.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageCardTemplateLambda.Arn}/invocations
         responses:
           default:
             statusCode: "200"
@@ -620,6 +563,282 @@ paths:
         passthroughBehavior: WHEN_NO_MATCH
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostGISDataLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  # ---------- Teams Management APIs ----------
+
+  /v2/teams:
+    get:
+      summary: List all teams for the current user
+      description: Returns all teams the user is a member of, including their role and current team status
+      produces:
+        - application/json
+      parameters:
+        - name: currentTeam
+          in: query
+          description: ID of the team the user is currently logged into
+          required: false
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListUserTeamsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create a new team
+      description: Creates a new team with the requesting user as the admin
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateTeamLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}:
+    get:
+      summary: Get team details
+      description: Returns detailed information about a specific team
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamOperationsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/status:
+    patch:
+      summary: Update team status
+      description: Activate or deactivate a team (admin only)
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamOperationsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members:
+    get:
+      summary: Get team members
+      description: Returns all members of a team with their roles
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamOperationsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add members to team
+      description: Add new members to a team (admin only)
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamOperationsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{username}/role:
+    post:
+      summary: Update member role
+      description: Update a team member's role to ADMIN or MEMBER (admin only)
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+        - name: username
+          in: path
+          description: Username of the member
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamOperationsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/user/current-team:
+    patch:
+      summary: Set current team
+      description: Update the user's currently logged-in team. User must be a member of the team.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SetCurrentTeamLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  # ---------- Employee Profile V2 APIs ----------
+
+  /v2/profile:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileV2Lambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get user profile information
+      description: Returns basic profile information for the authenticated user
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileV2Lambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    patch:
+      summary: Update user profile information
+      description: Update phone number, designation, display name, and/or profile picture
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                PhoneNumber:
+                  type: string
+                  description: User's phone number
+                  example: "+1234567890"
+                Designation:
+                  type: string
+                  description: User's job title or designation
+                  example: "Senior Developer"
+                DisplayName:
+                  type: string
+                  description: User's display name (updates both DDB and Cognito)
+                  example: "John Doe"
+                ProfilePic:
+                  type: string
+                  description: Base64 encoded profile picture
+                  example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            examples:
+              update_phone:
+                summary: Update phone number only
+                value:
+                  PhoneNumber: "+1234567890"
+              update_all:
+                summary: Update multiple fields
+                value:
+                  PhoneNumber: "+1234567890"
+                  Designation: "Senior Developer"
+                  DisplayName: "John Doe"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileV2Lambda.Arn}/invocations
         responses:
           default:
             statusCode: "200"

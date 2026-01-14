@@ -59,7 +59,7 @@ func CreateEmployeeService(ctx context.Context, ddbClient awsclients.DynamodbCli
 	}
 }
 
-const DEFAULT_PROFILE_PIC = "default.jpeg"
+const DEFAULT_PROFILE_PIC = "default.jpg"
 
 func GetDefaultProfilePicPath(username string) string {
 	return fmt.Sprintf("users/%s/profilepic/profile.png", username)
@@ -82,9 +82,17 @@ type EmployeeDynamodbData struct {
 
 	EmailID string `json:"EmailId,omitempty" dynamodbav:"EmailId"` // Secondary Index
 
-	ExternalId string `json:"ExternalId,omitempty" dynamodbav:"ExternalId"` // Secondary Index
+	ExternalId string `json:"ExternalId,omitempty" dynamodbav:"E_ID"` // Secondary Index - maps to E_ID in DynamoDB
 
 	DisplayName string `json:"DisplayName,omitempty" dynamodbav:"DisplayName"`
+
+	// Additional fields that exist in DynamoDB but weren't in the original struct
+	FirstName string `json:"FirstName,omitempty" dynamodbav:"FirstName"`
+	LastName  string `json:"LastName,omitempty" dynamodbav:"LastName"`
+	Status    string `json:"Status,omitempty" dynamodbav:"Status"`
+	Source    string `json:"Source,omitempty" dynamodbav:"Source"`
+	CreatedAt string `json:"CreatedAt,omitempty" dynamodbav:"CreatedAt"`
+	UpdatedAt string `json:"UpdatedAt,omitempty" dynamodbav:"UpdatedAt"`
 
 	Designation string `json:"Designation,omitempty" dynamodbav:"Designation"`
 	PhoneNumber string `json:"PhoneNumber,omitempty" dynamodbav:"PhoneNumber"`
@@ -96,20 +104,22 @@ type EmployeeDynamodbData struct {
 
 	MgrUserName string `json:"MgrUserName,omitempty" dynamodbav:"MgrUserName"`
 
-	StartDate string `json:"StartDate,omitempty" dynamodbav:"StartDate"`
-	EndDate   string `json:"EndDate,omitempty" dynamodbav:"EndDate"`
+	// StartDate string `json:"StartDate,omitempty" dynamodbav:"StartDate"`
+	// EndDate   string `json:"EndDate,omitempty" dynamodbav:"EndDate"`
 
 	TopLevelGroupName string `json:"TopLevelGroupName,omitempty" dynamodbav:"TopLevelGroupName"` // '|' separated Group Names
 
 	Location string `json:"Location,omitempty" dynamodbav:"Location"`
 
-	RewardsData map[string]EmployeeRewards `json:"RewardsData,omitempty" dynamodbav:"RewardsData"`
+	// RewardsData map[string]EmployeeRewards `json:"RewardsData,omitempty" dynamodbav:"RewardsData"`
 
-	RedeemedCards map[string]RewardCards `json:"RedeemedCards,omitempty" dynamodbav:"RedeemedCards"`
+	// RedeemedCards map[string]RewardCards `json:"RedeemedCards,omitempty" dynamodbav:"RedeemedCards"`
 
-	CertificatesData map[string]EmployeeCertificates `json:"CertificatesData,omitempty" dynamodbav:"CertificatesData"`
+	// CertificatesData map[string]EmployeeCertificates `json:"CertificatesData,omitempty" dynamodbav:"CertificatesData"`
 
 	RolesData map[string]bool `json:"RolesData,omitempty" dynamodbav:"RolesData"`
+
+	CurrentTeamId string `json:"CurrentTeamId,omitempty" dynamodbav:"CurrentTeamId"` // Currently logged-in team
 }
 
 type EmployeeRewards struct {
@@ -237,17 +247,17 @@ func (svc *EmployeeService) GetEmployeeDataRewardSettingsByUserName(EmployeeUser
 		return EmployeeDynamodbData{}, err
 	}
 
-	if EmployeeData.RewardsData == nil {
-		EmployeeData.RewardsData = make(map[string]EmployeeRewards)
-	}
+	// if EmployeeData.RewardsData == nil {
+	// 	EmployeeData.RewardsData = make(map[string]EmployeeRewards)
+	// }
 
-	for _, id := range []string{"RD00", "RD01", "RD02", "RD03"} {
-		if status, ok := ddbData.RewardTypeStatus[id]; ok {
-			data := EmployeeData.RewardsData[id] // this is a copy
-			data.IsActive = status.Active        // modify the copy
-			EmployeeData.RewardsData[id] = data  // reassign it back
-		}
-	}
+	// for _, id := range []string{"RD00", "RD01", "RD02", "RD03"} {
+	// 	if status, ok := ddbData.RewardTypeStatus[id]; ok {
+	// 		data := EmployeeData.RewardsData[id] // this is a copy
+	// 		data.IsActive = status.Active        // modify the copy
+	// 		EmployeeData.RewardsData[id] = data  // reassign it back
+	// 	}
+	// }
 
 	return EmployeeData, nil
 }
@@ -317,6 +327,17 @@ func (svc *EmployeeService) GetEmployeeDataByCognitoId(EmployeeCognitoId string)
 	}
 
 	EmployeeData := EmployeeDynamodbData{}
+
+	// Add safety check for nil Items[0] before unmarshaling
+	if output.Items[0] == nil {
+		svc.logger.Printf("Query returned nil item for employee with cognito-id: %v", EmployeeCognitoId)
+		return EmployeeDynamodbData{}, fmt.Errorf("query returned nil item for employee with cognito-id: %v", EmployeeCognitoId)
+	}
+
+	// Log the raw item before unmarshaling for debugging
+	svc.logger.Printf("Raw DynamoDB item for cognito-id %s: %+v", EmployeeCognitoId, output.Items[0])
+
+	// Unmarshal the first item from the query result
 	err = dynamodb_attributevalue.UnmarshalMap(output.Items[0], &EmployeeData)
 	if err != nil {
 		svc.logger.Printf("Query on Employee data Unmarshal failed with error :%v", err)

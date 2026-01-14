@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"log"
@@ -31,6 +32,8 @@ type CDNService struct {
 }
 
 // AssignPrivatePublicKey assigns the private and public keys for the CDN service.
+// Private key is retrieved from AWS Secrets Manager using the provided secretKeyArn.
+// format : {"private_key":"<PEM_ENCODED_PRIVATE_KEY>", "public_key":"abcdefghijklmnop"}"} , retrive only private_key from seceret string.
 func (svc *CDNService) AssignPrivatePublicKey(secretKeyArn string, publicKeyId string) error {
 	if secretKeyArn == "" {
 		return fmt.Errorf("[ERROR] Secret ARN cannot be empty")
@@ -48,13 +51,27 @@ func (svc *CDNService) AssignPrivatePublicKey(secretKeyArn string, publicKeyId s
 
 	privateKeyString := *output.SecretString
 
-	if privateKeyString == "" {
-		svc.logger.Printf("[ERROR] PrivateKey Value is empty : %v ", privateKeyString)
-		return fmt.Errorf("[ERROR] PrivateKey Value is empty : %v ", privateKeyString)
+	// get private key value from the secret string
+	// assuming the secret string is in JSON format: {"private_key":"<PEM_ENCODED_PRIVATE_KEY>"}
+	// we will extract the value of "private_key", extract using json package
+	type secretStruct struct {
+		PrivateKey string `json:"private_key"`
+	}
+
+	var secretData secretStruct
+	err = json.Unmarshal([]byte(privateKeyString), &secretData)
+	if err != nil {
+		svc.logger.Printf("[ERROR] Failed to unmarshal secret string. Error : %v", err)
+		return err
+	}
+
+	if secretData.PrivateKey == "" {
+		svc.logger.Printf("[ERROR] PrivateKey Value is empty : %v ", secretData.PrivateKey)
+		return fmt.Errorf("[ERROR] PrivateKey Value is empty : %v ", secretData.PrivateKey)
 	}
 
 	// Parse Private Key
-	parsedPrivateKey, err := parseCDNPrivateKey(privateKeyString)
+	parsedPrivateKey, err := parseCDNPrivateKey(secretData.PrivateKey)
 	if err != nil {
 		svc.logger.Printf("[ERROR] Failed to parse Private Key : %v", err)
 		return err
@@ -83,13 +100,27 @@ func parseCDNPrivateKey(pemPrivateKey string) (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("failed to parse PEM block containing private key")
 	}
 
-	// Parse the private key from the PEM block
-	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
-	if err != nil {
-		return nil, err
+	// Try PKCS1 format first (RSA PRIVATE KEY)
+	if block.Type == "RSA PRIVATE KEY" {
+		privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse PKCS1 private key: %v", err)
+		}
+		return privateKey, nil
 	}
 
-	return privateKey.(*rsa.PrivateKey), nil
+	// Try PKCS8 format (PRIVATE KEY)
+	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse PKCS8 private key: %v", err)
+	}
+
+	rsaKey, ok := privateKey.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("private key is not an RSA key")
+	}
+
+	return rsaKey, nil
 }
 
 func (svc *CDNService) CreateCDNService(
