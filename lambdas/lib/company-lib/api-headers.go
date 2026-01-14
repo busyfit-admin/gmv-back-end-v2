@@ -31,6 +31,12 @@ var apiHeaders = map[string][]string{
 		"patch-profile-data",
 		"get-user-certificates",
 	},
+	"ProfileV2API": {
+		"user-id",
+		"profile-data",
+		"content-type",
+		"accept",
+	},
 	"UsersAPI": {
 		"user-id",
 		"get-user-by-username",

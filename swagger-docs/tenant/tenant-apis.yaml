@@ -762,6 +762,89 @@ paths:
       security:
         - UserPool: []
 
+  # ---------- Employee Profile V2 APIs ----------
+
+  /v2/profile:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileV2Lambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get user profile information
+      description: Returns basic profile information for the authenticated user
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileV2Lambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    patch:
+      summary: Update user profile information
+      description: Update phone number, designation, display name, and/or profile picture
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                PhoneNumber:
+                  type: string
+                  description: User's phone number
+                  example: "+1234567890"
+                Designation:
+                  type: string
+                  description: User's job title or designation
+                  example: "Senior Developer"
+                DisplayName:
+                  type: string
+                  description: User's display name (updates both DDB and Cognito)
+                  example: "John Doe"
+                ProfilePic:
+                  type: string
+                  description: Base64 encoded profile picture
+                  example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            examples:
+              update_phone:
+                summary: Update phone number only
+                value:
+                  PhoneNumber: "+1234567890"
+              update_all:
+                summary: Update multiple fields
+                value:
+                  PhoneNumber: "+1234567890"
+                  Designation: "Senior Developer"
+                  DisplayName: "John Doe"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileV2Lambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
 components:
   schemas:
     Tenantrequestbody:

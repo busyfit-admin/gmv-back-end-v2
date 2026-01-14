@@ -1833,6 +1833,100 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
+  # ---------- Manage Employee Profile V2 Lambda ----------
+
+  ManageEmployeeProfileV2Lambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Architectures:
+        - x86_64
+      CodeUri: ../../lambdas/tenant-lambdas/employees-module/manage-employee-profile-v2/
+      Description: "Simplified Employee Profile Management V2 - Get and Update basic profile"
+      Role: !GetAtt ManageEmployeeProfileV2LambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Timeout: 300
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          COGNITO_USER_POOL_ID: !Ref TenantCognitoUserPool
+          # CDN related variables
+          SECRETS_CND_PK_ARN: !GetAtt PrivateKeySecretsCloudfront.Value
+          PUBLIC_KEY_ID: !GetAtt CloudFrontPublicKeyId.Value
+          CDN_DOMAIN: !GetAtt CDNforTenantsS3Store.DomainName
+          # Contents Bucket Name
+          BUCKET_NAME: !Ref TenantContentsBucket
+
+  ManageEmployeeProfileV2LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt EmployeeDataTable.Arn
+                  - !Sub ${EmployeeDataTable.Arn}/index/*
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: 
+                  - !GetAtt PrivateKeySecretsCloudfront.Value
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:cloudfront-private-key-${Environment}*"
+              - Effect: Allow
+                Action:
+                  - cloudfront:*
+                Resource: !Sub
+                  - arn:aws:cloudfront::${AccountId}:distribution/${CdnId}
+                  - CdnId: !Ref CDNforTenantsS3Store
+                    AccountId: !Ref AWS::AccountId
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:DeleteObject
+                Resource: !Sub
+                  - arn:aws:s3:::${BucketName}/*
+                  - BucketName: !Ref TenantContentsBucket
+              - Effect: Allow
+                Action:
+                  - cognito-idp:AdminUpdateUserAttributes
+                Resource: !GetAtt TenantCognitoUserPool.Arn
+
+  ManageEmployeeProfileV2InvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageEmployeeProfileV2Lambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
 
   # --------------- Rewards Management and related resources --------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------

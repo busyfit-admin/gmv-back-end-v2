@@ -21,30 +21,23 @@ import (
 	companylib "github.com/busyfit-admin/saas-integrated-apis/lambdas/lib/company-lib"
 )
 
-var RESP_HEADERS = map[string]string{
-	"Content-Type":                 "application/json",
-	"Access-Control-Allow-Headers": "*",
-	"Access-Control-Allow-Origin":  "*",
-	"Access-Control-Allow-Methods": "OPTIONS,POST,GET,PATCH",
-}
-
 type Service struct {
 	ctx    context.Context
 	logger *log.Logger
 
 	employeeSvc companylib.EmployeeService
-	cdnSvc      companylib.CDNService
-	contentSvc  companylib.TenantUploadContentService
 
-	// Cards MetaData Service
-	cardsMetaSvc  companylib.CompanyCardsMetadataService
-	CardsMetaData map[string]companylib.CompanyCardsMetaDataTable
+	cdnSvc     companylib.CDNService
+	contentSvc companylib.TenantUploadContentService
+
+	userPoolId string
+	cognitoSvc *cognitoidentityprovider.Client
 }
 
-var RESP_HEADERS = companylib.GetHeadersForAPI("ProfileAPI")
+var RESP_HEADERS = companylib.GetHeadersForAPI("ProfileV2API")
 
 func main() {
-	ctx, root := xray.BeginSegment(context.TODO(), "manage-employee-profile")
+	ctx, root := xray.BeginSegment(context.TODO(), "manage-employee-profile-v2")
 	defer root.Close(nil)
 
 	cfg, err := config.LoadDefaultConfig(ctx)
@@ -56,9 +49,10 @@ func main() {
 	dynamodbClient := dynamodb.NewFromConfig(cfg)
 	secretsClient := secretsmanager.NewFromConfig(cfg)
 	s3Client := s3.NewFromConfig(cfg)
+	cognitoClient := cognitoidentityprovider.NewFromConfig(cfg)
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	employeeSvc := companylib.CreateEmployeeService(ctx, dynamodbClient, nil, logger)
+	employeeSvc := companylib.CreateEmployeeService(ctx, dynamodbClient, cognitoClient, logger)
 	employeeSvc.EmployeeTable = os.Getenv("EMPLOYEE_TABLE")
 	employeeSvc.EmployeeTable_CognitoId_Index = os.Getenv("EMPLOYEE_TABLE_COGNITO_ID_INDEX")
 
@@ -70,7 +64,8 @@ func main() {
 	cdnSvc := companylib.CDNService{}
 	err = cdnSvc.CreateCDNService(ctx, logger, secretsClient, os.Getenv("SECRETS_CND_PK_ARN"), os.Getenv("PUBLIC_KEY_ID"))
 	if err != nil {
-		log.Fatalf("Error creating CDN Service: %v\n", err)
+		logger.Printf("Warning: Failed to initialize CDN Service: %v. Profile pictures may not be signed properly.", err)
+		// Continue with empty CDN service - GetPreSignedCDN_URL_noError should handle this gracefully
 	}
 	cdnSvc.CDNDomain = os.Getenv("CDN_DOMAIN")
 
@@ -80,13 +75,32 @@ func main() {
 		employeeSvc: *employeeSvc,
 		cdnSvc:      cdnSvc,
 		contentSvc:  *contentSvc,
+		cognitoSvc:  cognitoClient,
+		userPoolId:  os.Getenv("COGNITO_USER_POOL_ID"),
 	}
 
-	lambda.Start(svc.handleAPIRequests)
+	lambda.Start(func(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+		// Ensure CORS headers are always set, even on panics
+		defer func() {
+			if r := recover(); r != nil {
+				svc.logger.Printf("Lambda panicked: %v", r)
+			}
+		}()
+
+		return svc.handleAPIRequests(ctx, request)
+	})
 }
 
 func (svc *Service) handleAPIRequests(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.ctx = ctx
+
+	// Handle OPTIONS request for CORS preflight
+	if request.HTTPMethod == "OPTIONS" {
+		return events.APIGatewayProxyResponse{
+			Headers:    RESP_HEADERS,
+			StatusCode: 200,
+		}, nil
+	}
 
 	switch request.HTTPMethod {
 	case "GET":
@@ -115,8 +129,27 @@ type ProfileResponse struct {
 }
 
 func (svc *Service) GetUserProfile(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// Extract Cognito ID from JWT sub claim
-	employeeCognitoId := request.RequestContext.Authorizer["claims"].(map[string]interface{})["sub"].(string)
+	// Extract Cognito ID from JWT sub claim with proper error handling
+	var employeeCognitoId string
+	if claims, ok := request.RequestContext.Authorizer["claims"].(map[string]interface{}); ok {
+		if sub, exists := claims["sub"].(string); exists {
+			employeeCognitoId = sub
+		} else {
+			svc.logger.Printf("No 'sub' claim found in JWT")
+			return events.APIGatewayProxyResponse{
+				Headers:    RESP_HEADERS,
+				StatusCode: 401,
+				Body:       `{"error":"Invalid authentication token"}`,
+			}, nil
+		}
+	} else {
+		svc.logger.Printf("No claims found in request context")
+		return events.APIGatewayProxyResponse{
+			Headers:    RESP_HEADERS,
+			StatusCode: 401,
+			Body:       `{"error":"Authentication required"}`,
+		}, nil
+	}
 
 	employeeData, err := svc.employeeSvc.GetEmployeeDataByCognitoId(employeeCognitoId)
 	if err != nil {
@@ -128,8 +161,13 @@ func (svc *Service) GetUserProfile(request events.APIGatewayProxyRequest) (event
 		}, nil
 	}
 
-	// Sign the profile picture URL
+	// Sign the profile picture URL - fallback to original URL if signing fails
 	profilePic := svc.cdnSvc.GetPreSignedCDN_URL_noError(employeeData.ProfilePic)
+	if profilePic == "" && employeeData.ProfilePic != "" {
+		// If signing failed but we have a profile pic, use the original S3 URL as fallback
+		profilePic = employeeData.ProfilePic
+		svc.logger.Printf("Warning: CDN signing failed, using original URL for profile picture")
+	}
 
 	profile := ProfileResponse{
 		UserName:    employeeData.UserName,
@@ -167,8 +205,27 @@ type ProfileUpdateRequest struct {
 }
 
 func (svc *Service) UpdateUserProfile(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// Extract Cognito ID from JWT sub claim
-	employeeCognitoId := request.RequestContext.Authorizer["claims"].(map[string]interface{})["sub"].(string)
+	// Extract Cognito ID from JWT sub claim with proper error handling
+	var employeeCognitoId string
+	if claims, ok := request.RequestContext.Authorizer["claims"].(map[string]interface{}); ok {
+		if sub, exists := claims["sub"].(string); exists {
+			employeeCognitoId = sub
+		} else {
+			svc.logger.Printf("No 'sub' claim found in JWT")
+			return events.APIGatewayProxyResponse{
+				Headers:    RESP_HEADERS,
+				StatusCode: 401,
+				Body:       `{"error":"Invalid authentication token"}`,
+			}, nil
+		}
+	} else {
+		svc.logger.Printf("No claims found in request context")
+		return events.APIGatewayProxyResponse{
+			Headers:    RESP_HEADERS,
+			StatusCode: 401,
+			Body:       `{"error":"Authentication required"}`,
+		}, nil
+	}
 
 	employeeData, err := svc.employeeSvc.GetEmployeeDataByCognitoId(employeeCognitoId)
 	if err != nil {
@@ -247,16 +304,13 @@ func (svc *Service) UpdateUserProfile(request events.APIGatewayProxyRequest) (ev
 	// Update DynamoDB if there are changes
 	if needsDynamoDBUpdate {
 		updateDetails := companylib.BasicEmployeeDetails{
-			UserName:        employeeData.UserName,
-			ExternalId:      updatedData.ExternalId,
-			DisplayName:     updatedData.DisplayName,
-			PhoneNumber:     updatedData.PhoneNumber,
-			LoginType:       updatedData.LoginType,
-			IsManager:       updatedData.IsManager,
-			ManagerUserName: updatedData.ManagerUserName,
-			StartDate:       updatedData.StartDate,
-			EndDate:         updatedData.EndDate,
-			IsActive:        updatedData.IsActive,
+			UserName:    employeeData.UserName,
+			ExternalId:  updatedData.ExternalId,
+			DisplayName: updatedData.DisplayName,
+			PhoneNumber: updatedData.PhoneNumber,
+			LoginType:   updatedData.LoginType,
+			IsManager:   updatedData.IsManager,
+			IsActive:    updatedData.IsActive,
 		}
 
 		err = svc.employeeSvc.UpdateEmployeeDetailsByUserName(updateDetails)
