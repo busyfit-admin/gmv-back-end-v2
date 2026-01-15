@@ -66,6 +66,14 @@ var apiHeaders = map[string][]string{
 		"user-id",
 		"manager-id",
 	},
+	"EngagementsAPI": {
+		"get-all-engagements",
+		"get-engagement",
+		"create-engagement",
+		"update-engagement",
+		"delete-engagement",
+		"engagement-id",
+	},
 	"AppreciationsAPI": {
 
 		"get-all-skills",

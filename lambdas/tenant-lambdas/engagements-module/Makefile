@@ -2,8 +2,7 @@ SUBDIRS := $(wildcard */.)
 
 test: $(SUBDIRS)
 
-build: 
-	# ingore build at this level
+build: $(SUBDIRS)
 
 update: $(SUBDIRS)
 

@@ -424,6 +424,36 @@ func (svc *TeamsServiceV2) UpdateTeamStatus(teamId string, status TeamStatus, us
 	return nil
 }
 
+// GetTeamMemberDetails retrieves details of a team member
+func (svc *TeamsServiceV2) GetTeamMemberDetails(teamId string, userName string) (*TeamMember, error) {
+	input := &dynamodb.GetItemInput{
+		TableName: aws.String(svc.TeamsTable),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: teamId},
+			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", userName)},
+		},
+	}
+
+	result, err := svc.dynamodbClient.GetItem(svc.ctx, input)
+	if err != nil {
+		svc.logger.Printf("Failed to get team member details: %v", err)
+		return nil, fmt.Errorf("failed to get team member details: %w", err)
+	}
+
+	if result.Item == nil {
+		return nil, nil // Member not found
+	}
+
+	var member TeamMember
+	err = attributevalue.UnmarshalMap(result.Item, &member)
+	if err != nil {
+		svc.logger.Printf("Failed to unmarshal team member details: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal team member details: %w", err)
+	}
+
+	return &member, nil
+}
+
 // IsTeamAdmin checks if a user is an admin of a team
 func (svc *TeamsServiceV2) IsTeamAdmin(teamId string, userName string) (bool, error) {
 	input := &dynamodb.GetItemInput{
