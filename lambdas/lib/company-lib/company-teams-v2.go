@@ -105,17 +105,19 @@ type TeamsServiceV2 struct {
 	dynamodbClient awsclients.DynamodbClient
 	logger         *log.Logger
 	employeeSvc    *EmployeeService
+	emailSvc       *EmailService
 
 	TeamsTable string
 }
 
 // CreateTeamsServiceV2 creates a new teams service
-func CreateTeamsServiceV2(ctx context.Context, ddbClient awsclients.DynamodbClient, logger *log.Logger, empSvc *EmployeeService) *TeamsServiceV2 {
+func CreateTeamsServiceV2(ctx context.Context, ddbClient awsclients.DynamodbClient, logger *log.Logger, empSvc *EmployeeService, emailSvc *EmailService) *TeamsServiceV2 {
 	return &TeamsServiceV2{
 		ctx:            ctx,
 		dynamodbClient: ddbClient,
 		logger:         logger,
 		employeeSvc:    empSvc,
+		emailSvc:       emailSvc,
 	}
 }
 
@@ -506,15 +508,21 @@ func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingU
 
 	now := time.Now().UTC().Format(time.RFC3339)
 	transactItems := make([]types.TransactWriteItem, 0, len(input.UserNames)+1)
+	successfullyAddedMembers := make([]string, 0, len(input.UserNames)) // Track successful additions for email
 
 	// Create member entries
 	for _, userName := range input.UserNames {
 		displayName := userName
-		// Fetch display name from employee service if available
+		var employeeEmail string
+
+		// Fetch display name and email from employee service if available
 		if svc.employeeSvc != nil {
 			employee, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
-			if err == nil && employee.DisplayName != "" {
-				displayName = employee.DisplayName
+			if err == nil {
+				if employee.DisplayName != "" {
+					displayName = employee.DisplayName
+				}
+				employeeEmail = employee.EmailID
 			}
 		}
 
@@ -544,6 +552,11 @@ func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingU
 				ConditionExpression: aws.String("attribute_not_exists(PK)"),
 			},
 		})
+
+		// Store member info for email sending (only if we have email)
+		if employeeEmail != "" {
+			successfullyAddedMembers = append(successfullyAddedMembers, userName)
+		}
 	}
 
 	// Update member count
@@ -572,6 +585,12 @@ func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingU
 	}
 
 	svc.logger.Printf("Successfully added %d members to team %s", len(input.UserNames), input.TeamId)
+
+	// Send invitation emails to successfully added members
+	if svc.emailSvc != nil && len(successfullyAddedMembers) > 0 {
+		go svc.sendTeamInvitationEmails(metadata, successfullyAddedMembers, requestingUser)
+	}
+
 	return nil
 }
 
@@ -679,4 +698,118 @@ func (svc *TeamsServiceV2) GetTeamMembers(teamId string) ([]TeamMember, error) {
 	}
 
 	return members, nil
+}
+
+// sendTeamInvitationEmails sends invitation emails to new team members
+func (svc *TeamsServiceV2) sendTeamInvitationEmails(teamMetadata *TeamMetadata, memberUserNames []string, invitedBy string) {
+	defer func() {
+		if r := recover(); r != nil {
+			svc.logger.Printf("Panic in sendTeamInvitationEmails: %v", r)
+		}
+	}()
+
+	// Get inviter's display name
+	inviterDisplayName := invitedBy
+	if svc.employeeSvc != nil {
+		if inviterData, err := svc.employeeSvc.GetEmployeeDataByUserName(invitedBy); err == nil && inviterData.DisplayName != "" {
+			inviterDisplayName = inviterData.DisplayName
+		}
+	}
+
+	for _, userName := range memberUserNames {
+		if svc.employeeSvc == nil {
+			continue
+		}
+
+		// Get member's email and display name
+		memberData, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
+		if err != nil {
+			svc.logger.Printf("Failed to get employee data for %s: %v", userName, err)
+			continue
+		}
+
+		if memberData.EmailID == "" {
+			svc.logger.Printf("No email found for user %s, skipping invitation email", userName)
+			continue
+		}
+
+		// Create email content
+		subject := fmt.Sprintf("Welcome to Team: %s - Gomovo Hub", teamMetadata.TeamName)
+
+		htmlBody := fmt.Sprintf(`
+			<html>
+			<body>
+				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+					<div style="text-align: center; margin-bottom: 30px;">
+						<h1 style="color: #2c5aa0; margin-bottom: 10px;">Welcome to Gomovo Hub!</h1>
+					</div>
+					
+					<div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+						<h2 style="color: #333; margin-top: 0;">You've been added to a team!</h2>
+						<p style="font-size: 16px; color: #666; line-height: 1.5;">
+							Hi <strong>%s</strong>,
+						</p>
+						<p style="font-size: 16px; color: #666; line-height: 1.5;">
+							<strong>%s</strong> has added you to the team <strong>"%s"</strong> in Gomovo Hub.
+						</p>
+						
+						<div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+							<h3 style="color: #2c5aa0; margin-top: 0;">Team Details:</h3>
+							<p><strong>Team Name:</strong> %s</p>
+							<p><strong>Team Description:</strong> %s</p>
+							<p><strong>Added by:</strong> %s</p>
+						</div>
+					</div>
+					
+					<div style="text-align: center; margin: 30px 0;">
+						<a href="https://gomovo.com/login" style="display: inline-block; background-color: #2c5aa0; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+							Access Gomovo Hub
+						</a>
+					</div>
+					
+					<div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center; color: #888; font-size: 14px;">
+						<p>If you don't have an account yet, you can sign up using this email address.</p>
+						<p>Need help? Contact our support team.</p>
+					</div>
+				</div>
+			</body>
+			</html>
+		`, memberData.DisplayName, inviterDisplayName, teamMetadata.TeamName, teamMetadata.TeamName, teamMetadata.TeamDesc, inviterDisplayName)
+
+		textBody := fmt.Sprintf(`
+Welcome to Gomovo Hub!
+
+Hi %s,
+
+%s has added you to the team "%s" in Gomovo Hub.
+
+Team Details:
+- Team Name: %s
+- Team Description: %s  
+- Added by: %s
+
+You can access Gomovo Hub at: https://gomovo.com/login
+
+If you don't have an account yet, you can sign up using this email address.
+
+Need help? Contact our support team.
+		`, memberData.DisplayName, inviterDisplayName, teamMetadata.TeamName, teamMetadata.TeamName, teamMetadata.TeamDesc, inviterDisplayName)
+
+		// Send email using email service
+		emailInput := EmailInput{
+			ToEmails:  []string{memberData.EmailID},
+			Subject:   subject,
+			HtmlBody:  htmlBody,
+			TextBody:  textBody,
+			FromEmail: "noreply@gomovo.com", // Configure as needed
+			FromName:  "Gomovo Hub",
+		}
+
+		err = svc.emailSvc.SendEmail(emailInput)
+		if err != nil {
+			svc.logger.Printf("Failed to send team invitation email to %s: %v", memberData.EmailID, err)
+		} else {
+			svc.logger.Printf("Successfully sent team invitation email to %s for team %s", memberData.EmailID, teamMetadata.TeamName)
+		}
+	}
 }

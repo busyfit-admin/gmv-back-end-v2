@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
 	"github.com/aws/aws-xray-sdk-go/xray"
 
@@ -40,14 +41,16 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	ddbclient := dynamodb.NewFromConfig(cfg)
+	sesClient := ses.NewFromConfig(cfg)
 
 	// Initialize employee service
 	empSvc := companylib.CreateEmployeeService(ctx, ddbclient, nil, logger)
 	empSvc.EmployeeTable = os.Getenv("EMPLOYEE_TABLE")
 	empSvc.EmployeeTable_CognitoId_Index = os.Getenv("EMPLOYEE_TABLE_COGNITO_ID_INDEX")
 
+	emailSvc := companylib.CreateEmailService(ctx, sesClient, logger)
 	// Initialize teams service
-	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc)
+	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc, emailSvc)
 	teamsSvc.TeamsTable = os.Getenv("TEAMS_TABLE")
 
 	svc := &Service{
