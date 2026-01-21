@@ -4,6 +4,7 @@ Syncs Cognito user data to EmployeeDataTable on various triggers:
 - PostConfirmation: Creates new user
 - PreAuthentication: Updates user on login
 - PreTokenGeneration: Updates user on token generation/refresh
+- PostAuthentication: Syncs updated user attributes after successful authentication
 """
 
 import json
@@ -141,6 +142,14 @@ def handle_pre_token_generation(event):
     update_user_in_ddb(user_data)
 
 
+def handle_post_authentication(event):
+    """Handle PostAuthentication trigger - sync updated user attributes after successful login."""
+    user_data = extract_user_data(event)
+    # Always attempt to sync user attributes after authentication
+    # This ensures any profile updates made outside the app are captured
+    update_user_in_ddb(user_data)
+
+
 def handler(event, context):
     """Main Lambda handler for Cognito triggers."""
     trigger_source = event.get('triggerSource', '')
@@ -156,6 +165,9 @@ def handler(event, context):
         
         elif trigger_source in ['TokenGeneration_Authentication', 'TokenGeneration_RefreshTokens']:
             handle_pre_token_generation(event)
+        
+        elif trigger_source == 'PostAuthentication_Authentication':
+            handle_post_authentication(event)
         
         else:
             print(f"Unhandled trigger source: {trigger_source}")

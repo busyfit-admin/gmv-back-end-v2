@@ -207,7 +207,7 @@ func (svc *TeamsServiceV2) CreateTeam(input CreateTeamInput) (*TeamMetadata, err
 }
 
 // SetCurrentTeam updates the user's current team preference
-func (svc *TeamsServiceV2) SetCurrentTeam(userName string, teamId string) error {
+func (svc *TeamsServiceV2) SetCurrentTeam(userName string, userCognitoId string, teamId string) error {
 	if svc.employeeSvc == nil {
 		return fmt.Errorf("employee service not initialized")
 	}
@@ -245,12 +245,13 @@ func (svc *TeamsServiceV2) SetCurrentTeam(userName string, teamId string) error 
 	updateInput := &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.employeeSvc.EmployeeTable),
 		Key: map[string]types.AttributeValue{
-			"UserName": &types.AttributeValueMemberS{Value: userName},
+			"UserName": &types.AttributeValueMemberS{Value: userCognitoId}, // Using CognitoId as primary key
 		},
 		UpdateExpression: aws.String("SET CurrentTeamId = :teamId"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":teamId": &types.AttributeValueMemberS{Value: teamId},
 		},
+		ConditionExpression: aws.String("attribute_exists(UserName)"),
 	}
 
 	_, err = svc.dynamodbClient.UpdateItem(svc.ctx, updateInput)
@@ -264,24 +265,24 @@ func (svc *TeamsServiceV2) SetCurrentTeam(userName string, teamId string) error 
 }
 
 // GetCurrentTeam retrieves the user's current team preference
-func (svc *TeamsServiceV2) GetCurrentTeam(userName string) (string, error) {
+func (svc *TeamsServiceV2) GetCurrentTeam(userCognitoId string) (string, error) {
 	if svc.employeeSvc == nil {
 		svc.logger.Printf("Employee service not initialized, cannot get current team")
 		return "", nil
 	}
 
-	employee, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
+	employee, err := svc.employeeSvc.GetEmployeeDataByUserName(userCognitoId)
 	if err != nil {
-		svc.logger.Printf("Failed to get employee data for user %s: %v", userName, err)
+		svc.logger.Printf("Failed to get employee data for user %s: %v", userCognitoId, err)
 		return "", nil // Return empty string if employee not found
 	}
 
-	svc.logger.Printf("Current team for user %s: %s", userName, employee.CurrentTeamId)
+	svc.logger.Printf("Current team for user %s: %s", userCognitoId, employee.CurrentTeamId)
 	return employee.CurrentTeamId, nil
 }
 
 // GetUserTeams retrieves all teams for a user
-func (svc *TeamsServiceV2) GetUserTeams(userName string) ([]UserTeamInfo, error) {
+func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) ([]UserTeamInfo, error) {
 	// Get user's current team preference
 	currentTeamId, _ := svc.GetCurrentTeam(userName)
 
@@ -344,7 +345,7 @@ func (svc *TeamsServiceV2) GetUserTeams(userName string) ([]UserTeamInfo, error)
 		svc.logger.Printf("No current team set for user %s, auto-setting to first team: %s", userName, firstTeamId)
 
 		// Attempt to set the first team as current (ignore error if it fails)
-		if err := svc.SetCurrentTeam(userName, firstTeamId); err == nil {
+		if err := svc.SetCurrentTeam(userName, userCognitoId, firstTeamId); err == nil {
 			// Mark the first team as logged in
 			userTeams[0].IsLoggedIn = true
 			svc.logger.Printf("Successfully auto-set current team to %s for user %s", firstTeamId, userName)
@@ -458,6 +459,10 @@ func (svc *TeamsServiceV2) GetTeamMemberDetails(teamId string, userName string) 
 
 // IsTeamAdmin checks if a user is an admin of a team
 func (svc *TeamsServiceV2) IsTeamAdmin(teamId string, userName string) (bool, error) {
+
+	// logging the check
+	svc.logger.Printf("Checking if user %s is admin of team %s", userName, teamId)
+
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String(svc.TeamsTable),
 		Key: map[string]types.AttributeValue{
@@ -486,7 +491,7 @@ func (svc *TeamsServiceV2) IsTeamAdmin(teamId string, userName string) (bool, er
 	return member.Role == TeamMemberRoleAdmin && member.IsActive, nil
 }
 
-// AddTeamMembers adds members to a team
+// AddTeamMembers adds members to a team - Only the DDB Level
 func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingUser string) error {
 	// Verify requesting user is admin
 	isAdmin, err := svc.IsTeamAdmin(input.TeamId, requestingUser)
@@ -592,6 +597,42 @@ func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingU
 	}
 
 	return nil
+}
+
+// Add TeamMembersCheckCognito adds members to cognito user pool , and auto adds to team
+func (svc *TeamsServiceV2) AddTeamMembersCheckCognito(input AddTeamMembersInput, requestingUser string) error {
+	// Verify requesting user is admin
+	isAdmin, err := svc.IsTeamAdmin(input.TeamId, requestingUser)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return fmt.Errorf("user %s is not an admin of team %s", requestingUser, input.TeamId)
+	}
+	// Verify team exists and is active
+	metadata, err := svc.GetTeamMetadata(input.TeamId)
+	if err != nil {
+		return err
+	}
+	if metadata.Status != TeamStatusActive {
+		return fmt.Errorf("cannot add members to inactive team")
+	}
+	// Check and create users in Cognito if they don't exist
+	for _, userName := range input.UserNames {
+		emp, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
+		if err != nil {
+			svc.logger.Printf("User %s not found in employee service, creating in Cognito", userName)
+		}
+		if emp.CognitoId == "" {
+			err := svc.employeeSvc.CreateCognitoUser(userName)
+			if err != nil {
+				svc.logger.Printf("Failed to create Cognito user for %s: %v", userName, err)
+				return fmt.Errorf("failed to create Cognito user for %s: %w", userName, err)
+			}
+		}
+	}
+	// Now add members to the team in DynamoDB
+	return svc.AddTeamMembers(input, requestingUser)
 }
 
 // UpdateMemberRole updates a team member's role

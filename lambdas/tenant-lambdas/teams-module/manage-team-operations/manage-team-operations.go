@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
@@ -42,12 +44,14 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	ddbclient := dynamodb.NewFromConfig(cfg)
+	cognitoClient := cognitoidentityprovider.NewFromConfig(cfg)
 	sesClient := ses.NewFromConfig(cfg)
 
 	// Initialize employee service
-	empSvc := companylib.CreateEmployeeService(ctx, ddbclient, nil, logger)
+	empSvc := companylib.CreateEmployeeService(ctx, ddbclient, cognitoClient, logger)
 	empSvc.EmployeeTable = os.Getenv("EMPLOYEE_TABLE")
 	empSvc.EmployeeTable_CognitoId_Index = os.Getenv("EMPLOYEE_TABLE_COGNITO_ID_INDEX")
+	empSvc.EmployeeUserPoolId = os.Getenv("COGNITO_USER_POOL_ID")
 
 	// Email service
 	emailSvc := companylib.CreateEmailService(ctx, sesClient, logger)
@@ -84,7 +88,7 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 		return svc.errorResponse(http.StatusUnauthorized, "User not found", err)
 	}
 
-	userName := employee.UserName
+	userName := employee.EmailID
 
 	// Route based on path and method
 	pathParts := strings.Split(strings.Trim(request.Path, "/"), "/")
@@ -93,11 +97,17 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 	case "GET":
 		if len(pathParts) >= 2 && pathParts[len(pathParts)-1] == "members" {
 			// GET /teams/{teamId}/members
-			teamId := pathParts[len(pathParts)-2]
+			teamId, err := url.PathUnescape(pathParts[len(pathParts)-2])
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid team ID", err)
+			}
 			return svc.getTeamMembers(teamId, userName)
 		} else if len(pathParts) >= 1 {
 			// GET /teams/{teamId}
-			teamId := pathParts[len(pathParts)-1]
+			teamId, err := url.PathUnescape(pathParts[len(pathParts)-1])
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid team ID", err)
+			}
 			return svc.getTeamDetails(teamId, userName)
 		}
 		return svc.errorResponse(http.StatusBadRequest, "Invalid path", nil)
@@ -105,7 +115,10 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 	case "PATCH":
 		if len(pathParts) >= 2 && pathParts[len(pathParts)-1] == "status" {
 			// PATCH /teams/{teamId}/status
-			teamId := pathParts[len(pathParts)-2]
+			teamId, err := url.PathUnescape(pathParts[len(pathParts)-2])
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid team ID", err)
+			}
 			return svc.updateTeamStatus(teamId, userName, request)
 		}
 		return svc.errorResponse(http.StatusBadRequest, "Invalid path", nil)
@@ -113,11 +126,17 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 	case "POST":
 		if len(pathParts) >= 2 && pathParts[len(pathParts)-1] == "members" {
 			// POST /teams/{teamId}/members
-			teamId := pathParts[len(pathParts)-2]
+			teamId, err := url.PathUnescape(pathParts[len(pathParts)-2])
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid team ID", err)
+			}
 			return svc.addTeamMembers(teamId, userName, request)
 		} else if len(pathParts) >= 3 && pathParts[len(pathParts)-1] == "role" {
 			// POST /teams/{teamId}/members/{username}/role
-			teamId := pathParts[len(pathParts)-4]
+			teamId, err := url.PathUnescape(pathParts[len(pathParts)-4])
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid team ID", err)
+			}
 			return svc.updateMemberRole(teamId, userName, request)
 		}
 		return svc.errorResponse(http.StatusBadRequest, "Invalid path", nil)
@@ -244,7 +263,7 @@ func (svc *Service) addTeamMembers(teamId string, userName string, request event
 		UserNames: input.UserNames,
 	}
 
-	err := svc.teamsSVC.AddTeamMembers(addInput, userName)
+	err := svc.teamsSVC.AddTeamMembersCheckCognito(addInput, userName)
 	if err != nil {
 		svc.logger.Printf("Failed to add team members: %v", err)
 		if strings.Contains(err.Error(), "not an admin") {

@@ -34,6 +34,7 @@ The `TenantTeamsTable` uses a single-table design with the following access patt
 1. **list-user-teams**: Lists all teams for a user
 2. **create-team**: Creates a new team (user becomes admin)
 3. **manage-team-operations**: Handles team operations (deactivate, add users, assign admins)
+4. **set-current-team**: Sets the user's current active team
 
 ### Library
 
@@ -272,6 +273,35 @@ curl -X POST "https://api.example.com/v1/teams/TEAM#123/members/jane.smith/role"
   -d '{"userName":"jane.smith","role":"ADMIN"}'
 ```
 
+### 8. Set Current Team
+
+**Endpoint:** `PATCH /v1/current-team` or `PUT /v1/current-team`
+
+**Description:** Sets the user's current active team. The user must be a member of the specified team.
+
+**Request Body:**
+```json
+{
+  "teamId": "TEAM#uuid"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Current team updated successfully",
+  "currentTeamId": "TEAM#uuid"
+}
+```
+
+**Example:**
+```bash
+curl -X PATCH "https://api.example.com/v1/current-team" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"teamId":"TEAM#123"}'
+```
+
 ## Authorization
 
 All endpoints require Cognito authentication. The username is extracted from:
@@ -302,6 +332,13 @@ The following operations require the requesting user to be a team admin:
 {
   "error": "Only admins can add members",
   "message": "user john.doe is not an admin of team TEAM#123"
+}
+```
+
+```json
+{
+  "error": "User is not a member of this team",
+  "message": "User is not a member of this team"
 }
 ```
 
@@ -336,6 +373,9 @@ cd create-team && make build && cd ..
 
 # Build manage-team-operations
 cd manage-team-operations && make build && cd ..
+
+# Build set-current-team
+cd set-current-team && make build && cd ..
 ```
 
 ### Deploy CloudFormation Stack
@@ -392,6 +432,16 @@ curl -X PATCH "https://api.example.com/v1/teams/TEAM#123/status" \
   -H "Content-Type: application/json" \
   -d '{
     "status": "INACTIVE"
+  }'
+```
+
+### Set Current Team
+```bash
+curl -X PATCH "https://api.example.com/v1/current-team" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "teamId": "TEAM#123"
   }'
 ```
 

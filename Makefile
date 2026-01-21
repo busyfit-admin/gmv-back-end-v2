@@ -7,9 +7,15 @@ test: $(SUBDIRS)
 
 build: $(SUBDIRS)
 
+build-teams-module: 
+	$(MAKE) -C lambdas/tenant-lambdas/teams-module build
+
 update: $(SUBDIRS)
 
 deploy: $(SUBDIRS)
+
+deploy-tenant-cfn: 
+	$(MAKE) -C cfn/tenant-cfn deploy
 
 local: $(SUBDIRS)
 

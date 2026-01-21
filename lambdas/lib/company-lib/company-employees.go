@@ -181,6 +181,11 @@ func (svc *EmployeeService) GetEmployeeDataByUserName(EmployeeUserName string) (
 
 	output, err := svc.dynamodbClient.GetItem(svc.ctx, &getItemInput)
 
+	// if get item not found any record then return empty struct
+	if output.Item == nil {
+		return EmployeeDynamodbData{}, nil
+	}
+
 	if err != nil {
 		svc.logger.Printf("Query on Employee data failed with error :%v", err)
 		return EmployeeDynamodbData{}, err

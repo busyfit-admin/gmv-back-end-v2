@@ -85,7 +85,7 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 
 	switch request.HTTPMethod {
 	case "POST":
-		return svc.createTeam(employee.UserName, request)
+		return svc.createTeam(employee.EmailID, request)
 	default:
 		return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
 	}

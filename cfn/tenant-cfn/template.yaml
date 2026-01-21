@@ -1022,6 +1022,25 @@ Resources:
       UserPoolName: !Sub Tenant-UserPool-${Environment}
       AdminCreateUserConfig:
         AllowAdminCreateUserOnly: false # change to true (not sure have to discuss)
+        InviteMessageTemplate:
+          EmailSubject: "Welcome to Gomovo Hub - Your Invitation"
+          EmailMessage: |
+            Hello,
+
+            Welcome to Gomovo Hub! You have been invited to join our platform.
+
+            Your username is: {username}
+            Your temporary password is: {####}
+
+            Please use this temporary password or one-time login code to sign in and set up your account.
+
+            Sign in here: https://app.gomovo.com
+
+            If you have any questions, please contact our support team.
+
+            Best regards,
+            The Gomovo Hub Team
+          SMSMessage: "Welcome to Gomovo Hub! Your username is {username} and temporary password is {####}"
       DeletionProtection: INACTIVE # Change to Active for PROD Deployments
       UsernameAttributes:
         - email
@@ -1069,6 +1088,7 @@ Resources:
         PostConfirmation: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
         PreAuthentication: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
         PreTokenGeneration: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
+        PostAuthentication: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
 
   TenantProfileCognitoClient:
     Type: AWS::Cognito::UserPoolClient
@@ -1147,6 +1167,14 @@ Resources:
       SourceArn: !GetAtt TenantCognitoUserPool.Arn
 
   CognitoPreTokenGenerationLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SyncCognitoUserToDynamoDBLambda
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt TenantCognitoUserPool.Arn
+
+  CognitoPostAuthenticationLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref SyncCognitoUserToDynamoDBLambda
@@ -2708,6 +2736,7 @@ Resources:
           TEAMS_TABLE: !Ref TenantTeamsTableV2
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          COGNITO_USER_POOL_ID: !Ref TenantCognitoUserPool
 
   ManageTeamOperationsLambdaInvokePermissions:
     Type: AWS::Lambda::Permission
@@ -2872,7 +2901,17 @@ Resources:
                   - dynamodb:TransactWriteItems
                 Resource:
                   - !GetAtt TenantTeamsTableV2.Arn
-                  - !GetAtt EmployeeDataTable.Arn
+                  - !GetAtt EmployeeDataTable.Arn 
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cognito-idp:*
+                Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${TenantCognitoUserPool}  
+
 
   # --------------- Feeds, Events, appreciations and Certificates related functions --------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------

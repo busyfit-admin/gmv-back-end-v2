@@ -83,14 +83,14 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 
 	switch request.HTTPMethod {
 	case "PATCH", "PUT":
-		return svc.setCurrentTeam(employee.UserName, request)
+		return svc.setCurrentTeam(employee.EmailID, cognitoId, request)
 	default:
 		return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
 	}
 }
 
 // setCurrentTeam sets the user's current team
-func (svc *Service) setCurrentTeam(userName string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) setCurrentTeam(userName string, userCognitoId string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.logger.Printf("Setting current team for user: %s", userName)
 
 	// Parse request body
@@ -108,7 +108,7 @@ func (svc *Service) setCurrentTeam(userName string, request events.APIGatewayPro
 	}
 
 	// Set the current team
-	err := svc.teamsSVC.SetCurrentTeam(userName, input.TeamId)
+	err := svc.teamsSVC.SetCurrentTeam(userName, userCognitoId, input.TeamId)
 	if err != nil {
 		svc.logger.Printf("Failed to set current team: %v", err)
 		if err.Error() == fmt.Sprintf("user is not a member of team %s", input.TeamId) {

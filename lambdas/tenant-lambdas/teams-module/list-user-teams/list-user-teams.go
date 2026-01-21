@@ -83,24 +83,24 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 
 	switch request.HTTPMethod {
 	case "GET":
-		return svc.listUserTeams(employee.UserName, request)
+		return svc.listUserTeams(employee.EmailID, cognitoId, request)
 	default:
 		return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
 	}
 }
 
 // listUserTeams retrieves all teams for the current user
-func (svc *Service) listUserTeams(userName string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) listUserTeams(userName string, userCognitoId string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.logger.Printf("Listing teams for user: %s", userName)
 
-	teams, err := svc.teamsSVC.GetUserTeams(userName)
+	teams, err := svc.teamsSVC.GetUserTeams(userName, userCognitoId)
 	if err != nil {
 		svc.logger.Printf("Failed to get user teams: %v", err)
 		return svc.errorResponse(http.StatusInternalServerError, "Failed to retrieve teams", err)
 	}
 
 	// Get current team from stored preference (already marked in teams)
-	currentTeamId, err := svc.teamsSVC.GetCurrentTeam(userName)
+	currentTeamId, err := svc.teamsSVC.GetCurrentTeam(userCognitoId)
 	if err != nil {
 		svc.logger.Printf("Warning: Failed to get current team: %v", err)
 	}
