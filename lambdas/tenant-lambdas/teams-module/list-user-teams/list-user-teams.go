@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
 	"github.com/aws/aws-xray-sdk-go/xray"
 
@@ -40,14 +41,16 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	ddbclient := dynamodb.NewFromConfig(cfg)
+	sesClient := ses.NewFromConfig(cfg)
 
 	// Initialize employee service
 	empSvc := companylib.CreateEmployeeService(ctx, ddbclient, nil, logger)
 	empSvc.EmployeeTable = os.Getenv("EMPLOYEE_TABLE")
 	empSvc.EmployeeTable_CognitoId_Index = os.Getenv("EMPLOYEE_TABLE_COGNITO_ID_INDEX")
 
+	emailSvc := companylib.CreateEmailService(ctx, sesClient, logger)
 	// Initialize teams service
-	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc)
+	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc, emailSvc)
 	teamsSvc.TeamsTable = os.Getenv("TEAMS_TABLE")
 
 	svc := &Service{
@@ -80,24 +83,24 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 
 	switch request.HTTPMethod {
 	case "GET":
-		return svc.listUserTeams(employee.UserName, request)
+		return svc.listUserTeams(employee.EmailID, cognitoId, request)
 	default:
 		return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
 	}
 }
 
 // listUserTeams retrieves all teams for the current user
-func (svc *Service) listUserTeams(userName string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) listUserTeams(userName string, userCognitoId string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.logger.Printf("Listing teams for user: %s", userName)
 
-	teams, err := svc.teamsSVC.GetUserTeams(userName)
+	teams, err := svc.teamsSVC.GetUserTeams(userName, userCognitoId)
 	if err != nil {
 		svc.logger.Printf("Failed to get user teams: %v", err)
 		return svc.errorResponse(http.StatusInternalServerError, "Failed to retrieve teams", err)
 	}
 
 	// Get current team from stored preference (already marked in teams)
-	currentTeamId, err := svc.teamsSVC.GetCurrentTeam(userName)
+	currentTeamId, err := svc.teamsSVC.GetCurrentTeam(userCognitoId)
 	if err != nil {
 		svc.logger.Printf("Warning: Failed to get current team: %v", err)
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
 	"github.com/aws/aws-xray-sdk-go/xray"
 
@@ -40,14 +41,16 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	ddbclient := dynamodb.NewFromConfig(cfg)
+	sesClient := ses.NewFromConfig(cfg)
 
 	// Initialize employee service
 	empSvc := companylib.CreateEmployeeService(ctx, ddbclient, nil, logger)
 	empSvc.EmployeeTable = os.Getenv("EMPLOYEE_TABLE")
 	empSvc.EmployeeTable_CognitoId_Index = os.Getenv("EMPLOYEE_TABLE_COGNITO_ID_INDEX")
 
+	emailSvc := companylib.CreateEmailService(ctx, sesClient, logger)
 	// Initialize teams service
-	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc)
+	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc, emailSvc)
 	teamsSvc.TeamsTable = os.Getenv("TEAMS_TABLE")
 
 	svc := &Service{
@@ -80,14 +83,14 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 
 	switch request.HTTPMethod {
 	case "PATCH", "PUT":
-		return svc.setCurrentTeam(employee.UserName, request)
+		return svc.setCurrentTeam(employee.EmailID, cognitoId, request)
 	default:
 		return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
 	}
 }
 
 // setCurrentTeam sets the user's current team
-func (svc *Service) setCurrentTeam(userName string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) setCurrentTeam(userName string, userCognitoId string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.logger.Printf("Setting current team for user: %s", userName)
 
 	// Parse request body
@@ -105,7 +108,7 @@ func (svc *Service) setCurrentTeam(userName string, request events.APIGatewayPro
 	}
 
 	// Set the current team
-	err := svc.teamsSVC.SetCurrentTeam(userName, input.TeamId)
+	err := svc.teamsSVC.SetCurrentTeam(userName, userCognitoId, input.TeamId)
 	if err != nil {
 		svc.logger.Printf("Failed to set current team: %v", err)
 		if err.Error() == fmt.Sprintf("user is not a member of team %s", input.TeamId) {

@@ -105,17 +105,19 @@ type TeamsServiceV2 struct {
 	dynamodbClient awsclients.DynamodbClient
 	logger         *log.Logger
 	employeeSvc    *EmployeeService
+	emailSvc       *EmailService
 
 	TeamsTable string
 }
 
 // CreateTeamsServiceV2 creates a new teams service
-func CreateTeamsServiceV2(ctx context.Context, ddbClient awsclients.DynamodbClient, logger *log.Logger, empSvc *EmployeeService) *TeamsServiceV2 {
+func CreateTeamsServiceV2(ctx context.Context, ddbClient awsclients.DynamodbClient, logger *log.Logger, empSvc *EmployeeService, emailSvc *EmailService) *TeamsServiceV2 {
 	return &TeamsServiceV2{
 		ctx:            ctx,
 		dynamodbClient: ddbClient,
 		logger:         logger,
 		employeeSvc:    empSvc,
+		emailSvc:       emailSvc,
 	}
 }
 
@@ -205,7 +207,7 @@ func (svc *TeamsServiceV2) CreateTeam(input CreateTeamInput) (*TeamMetadata, err
 }
 
 // SetCurrentTeam updates the user's current team preference
-func (svc *TeamsServiceV2) SetCurrentTeam(userName string, teamId string) error {
+func (svc *TeamsServiceV2) SetCurrentTeam(userName string, userCognitoId string, teamId string) error {
 	if svc.employeeSvc == nil {
 		return fmt.Errorf("employee service not initialized")
 	}
@@ -243,9 +245,10 @@ func (svc *TeamsServiceV2) SetCurrentTeam(userName string, teamId string) error 
 	updateInput := &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.employeeSvc.EmployeeTable),
 		Key: map[string]types.AttributeValue{
-			"UserName": &types.AttributeValueMemberS{Value: userName},
+			"UserName": &types.AttributeValueMemberS{Value: userCognitoId}, // Using userCognitoId as key since Employee table UserName field contains Cognito ID
 		},
-		UpdateExpression: aws.String("SET CurrentTeamId = :teamId"),
+		UpdateExpression:    aws.String("SET CurrentTeamId = :teamId"),
+		ConditionExpression: aws.String("attribute_exists(UserName)"), // Ensure record exists
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":teamId": &types.AttributeValueMemberS{Value: teamId},
 		},
@@ -257,31 +260,31 @@ func (svc *TeamsServiceV2) SetCurrentTeam(userName string, teamId string) error 
 		return fmt.Errorf("failed to update current team: %w", err)
 	}
 
-	svc.logger.Printf("Successfully set current team %s for user %s", teamId, userName)
+	svc.logger.Printf("Successfully set current team %s for user %s with cognito ID %s", teamId, userName, userCognitoId)
 	return nil
 }
 
 // GetCurrentTeam retrieves the user's current team preference
-func (svc *TeamsServiceV2) GetCurrentTeam(userName string) (string, error) {
+func (svc *TeamsServiceV2) GetCurrentTeam(userCognitoId string) (string, error) {
 	if svc.employeeSvc == nil {
 		svc.logger.Printf("Employee service not initialized, cannot get current team")
 		return "", nil
 	}
 
-	employee, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
+	employee, err := svc.employeeSvc.GetEmployeeDataByUserName(userCognitoId)
 	if err != nil {
-		svc.logger.Printf("Failed to get employee data for user %s: %v", userName, err)
+		svc.logger.Printf("Failed to get employee data for user %s: %v", userCognitoId, err)
 		return "", nil // Return empty string if employee not found
 	}
 
-	svc.logger.Printf("Current team for user %s: %s", userName, employee.CurrentTeamId)
+	svc.logger.Printf("Current team for user %s: %s", userCognitoId, employee.CurrentTeamId)
 	return employee.CurrentTeamId, nil
 }
 
 // GetUserTeams retrieves all teams for a user
-func (svc *TeamsServiceV2) GetUserTeams(userName string) ([]UserTeamInfo, error) {
+func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) ([]UserTeamInfo, error) {
 	// Get user's current team preference
-	currentTeamId, _ := svc.GetCurrentTeam(userName)
+	currentTeamId, _ := svc.GetCurrentTeam(userCognitoId)
 
 	// Query GSI1 to get all teams for the user
 	input := &dynamodb.QueryInput{
@@ -342,7 +345,7 @@ func (svc *TeamsServiceV2) GetUserTeams(userName string) ([]UserTeamInfo, error)
 		svc.logger.Printf("No current team set for user %s, auto-setting to first team: %s", userName, firstTeamId)
 
 		// Attempt to set the first team as current (ignore error if it fails)
-		if err := svc.SetCurrentTeam(userName, firstTeamId); err == nil {
+		if err := svc.SetCurrentTeam(userName, userCognitoId, firstTeamId); err == nil {
 			// Mark the first team as logged in
 			userTeams[0].IsLoggedIn = true
 			svc.logger.Printf("Successfully auto-set current team to %s for user %s", firstTeamId, userName)
@@ -424,8 +427,42 @@ func (svc *TeamsServiceV2) UpdateTeamStatus(teamId string, status TeamStatus, us
 	return nil
 }
 
+// GetTeamMemberDetails retrieves details of a team member
+func (svc *TeamsServiceV2) GetTeamMemberDetails(teamId string, userName string) (*TeamMember, error) {
+	input := &dynamodb.GetItemInput{
+		TableName: aws.String(svc.TeamsTable),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: teamId},
+			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", userName)},
+		},
+	}
+
+	result, err := svc.dynamodbClient.GetItem(svc.ctx, input)
+	if err != nil {
+		svc.logger.Printf("Failed to get team member details: %v", err)
+		return nil, fmt.Errorf("failed to get team member details: %w", err)
+	}
+
+	if result.Item == nil {
+		return nil, nil // Member not found
+	}
+
+	var member TeamMember
+	err = attributevalue.UnmarshalMap(result.Item, &member)
+	if err != nil {
+		svc.logger.Printf("Failed to unmarshal team member details: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal team member details: %w", err)
+	}
+
+	return &member, nil
+}
+
 // IsTeamAdmin checks if a user is an admin of a team
 func (svc *TeamsServiceV2) IsTeamAdmin(teamId string, userName string) (bool, error) {
+
+	// logging the check
+	svc.logger.Printf("Checking if user %s is admin of team %s", userName, teamId)
+
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String(svc.TeamsTable),
 		Key: map[string]types.AttributeValue{
@@ -454,7 +491,7 @@ func (svc *TeamsServiceV2) IsTeamAdmin(teamId string, userName string) (bool, er
 	return member.Role == TeamMemberRoleAdmin && member.IsActive, nil
 }
 
-// AddTeamMembers adds members to a team
+// AddTeamMembers adds members to a team - Only the DDB Level
 func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingUser string) error {
 	// Verify requesting user is admin
 	isAdmin, err := svc.IsTeamAdmin(input.TeamId, requestingUser)
@@ -476,15 +513,21 @@ func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingU
 
 	now := time.Now().UTC().Format(time.RFC3339)
 	transactItems := make([]types.TransactWriteItem, 0, len(input.UserNames)+1)
+	successfullyAddedMembers := make([]string, 0, len(input.UserNames)) // Track successful additions for email
 
 	// Create member entries
 	for _, userName := range input.UserNames {
 		displayName := userName
-		// Fetch display name from employee service if available
+		var employeeEmail string
+
+		// Fetch display name and email from employee service if available
 		if svc.employeeSvc != nil {
 			employee, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
-			if err == nil && employee.DisplayName != "" {
-				displayName = employee.DisplayName
+			if err == nil {
+				if employee.DisplayName != "" {
+					displayName = employee.DisplayName
+				}
+				employeeEmail = employee.EmailID
 			}
 		}
 
@@ -514,6 +557,11 @@ func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingU
 				ConditionExpression: aws.String("attribute_not_exists(PK)"),
 			},
 		})
+
+		// Store member info for email sending (only if we have email)
+		if employeeEmail != "" {
+			successfullyAddedMembers = append(successfullyAddedMembers, userName)
+		}
 	}
 
 	// Update member count
@@ -542,7 +590,49 @@ func (svc *TeamsServiceV2) AddTeamMembers(input AddTeamMembersInput, requestingU
 	}
 
 	svc.logger.Printf("Successfully added %d members to team %s", len(input.UserNames), input.TeamId)
+
+	// Send invitation emails to successfully added members
+	if svc.emailSvc != nil && len(successfullyAddedMembers) > 0 {
+		go svc.sendTeamInvitationEmails(metadata, successfullyAddedMembers, requestingUser)
+	}
+
 	return nil
+}
+
+// Add TeamMembersCheckCognito adds members to cognito user pool , and auto adds to team
+func (svc *TeamsServiceV2) AddTeamMembersCheckCognito(input AddTeamMembersInput, requestingUser string) error {
+	// Verify requesting user is admin
+	isAdmin, err := svc.IsTeamAdmin(input.TeamId, requestingUser)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return fmt.Errorf("user %s is not an admin of team %s", requestingUser, input.TeamId)
+	}
+	// Verify team exists and is active
+	metadata, err := svc.GetTeamMetadata(input.TeamId)
+	if err != nil {
+		return err
+	}
+	if metadata.Status != TeamStatusActive {
+		return fmt.Errorf("cannot add members to inactive team")
+	}
+	// Check and create users in Cognito if they don't exist
+	for _, userName := range input.UserNames {
+		emp, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
+		if err != nil {
+			svc.logger.Printf("User %s not found in employee service, creating in Cognito", userName)
+		}
+		if emp.CognitoId == "" {
+			err := svc.employeeSvc.CreateCognitoUser(userName)
+			if err != nil {
+				svc.logger.Printf("Failed to create Cognito user for %s: %v", userName, err)
+				return fmt.Errorf("failed to create Cognito user for %s: %w", userName, err)
+			}
+		}
+	}
+	// Now add members to the team in DynamoDB
+	return svc.AddTeamMembers(input, requestingUser)
 }
 
 // UpdateMemberRole updates a team member's role
@@ -649,4 +739,118 @@ func (svc *TeamsServiceV2) GetTeamMembers(teamId string) ([]TeamMember, error) {
 	}
 
 	return members, nil
+}
+
+// sendTeamInvitationEmails sends invitation emails to new team members
+func (svc *TeamsServiceV2) sendTeamInvitationEmails(teamMetadata *TeamMetadata, memberUserNames []string, invitedBy string) {
+	defer func() {
+		if r := recover(); r != nil {
+			svc.logger.Printf("Panic in sendTeamInvitationEmails: %v", r)
+		}
+	}()
+
+	// Get inviter's display name
+	inviterDisplayName := invitedBy
+	if svc.employeeSvc != nil {
+		if inviterData, err := svc.employeeSvc.GetEmployeeDataByUserName(invitedBy); err == nil && inviterData.DisplayName != "" {
+			inviterDisplayName = inviterData.DisplayName
+		}
+	}
+
+	for _, userName := range memberUserNames {
+		if svc.employeeSvc == nil {
+			continue
+		}
+
+		// Get member's email and display name
+		memberData, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
+		if err != nil {
+			svc.logger.Printf("Failed to get employee data for %s: %v", userName, err)
+			continue
+		}
+
+		if memberData.EmailID == "" {
+			svc.logger.Printf("No email found for user %s, skipping invitation email", userName)
+			continue
+		}
+
+		// Create email content
+		subject := fmt.Sprintf("Welcome to Team: %s - Gomovo Hub", teamMetadata.TeamName)
+
+		htmlBody := fmt.Sprintf(`
+			<html>
+			<body>
+				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+					<div style="text-align: center; margin-bottom: 30px;">
+						<h1 style="color: #2c5aa0; margin-bottom: 10px;">Welcome to Gomovo Hub!</h1>
+					</div>
+					
+					<div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+						<h2 style="color: #333; margin-top: 0;">You've been added to a team!</h2>
+						<p style="font-size: 16px; color: #666; line-height: 1.5;">
+							Hi <strong>%s</strong>,
+						</p>
+						<p style="font-size: 16px; color: #666; line-height: 1.5;">
+							<strong>%s</strong> has added you to the team <strong>"%s"</strong> in Gomovo Hub.
+						</p>
+						
+						<div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+							<h3 style="color: #2c5aa0; margin-top: 0;">Team Details:</h3>
+							<p><strong>Team Name:</strong> %s</p>
+							<p><strong>Team Description:</strong> %s</p>
+							<p><strong>Added by:</strong> %s</p>
+						</div>
+					</div>
+					
+					<div style="text-align: center; margin: 30px 0;">
+						<a href="https://gomovo.com/login" style="display: inline-block; background-color: #2c5aa0; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+							Access Gomovo Hub
+						</a>
+					</div>
+					
+					<div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center; color: #888; font-size: 14px;">
+						<p>If you don't have an account yet, you can sign up using this email address.</p>
+						<p>Need help? Contact our support team.</p>
+					</div>
+				</div>
+			</body>
+			</html>
+		`, memberData.DisplayName, inviterDisplayName, teamMetadata.TeamName, teamMetadata.TeamName, teamMetadata.TeamDesc, inviterDisplayName)
+
+		textBody := fmt.Sprintf(`
+Welcome to Gomovo Hub!
+
+Hi %s,
+
+%s has added you to the team "%s" in Gomovo Hub.
+
+Team Details:
+- Team Name: %s
+- Team Description: %s  
+- Added by: %s
+
+You can access Gomovo Hub at: https://gomovo.com/login
+
+If you don't have an account yet, you can sign up using this email address.
+
+Need help? Contact our support team.
+		`, memberData.DisplayName, inviterDisplayName, teamMetadata.TeamName, teamMetadata.TeamName, teamMetadata.TeamDesc, inviterDisplayName)
+
+		// Send email using email service
+		emailInput := EmailInput{
+			ToEmails:  []string{memberData.EmailID},
+			Subject:   subject,
+			HtmlBody:  htmlBody,
+			TextBody:  textBody,
+			FromEmail: "noreply@gomovo.com", // Configure as needed
+			FromName:  "Gomovo Hub",
+		}
+
+		err = svc.emailSvc.SendEmail(emailInput)
+		if err != nil {
+			svc.logger.Printf("Failed to send team invitation email to %s: %v", memberData.EmailID, err)
+		} else {
+			svc.logger.Printf("Successfully sent team invitation email to %s for team %s", memberData.EmailID, teamMetadata.TeamName)
+		}
+	}
 }

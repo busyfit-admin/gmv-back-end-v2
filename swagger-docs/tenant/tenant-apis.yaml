@@ -762,6 +762,286 @@ paths:
       security:
         - UserPool: []
 
+  # ---------- Team Attributes APIs (Skills, Values, Milestones, Metrics) ----------
+
+  /v2/teams/{teamId}/attributes:
+    get:
+      summary: List team attributes
+      description: Get all attributes (skills, values, milestones, metrics) for a specific team. All team members can access.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+        - name: type
+          in: query
+          description: Filter by attribute type (SKILL, VALUE, MILESTONE, METRIC)
+          required: false
+          type: string
+          enum:
+            - SKILL
+            - VALUE
+            - MILESTONE
+            - METRIC
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: object
+            properties:
+              teamId:
+                type: string
+                description: Team ID
+              attributes:
+                type: object
+                properties:
+                  skills:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeamAttribute'
+                  values:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeamAttribute'
+                  milestones:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeamAttribute'
+                  metrics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeamAttribute'
+              total:
+                type: integer
+                description: Total number of attributes
+        403:
+          description: User is not a member of this team
+        404:
+          description: Team not found
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamAttributesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+    post:
+      summary: Create custom team attribute
+      description: Create a new custom attribute for a team. Only team admins can create attributes.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            required:
+              - attributeType
+              - name
+            properties:
+              attributeType:
+                type: string
+                enum:
+                  - SKILL
+                  - VALUE
+                  - MILESTONE
+                  - METRIC
+                description: Type of attribute to create
+              name:
+                type: string
+                description: Name of the attribute
+                maxLength: 100
+              description:
+                type: string
+                description: Description of the attribute
+                maxLength: 500
+      responses:
+        201:
+          description: Attribute created successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              attribute:
+                $ref: '#/components/schemas/TeamAttribute'
+        400:
+          description: Invalid request body or attribute type
+        403:
+          description: Only team admins can create attributes
+        404:
+          description: Team not found
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamAttributesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/attributes/{attributeId}:
+    patch:
+      summary: Update custom team attribute
+      description: Update an existing custom attribute for a team. Only team admins can update attributes. Default attributes cannot be updated.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+        - name: attributeId
+          in: path
+          description: Attribute ID to update
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Updated name of the attribute
+                maxLength: 100
+              description:
+                type: string
+                description: Updated description of the attribute
+                maxLength: 500
+            minProperties: 1
+            additionalProperties: false
+      responses:
+        200:
+          description: Attribute updated successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Attribute updated successfully"
+              attribute:
+                $ref: '#/components/schemas/TeamAttribute'
+        400:
+          description: Invalid request body or no fields provided
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "At least one field (name or description) must be provided for update"
+        403:
+          description: Only team admins can update attributes
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Only team admins can update custom attributes"
+        404:
+          description: Attribute or team not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Attribute not found"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamAttributesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+    delete:
+      summary: Delete custom team attribute
+      description: Delete a custom attribute from a team. Only team admins can delete attributes. Default attributes cannot be deleted.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          description: Team ID
+          required: true
+          type: string
+        - name: attributeId
+          in: path
+          description: Attribute ID to delete
+          required: true
+          type: string
+      responses:
+        200:
+          description: Attribute deleted successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Attribute deleted successfully"
+              attributeId:
+                type: string
+                example: "ATTR-123e4567-e89b-12d3-a456-426614174000"
+              deletedBy:
+                type: string
+                example: "john.doe"
+        403:
+          description: Only team admins can delete attributes
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Only team admins can delete custom attributes"
+        404:
+          description: Attribute or team not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Attribute not found"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamAttributesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   # ---------- Employee Profile V2 APIs ----------
 
   /v2/profile:
@@ -868,6 +1148,55 @@ components:
           type: string
         field3:
           type: object
+    TeamAttribute:
+      description: Team attribute schema (skills, values, milestones, metrics)
+      type: object
+      properties:
+        attributeId:
+          type: string
+          description: Unique identifier for the attribute (format ATTR-{uuid})
+          example: "ATTR-123e4567-e89b-12d3-a456-426614174000"
+        teamId:
+          type: string
+          description: Team identifier (format TEAM-{id})
+          example: "TEAM-abc123"
+        attributeType:
+          type: string
+          enum:
+            - SKILL
+            - VALUE
+            - MILESTONE
+            - METRIC
+          description: Type of attribute
+          example: "SKILL"
+        name:
+          type: string
+          description: Display name of the attribute
+          maxLength: 100
+          example: "Leadership"
+        description:
+          type: string
+          description: Detailed description of the attribute
+          maxLength: 500
+          example: "Demonstrated ability to lead and inspire team members"
+        isDefault:
+          type: boolean
+          description: Whether this is a system-created default attribute
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of creation
+          example: "2026-01-15T10:00:00Z"
+        createdBy:
+          type: string
+          description: Username of the creator
+          example: "john.doe"
+        updatedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last update
+          example: "2026-01-15T10:00:00Z"
     errorbody:
       type: object
       properties:

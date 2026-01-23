@@ -624,6 +624,45 @@ Resources:
           Projection:
             ProjectionType: "ALL"
 
+  # -- Team Attributes Table (V2) -
+  # This table stores team-specific attributes (skills, values, milestones, metrics)
+  # PK: AttributeId (e.g., ATTR-{uuid})
+  # SK: TeamId (e.g., TEAM-{id})
+  # GSI: TeamId-AttributeType-index for querying attributes by team and type
+  DDBTeamAttributesTableTeamIdIndex:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/dynamodb/TeamAttributesTable-TeamIdIndex
+      Type: String
+      Value: TeamId-AttributeType-index
+
+  TeamAttributesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub TeamAttributesTable-${Environment}
+      AttributeDefinitions:
+        - AttributeName: AttributeId
+          AttributeType: S
+        - AttributeName: TeamId
+          AttributeType: S
+        - AttributeName: AttributeType
+          AttributeType: S
+      KeySchema:
+        - AttributeName: AttributeId
+          KeyType: HASH
+        - AttributeName: TeamId
+          KeyType: RANGE
+      BillingMode: "PAY_PER_REQUEST"
+      GlobalSecondaryIndexes:
+        - IndexName: !GetAtt DDBTeamAttributesTableTeamIdIndex.Value
+          KeySchema:
+            - AttributeName: "TeamId"
+              KeyType: "HASH"
+            - AttributeName: "AttributeType"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+
   # ----------B)Tenant Admin Portal Related DDB Tables ---------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -983,6 +1022,25 @@ Resources:
       UserPoolName: !Sub Tenant-UserPool-${Environment}
       AdminCreateUserConfig:
         AllowAdminCreateUserOnly: false # change to true (not sure have to discuss)
+        InviteMessageTemplate:
+          EmailSubject: "Welcome to Gomovo Hub - Your Invitation"
+          EmailMessage: |
+            Hello,
+
+            Welcome to Gomovo Hub! You have been invited to join our platform.
+
+            Your username is: {username}
+            Your temporary password is: {####}
+
+            Please use this temporary password or one-time login code to sign in and set up your account.
+
+            Sign in here: https://app.gomovo.com
+
+            If you have any questions, please contact our support team.
+
+            Best regards,
+            The Gomovo Hub Team
+          SMSMessage: "Welcome to Gomovo Hub! Your username is {username} and temporary password is {####}"
       DeletionProtection: INACTIVE # Change to Active for PROD Deployments
       UsernameAttributes:
         - email
@@ -1030,6 +1088,7 @@ Resources:
         PostConfirmation: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
         PreAuthentication: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
         PreTokenGeneration: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
+        PostAuthentication: !GetAtt SyncCognitoUserToDynamoDBLambda.Arn
 
   TenantProfileCognitoClient:
     Type: AWS::Cognito::UserPoolClient
@@ -1108,6 +1167,14 @@ Resources:
       SourceArn: !GetAtt TenantCognitoUserPool.Arn
 
   CognitoPreTokenGenerationLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SyncCognitoUserToDynamoDBLambda
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt TenantCognitoUserPool.Arn
+
+  CognitoPostAuthenticationLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref SyncCognitoUserToDynamoDBLambda
@@ -2669,6 +2736,7 @@ Resources:
           TEAMS_TABLE: !Ref TenantTeamsTableV2
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          COGNITO_USER_POOL_ID: !Ref TenantCognitoUserPool
 
   ManageTeamOperationsLambdaInvokePermissions:
     Type: AWS::Lambda::Permission
@@ -2706,6 +2774,82 @@ Resources:
       FunctionName: !GetAtt SetCurrentTeamLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage team attributes (skills, values, milestones, metrics) ----------
+
+  ManageTeamAttributesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage team-specific attributes (skills, values, milestones, metrics) V2"
+      Role: !GetAtt ManageTeamAttributesLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/engagements-module/manage-team-attributes/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          TEAM_ATTRIBUTES_TABLE: !Ref TeamAttributesTable
+          TEAM_ATTRIBUTES_TEAMID_INDEX: !GetAtt DDBTeamAttributesTableTeamIdIndex.Value
+
+  ManageTeamAttributesLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageTeamAttributesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  ManageTeamAttributesLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ManageTeamAttributes-Lambda-Role-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/TeamAttributes/"
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !GetAtt TeamAttributesTable.Arn
+                  - !Sub ${TeamAttributesTable.Arn}/index/*
+                  - !GetAtt TenantTeamsTableV2.Arn
+                  - !Sub ${TenantTeamsTableV2.Arn}/index/*
+                  - !GetAtt EmployeeDataTable.Arn
+                  - !Sub ${EmployeeDataTable.Arn}/index/*
 
   # ---------- Shared IAM Role for Teams V2 Lambdas ----------
 
@@ -2757,7 +2901,17 @@ Resources:
                   - dynamodb:TransactWriteItems
                 Resource:
                   - !GetAtt TenantTeamsTableV2.Arn
-                  - !GetAtt EmployeeDataTable.Arn
+                  - !GetAtt EmployeeDataTable.Arn 
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cognito-idp:*
+                Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${TenantCognitoUserPool}  
+
 
   # --------------- Feeds, Events, appreciations and Certificates related functions --------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------
