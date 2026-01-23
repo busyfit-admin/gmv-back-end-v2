@@ -356,6 +356,31 @@ func (svc *TeamAttributeServiceV2) GetAttributesByType(teamId string) (GroupedAt
 	return grouped, nil
 }
 
+func (svc *TeamAttributeServiceV2) GetAttributeById(attributeId string, teamId string) (*TeamAttribute, error) {
+	getOutput, err := svc.dynamodbClient.GetItem(svc.ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(svc.TeamAttributesTable),
+		Key: map[string]types.AttributeValue{
+			"AttributeId": &types.AttributeValueMemberS{Value: attributeId},
+			"TeamId":      &types.AttributeValueMemberS{Value: teamId},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get attribute: %v", err)
+	}
+
+	if getOutput.Item == nil {
+		return nil, fmt.Errorf("attribute not found")
+	}
+
+	var attr TeamAttribute
+	err = attributevalue.UnmarshalMap(getOutput.Item, &attr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal attribute: %v", err)
+	}
+
+	return &attr, nil
+}
+
 // UpdateAttribute updates an existing attribute
 func (svc *TeamAttributeServiceV2) UpdateAttribute(attributeId string, teamId string, name string, description string) error {
 	timestamp := time.Now().UTC().Format(time.RFC3339)

@@ -12,6 +12,17 @@ All endpoints require Cognito User Pool authentication with a valid Bearer token
 Authorization: Bearer {cognito-token}
 ```
 
+## Available Endpoints
+
+| Method | Endpoint | Description | Access Level |
+|--------|----------|-------------|--------------|
+| GET | `/v2/teams/{teamId}/attributes` | List team attributes | Team Members |
+| POST | `/v2/teams/{teamId}/attributes` | Create custom attribute | Team Admins |
+| PATCH | `/v2/teams/{teamId}/attributes/{attributeId}` | Update custom attribute | Team Admins |
+| DELETE | `/v2/teams/{teamId}/attributes/{attributeId}` | Delete custom attribute | Team Admins |
+
+**Note**: Default attributes (provided automatically when teams are created) cannot be updated or deleted.
+
 ---
 
 ## Endpoints
@@ -313,6 +324,135 @@ curl -X GET "https://api.example.com/v2/teams/TEAM-abc123/attributes?type=VALUE"
 
 ---
 
+### 3. Update Custom Team Attribute
+
+Updates an existing custom attribute for a team. Only team admins can update custom attributes. Default attributes cannot be updated.
+
+**Endpoint**: `PATCH /v2/teams/{teamId}/attributes/{attributeId}`
+
+**Path Parameters**:
+- `teamId` (required): The unique identifier of the team (format: `TEAM-{id}` or `TEAM#{uuid}`)
+  - **Important**: If the team ID contains special characters like `#`, it must be URL-encoded (e.g., `TEAM%236f5f4dd7-7c78-47f2-aa6c-12ff66e9aa58`)
+- `attributeId` (required): The unique identifier of the attribute to update (format: `ATTR-{uuid}`)
+
+**Request Headers**:
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+**Request Body**:
+```json
+{
+  "name": "Advanced Data Analysis",
+  "description": "Ability to perform advanced statistical analysis and machine learning"
+}
+```
+
+**Request Body Parameters**:
+- `name` (optional): New display name for the attribute (max 100 characters)
+- `description` (optional): New description for the attribute (max 500 characters)
+- **Note**: At least one field must be provided
+
+**Success Response** (200 OK):
+```json
+{
+  "message": "Attribute updated successfully",
+  "attribute": {
+    "attributeId": "ATTR-123e4567-e89b-12d3-a456-426614174000",
+    "teamId": "TEAM-abc123",
+    "attributeType": "SKILL",
+    "name": "Advanced Data Analysis",
+    "description": "Ability to perform advanced statistical analysis and machine learning"
+  }
+}
+```
+
+**Error Responses**:
+
+400 Bad Request (no fields provided):
+```json
+{
+  "error": "At least one field (name or description) must be provided for update"
+}
+```
+
+403 Forbidden:
+```json
+{
+  "error": "Only team admins can update custom attributes"
+}
+```
+
+404 Not Found:
+```json
+{
+  "error": "Attribute not found"
+}
+```
+
+**cURL Example**:
+```bash
+curl -X PATCH https://api.example.com/v2/teams/TEAM-abc123/attributes/ATTR-123e4567-e89b-12d3-a456-426614174000 \
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Advanced Data Analysis",
+    "description": "Ability to perform advanced statistical analysis and machine learning"
+  }'
+```
+
+---
+
+### 4. Delete Custom Team Attribute
+
+Deletes a custom attribute from a team. Only team admins can delete custom attributes. Default attributes cannot be deleted.
+
+**Endpoint**: `DELETE /v2/teams/{teamId}/attributes/{attributeId}`
+
+**Path Parameters**:
+- `teamId` (required): The unique identifier of the team (format: `TEAM-{id}` or `TEAM#{uuid}`)
+  - **Important**: If the team ID contains special characters like `#`, it must be URL-encoded (e.g., `TEAM%236f5f4dd7-7c78-47f2-aa6c-12ff66e9aa58`)
+- `attributeId` (required): The unique identifier of the attribute to delete (format: `ATTR-{uuid}`)
+
+**Request Headers**:
+```
+Authorization: Bearer {token}
+```
+
+**Success Response** (200 OK):
+```json
+{
+  "message": "Attribute deleted successfully",
+  "attributeId": "ATTR-123e4567-e89b-12d3-a456-426614174000",
+  "deletedBy": "john.doe"
+}
+```
+
+**Error Responses**:
+
+403 Forbidden:
+```json
+{
+  "error": "Only team admins can delete custom attributes"
+}
+```
+
+404 Not Found:
+```json
+{
+  "error": "Attribute not found"
+}
+```
+
+**cURL Example**:
+```bash
+curl -X DELETE https://api.example.com/v2/teams/TEAM-abc123/attributes/ATTR-123e4567-e89b-12d3-a456-426614174000 \
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1..."
+```
+
+---
+
 ## Team Initialization
 
 ### Automatic Default Attributes
@@ -385,10 +525,14 @@ enum AttributeType {
 ### Team Member (Any Role)
 - ✅ GET /v2/teams/{teamId}/attributes
 - ❌ POST /v2/teams/{teamId}/attributes
+- ❌ PATCH /v2/teams/{teamId}/attributes/{attributeId}
+- ❌ DELETE /v2/teams/{teamId}/attributes/{attributeId}
 
 ### Team Admin
 - ✅ GET /v2/teams/{teamId}/attributes
 - ✅ POST /v2/teams/{teamId}/attributes
+- ✅ PATCH /v2/teams/{teamId}/attributes/{attributeId}
+- ✅ DELETE /v2/teams/{teamId}/attributes/{attributeId}
 
 ### Non-Team Member
 - ❌ All endpoints (403 Forbidden)
@@ -493,6 +637,59 @@ const createAttribute = async (
   
   return await response.json();
 };
+
+// Update custom attribute
+const updateAttribute = async (
+  teamId: string,
+  attributeId: string,
+  name?: string,
+  description?: string
+) => {
+  const encodedTeamId = encodeURIComponent(teamId);
+  const response = await fetch(
+    `https://api.example.com/v2/teams/${encodedTeamId}/attributes/${attributeId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...(name && { name }),
+        ...(description && { description }),
+      }),
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error('Failed to update attribute');
+  }
+  
+  return await response.json();
+};
+
+// Delete custom attribute
+const deleteAttribute = async (
+  teamId: string,
+  attributeId: string
+) => {
+  const encodedTeamId = encodeURIComponent(teamId);
+  const response = await fetch(
+    `https://api.example.com/v2/teams/${encodedTeamId}/attributes/${attributeId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error('Failed to delete attribute');
+  }
+  
+  return await response.json();
+};
 ```
 
 ---
@@ -541,6 +738,14 @@ fetch(`/v2/teams/${encodedTeamId}/attributes`);
 ---
 
 ## Changelog
+
+### Version 2.1.0 (2026-01-23)
+- **Added**: PATCH `/v2/teams/{teamId}/attributes/{attributeId}` endpoint documentation
+- **Added**: DELETE `/v2/teams/{teamId}/attributes/{attributeId}` endpoint documentation  
+- **Enhanced**: Complete access control documentation for all endpoints
+- **Enhanced**: Frontend integration examples with TypeScript for all CRUD operations
+- **Enhanced**: Comprehensive error handling examples
+- **Updated**: Swagger/OpenAPI specification with new endpoints
 
 ### Version 2.0.0 (2026-01-15)
 - Initial release of unified Team Attributes API

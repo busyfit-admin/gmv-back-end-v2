@@ -15,7 +15,8 @@ The V2 implementation consolidates skills, values, milestones, and metrics into 
 
 ### API Endpoints
 - **File**: `lambdas/tenant-lambdas/engagements-module/manage-team-attributes/manage-team-attributes.go`
-- **Base Path**: `/teams/{teamId}/attributes`
+- **Base Path**: `/v2/teams/{teamId}/attributes`
+- **Methods**: GET, POST, PATCH, DELETE
 
 ## Database Schema
 
@@ -104,6 +105,7 @@ Each team automatically receives 3 default attributes per type:
 **Error Responses**:
 - `400 Bad Request` - Invalid request body or attribute type
 - `403 Forbidden` - User is not a team admin
+- `404 Not Found` - Team not found
 - `500 Internal Server Error` - Server error
 
 ### 2. List Team Attributes
@@ -143,6 +145,63 @@ Each team automatically receives 3 default attributes per type:
 
 **Error Responses**:
 - `403 Forbidden` - User is not a team member
+- `404 Not Found` - Team not found
+- `500 Internal Server Error` - Server error
+
+### 3. Update Custom Attribute
+
+**Endpoint**: `PATCH /v2/teams/{teamId}/attributes/{attributeId}`
+
+**Authorization**: Team Admin only
+
+**Request Body**:
+```json
+{
+  "name": "Updated Attribute Name",
+  "description": "Updated description"
+}
+```
+
+**Note**: At least one field (`name` or `description`) must be provided. Fields not provided will remain unchanged.
+
+**Response** (200 OK):
+```json
+{
+  "message": "Attribute updated successfully",
+  "attribute": {
+    "attributeId": "ATTR-123e4567-e89b-12d3-a456-426614174000",
+    "teamId": "TEAM-abc123",
+    "attributeType": "SKILL",
+    "name": "Updated Attribute Name",
+    "description": "Updated description"
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request` - Invalid request body or no fields provided
+- `403 Forbidden` - User is not a team admin
+- `404 Not Found` - Attribute or team not found
+- `500 Internal Server Error` - Server error
+
+### 4. Delete Custom Attribute
+
+**Endpoint**: `DELETE /v2/teams/{teamId}/attributes/{attributeId}`
+
+**Authorization**: Team Admin only
+
+**Response** (200 OK):
+```json
+{
+  "message": "Attribute deleted successfully",
+  "attributeId": "ATTR-123e4567-e89b-12d3-a456-426614174000",
+  "deletedBy": "john.doe"
+}
+```
+
+**Error Responses**:
+- `403 Forbidden` - User is not a team admin
+- `404 Not Found` - Attribute or team not found
 - `500 Internal Server Error` - Server error
 
 ## Environment Variables
@@ -174,6 +233,9 @@ ListTeamAttributes(teamId string, attributeType *TeamAttributeType) ([]TeamAttri
 // Get attributes grouped by type
 GetAttributesByType(teamId string) (GroupedAttributes, error)
 
+// Get a specific attribute by ID
+GetAttributeById(attributeId, teamId string) (*TeamAttribute, error)
+
 // Update an attribute
 UpdateAttribute(attributeId, teamId, name, description string) error
 
@@ -186,7 +248,7 @@ DeleteAttribute(attributeId, teamId string) error
 ### Team Admin
 - Can create custom attributes
 - Can view all attributes
-- Can update custom attributes
+- Can update custom attributes (name and description)
 - Can delete custom attributes (not defaults)
 
 ### Team Member
@@ -226,6 +288,19 @@ curl -X GET https://api.example.com/teams/TEAM-abc123/attributes \
 # Get only skills
 curl -X GET https://api.example.com/teams/TEAM-abc123/attributes?type=SKILL \
   -H "Authorization: Bearer {token}"
+
+# Update a custom attribute
+curl -X PATCH https://api.example.com/v2/teams/TEAM-abc123/attributes/ATTR-123 \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Advanced Leadership",
+    "description": "Advanced leadership skills with strategic thinking"
+  }'
+
+# Delete a custom attribute
+curl -X DELETE https://api.example.com/v2/teams/TEAM-abc123/attributes/ATTR-123 \
+  -H "Authorization: Bearer {token}"
 ```
 
 ## Building and Deploying
@@ -243,9 +318,15 @@ The Lambda should be configured with:
 - Timeout: 30 seconds
 - Memory: 256 MB
 
+**Important Notes**:
+- Default attributes (`isDefault=true`) cannot be updated or deleted - only custom attributes can be modified
+- Team admins can only modify attributes belonging to their team
+- When updating, at least one field (`name` or `description`) must be provided
+- Deleting an attribute is permanent and cannot be undone
+
 ### API Gateway Integration
-- Path: `/teams/{teamId}/attributes`
-- Methods: GET, POST
+- Path: `/v2/teams/{teamId}/attributes[/{attributeId}]`
+- Methods: GET, POST, PATCH, DELETE
 - Authorization: Cognito User Pool
 
 ## Migration from V1

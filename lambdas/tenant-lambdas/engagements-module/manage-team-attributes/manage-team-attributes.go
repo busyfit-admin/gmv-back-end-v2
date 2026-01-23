@@ -50,7 +50,7 @@ func main() {
 	empSvc.EmployeeTable_CognitoId_Index = os.Getenv("EMPLOYEE_TABLE_COGNITO_ID_INDEX")
 
 	// Initialize teams service
-	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc)
+	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc, nil)
 	teamsSvc.TeamsTable = os.Getenv("TEAMS_TABLE")
 
 	// Initialize attribute service
@@ -87,21 +87,23 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 		return svc.errorResponse(http.StatusUnauthorized, "User not found", err)
 	}
 
-	userName := employee.UserName
+	userName := employee.EmailID
 
 	// Route based on path and method
 	// Expected paths:
 	// POST /v2/teams/{teamId}/attributes - Create custom attribute (admin only)
 	// GET /v2/teams/{teamId}/attributes - List all attributes for team (all members)
 	// GET /v2/teams/{teamId}/attributes?type=SKILL - List attributes filtered by type
+	// PATCH /v2/teams/{teamId}/attributes/{attributeId} - Update custom attribute (admin only)
+	// DELETE /v2/teams/{teamId}/attributes/{attributeId} - Delete custom attribute (admin only)
 
 	pathParts := strings.Split(strings.Trim(request.Path, "/"), "/")
 
-	// Validate path structure: /v2/teams/{teamId}/attributes
-	// pathParts[0] = "v2", pathParts[1] = "teams", pathParts[2] = teamId, pathParts[3] = "attributes"
+	// Validate path structure: /v2/teams/{teamId}/attributes[/{attributeId}]
+	// pathParts[0] = "v2", pathParts[1] = "teams", pathParts[2] = teamId, pathParts[3] = "attributes", pathParts[4] = attributeId (optional)
 	if len(pathParts) < 4 || pathParts[0] != "v2" || pathParts[1] != "teams" || pathParts[3] != "attributes" {
 		svc.logger.Printf("Invalid path structure. pathParts: %v", pathParts)
-		return svc.errorResponse(http.StatusBadRequest, "Invalid path format. Expected /v2/teams/{teamId}/attributes", nil)
+		return svc.errorResponse(http.StatusBadRequest, "Invalid path format. Expected /v2/teams/{teamId}/attributes[/{attributeId}]", nil)
 	}
 
 	// URL decode the team ID in case it contains encoded characters like %23 (#)
@@ -133,6 +135,36 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 	case "GET":
 		// All team members can list attributes
 		return svc.listTeamAttributes(teamId, request)
+
+	case "PATCH":
+		// Only team admins can update custom attributes
+		if !isAdmin {
+			return svc.errorResponse(http.StatusForbidden, "Only team admins can update custom attributes", nil)
+		}
+		// Validate that attributeId is provided in path
+		if len(pathParts) < 5 {
+			return svc.errorResponse(http.StatusBadRequest, "Attribute ID is required for update operation", nil)
+		}
+		attributeId, err := url.QueryUnescape(pathParts[4])
+		if err != nil {
+			return svc.errorResponse(http.StatusBadRequest, "Invalid attribute ID format", err)
+		}
+		return svc.updateCustomAttribute(teamId, attributeId, userName, request)
+
+	case "DELETE":
+		// Only team admins can delete custom attributes
+		if !isAdmin {
+			return svc.errorResponse(http.StatusForbidden, "Only team admins can delete custom attributes", nil)
+		}
+		// Validate that attributeId is provided in path
+		if len(pathParts) < 5 {
+			return svc.errorResponse(http.StatusBadRequest, "Attribute ID is required for delete operation", nil)
+		}
+		attributeId, err := url.QueryUnescape(pathParts[4])
+		if err != nil {
+			return svc.errorResponse(http.StatusBadRequest, "Invalid attribute ID format", err)
+		}
+		return svc.deleteCustomAttribute(teamId, attributeId, userName)
 
 	default:
 		return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
@@ -322,6 +354,110 @@ func (svc *Service) errorResponse(statusCode int, message string, err error) (ev
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: statusCode,
+		Headers:    RESP_HEADERS,
+		Body:       string(body),
+	}, nil
+}
+
+// updateCustomAttribute updates an existing custom attribute for a team
+func (svc *Service) updateCustomAttribute(teamId string, attributeId string, userName string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	svc.logger.Printf("Updating custom attribute %s for team: %s by user: %s", attributeId, teamId, userName)
+
+	// Parse request body
+	type UpdateAttributeRequest struct {
+		Name        *string `json:"name"`
+		Description *string `json:"description"`
+	}
+
+	var req UpdateAttributeRequest
+	err := json.Unmarshal([]byte(request.Body), &req)
+	if err != nil {
+		svc.logger.Printf("Failed to parse request body: %v", err)
+		return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+	}
+
+	// Validate at least one field is provided
+	if req.Name == nil && req.Description == nil {
+		return svc.errorResponse(http.StatusBadRequest, "At least one field (name or description) must be provided for update", nil)
+	}
+
+	// Get existing attribute to verify it exists and belongs to this team
+	existingAttr, err := svc.attributeSVC.GetAttributeById(attributeId, teamId)
+	if err != nil {
+		svc.logger.Printf("Failed to get attribute: %v", err)
+		return svc.errorResponse(http.StatusNotFound, "Attribute not found", err)
+	}
+
+	// Update only the provided fields
+	updatedAttr := *existingAttr
+	if req.Name != nil {
+		updatedAttr.Name = *req.Name
+	}
+	if req.Description != nil {
+		updatedAttr.Description = *req.Description
+	}
+
+	// Update the attribute
+	err = svc.attributeSVC.UpdateAttribute(attributeId, teamId, updatedAttr.Name, updatedAttr.Description)
+	if err != nil {
+		svc.logger.Printf("Failed to update attribute: %v", err)
+		return svc.errorResponse(http.StatusInternalServerError, "Failed to update attribute", err)
+	}
+
+	// Return the updated attribute
+	body, err := json.Marshal(map[string]interface{}{
+		"message": "Attribute updated successfully",
+		"attribute": map[string]string{
+			"attributeId":   updatedAttr.AttributeId,
+			"teamId":        updatedAttr.TeamId,
+			"attributeType": string(updatedAttr.AttributeType),
+			"name":          updatedAttr.Name,
+			"description":   updatedAttr.Description,
+		},
+	})
+	if err != nil {
+		svc.logger.Printf("Failed to marshal response: %v", err)
+		return svc.errorResponse(http.StatusInternalServerError, "Failed to create response", err)
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Headers:    RESP_HEADERS,
+		Body:       string(body),
+	}, nil
+}
+
+// deleteCustomAttribute deletes a custom attribute for a team
+func (svc *Service) deleteCustomAttribute(teamId string, attributeId string, userName string) (events.APIGatewayProxyResponse, error) {
+	svc.logger.Printf("Deleting custom attribute %s for team: %s by user: %s", attributeId, teamId, userName)
+
+	// Verify attribute exists and belongs to this team
+	_, err := svc.attributeSVC.GetAttributeById(attributeId, teamId)
+	if err != nil {
+		svc.logger.Printf("Failed to get attribute: %v", err)
+		return svc.errorResponse(http.StatusNotFound, "Attribute not found", err)
+	}
+
+	// Delete the attribute
+	err = svc.attributeSVC.DeleteAttribute(attributeId, teamId)
+	if err != nil {
+		svc.logger.Printf("Failed to delete attribute: %v", err)
+		return svc.errorResponse(http.StatusInternalServerError, "Failed to delete attribute", err)
+	}
+
+	// Return success response
+	body, err := json.Marshal(map[string]interface{}{
+		"message":     "Attribute deleted successfully",
+		"attributeId": attributeId,
+		"deletedBy":   userName,
+	})
+	if err != nil {
+		svc.logger.Printf("Failed to marshal response: %v", err)
+		return svc.errorResponse(http.StatusInternalServerError, "Failed to create response", err)
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
 		Headers:    RESP_HEADERS,
 		Body:       string(body),
 	}, nil
