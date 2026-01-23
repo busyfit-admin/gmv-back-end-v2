@@ -245,13 +245,13 @@ func (svc *TeamsServiceV2) SetCurrentTeam(userName string, userCognitoId string,
 	updateInput := &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.employeeSvc.EmployeeTable),
 		Key: map[string]types.AttributeValue{
-			"UserName": &types.AttributeValueMemberS{Value: userCognitoId}, // Using CognitoId as primary key
+			"UserName": &types.AttributeValueMemberS{Value: userCognitoId}, // Using userCognitoId as key since Employee table UserName field contains Cognito ID
 		},
-		UpdateExpression: aws.String("SET CurrentTeamId = :teamId"),
+		UpdateExpression:    aws.String("SET CurrentTeamId = :teamId"),
+		ConditionExpression: aws.String("attribute_exists(UserName)"), // Ensure record exists
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":teamId": &types.AttributeValueMemberS{Value: teamId},
 		},
-		ConditionExpression: aws.String("attribute_exists(UserName)"),
 	}
 
 	_, err = svc.dynamodbClient.UpdateItem(svc.ctx, updateInput)
@@ -260,7 +260,7 @@ func (svc *TeamsServiceV2) SetCurrentTeam(userName string, userCognitoId string,
 		return fmt.Errorf("failed to update current team: %w", err)
 	}
 
-	svc.logger.Printf("Successfully set current team %s for user %s", teamId, userName)
+	svc.logger.Printf("Successfully set current team %s for user %s with cognito ID %s", teamId, userName, userCognitoId)
 	return nil
 }
 
@@ -284,7 +284,7 @@ func (svc *TeamsServiceV2) GetCurrentTeam(userCognitoId string) (string, error) 
 // GetUserTeams retrieves all teams for a user
 func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) ([]UserTeamInfo, error) {
 	// Get user's current team preference
-	currentTeamId, _ := svc.GetCurrentTeam(userName)
+	currentTeamId, _ := svc.GetCurrentTeam(userCognitoId)
 
 	// Query GSI1 to get all teams for the user
 	input := &dynamodb.QueryInput{
