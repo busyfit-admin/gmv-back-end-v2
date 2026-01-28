@@ -27,8 +27,10 @@ const (
 type TeamMemberRole string
 
 const (
-	TeamMemberRoleAdmin  TeamMemberRole = "ADMIN"
-	TeamMemberRoleMember TeamMemberRole = "MEMBER"
+	TeamMemberRoleAdmin  TeamMemberRole = "ADMIN"  // Can manage team creation, members, and settings
+	TeamMemberRoleOwner  TeamMemberRole = "OWNER"  // Can handle team management and lifecycle
+	TeamMemberRoleMember TeamMemberRole = "MEMBER" // Regular team member with standard access
+	TeamMemberRoleGuest  TeamMemberRole = "GUEST"  // Limited access member - view only
 )
 
 // TeamMetadata represents team information

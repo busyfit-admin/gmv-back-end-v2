@@ -663,6 +663,49 @@ Resources:
           Projection:
             ProjectionType: "ALL"
 
+  # -- Organization related DDB Tables ---
+  OrganizationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub OrganizationTable-${Environment}
+      AttributeDefinitions:
+        - AttributeName: OrganizationId
+          AttributeType: S
+        - AttributeName: PlanType
+          AttributeType: S
+      KeySchema:
+        - AttributeName: OrganizationId
+          KeyType: HASH
+      BillingMode: "PAY_PER_REQUEST"
+      GlobalSecondaryIndexes:
+        - IndexName: PlanType-index
+          KeySchema:
+            - AttributeName: "PlanType"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+
+  PromoCodesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub PromoCodesTable-${Environment}
+      AttributeDefinitions:
+        - AttributeName: PromoCode
+          AttributeType: S
+        - AttributeName: IsActive
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PromoCode
+          KeyType: HASH
+      BillingMode: "PAY_PER_REQUEST"
+      GlobalSecondaryIndexes:
+        - IndexName: IsActive-index
+          KeySchema:
+            - AttributeName: "IsActive"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+
   # ----------B)Tenant Admin Portal Related DDB Tables ---------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2912,6 +2955,219 @@ Resources:
                   - cognito-idp:*
                 Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${TenantCognitoUserPool}  
 
+
+  # --------------- Organization Management Related functions --------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------------------------------------------
+
+  # ---------- Lambda to create organization ----------
+
+  CreateOrganizationLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to create a new organization with admin user"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-module/create-organization/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrganizationTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          PROMO_CODES_TABLE: !Ref PromoCodesTable
+
+  CreateOrganizationLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CreateOrganizationLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage organization ----------
+
+  ManageOrganizationLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to get and update organization details"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-module/manage-organization/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrganizationTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManageOrganizationLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageOrganizationLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage subscription ----------
+
+  ManageSubscriptionLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage organization subscription plans and billing"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-module/manage-subscription/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrganizationTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManageSubscriptionLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageSubscriptionLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage promo codes ----------
+
+  ManagePromoCodesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to apply and validate promotional codes"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-module/manage-promo-codes/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrganizationTable
+          PROMO_CODES_TABLE: !Ref PromoCodesTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManagePromoCodesLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePromoCodesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to list user organizations ----------
+
+  ListUserOrganizationsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to list all organizations where user is admin"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-module/list-user-organizations/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrganizationTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ListUserOrganizationsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ListUserOrganizationsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Shared IAM Role for Organization Lambdas ----------
+
+  OrganizationLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub Organization-Lambda-Role-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/Organization/"
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:TransactGetItems
+                  - dynamodb:TransactWriteItems
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !GetAtt OrganizationTable.Arn
+                  - !Sub ${OrganizationTable.Arn}/index/*
+                  - !GetAtt PromoCodesTable.Arn
+                  - !Sub ${PromoCodesTable.Arn}/index/*
+                  - !GetAtt EmployeeDataTable.Arn
+                  - !Sub ${EmployeeDataTable.Arn}/index/*
+              - Effect: Allow
+                Action:
+                  - dynamodb:TransactWriteItems
+                Resource:
+                  - !GetAtt OrganizationTable.Arn
+                  - !GetAtt PromoCodesTable.Arn
+                  - !GetAtt EmployeeDataTable.Arn 
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: "*"
 
   # --------------- Feeds, Events, appreciations and Certificates related functions --------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------

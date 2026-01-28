@@ -7,8 +7,12 @@ test: $(SUBDIRS)
 
 build: $(SUBDIRS)
 
-build-teams-module: 
+tidy-v2:
+	$(MAKE) -C lambdas/tenant-lambdas/org-module tidy
+
+build-v2: 
 	$(MAKE) -C lambdas/tenant-lambdas/teams-module build
+	$(MAKE) -C lambdas/tenant-lambdas/org-module build
 
 update: $(SUBDIRS)
 
