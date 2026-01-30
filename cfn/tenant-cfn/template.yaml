@@ -94,52 +94,6 @@ Resources:
   #  ------------------------------------------------------------------------------------------
   #  ------------------------------------------------------------------------------------------
 
-
-  # -- EventBridge Name ---
-  EventBridgeName:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${AWS::StackName}/event-bridge-name
-      Type: String
-      Value: default
-
-  # -- Employee data table event source and detail type parameters ---
-  EventSourceEmployeeDataTable:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${AWS::StackName}/event-source/ddb/source/employee-data
-      Type: String
-      Value: employee-data-table-events
-
-  EventDetailTypeEmployeeDataTable:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${AWS::StackName}/event-source/ddb/detail-type/employee-data
-      Type: String
-      Value: new-image-events
-
-  # -- Tenant Engagement table event source and detail type parameters ---
-  EventSourceTenantEngagementTable:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${AWS::StackName}/event-source/ddb/source/tenant-engagements
-      Type: String
-      Value: tenant-engagements-table-events
-
-  EventDetailTypeTenantEngagementTable:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${AWS::StackName}/event-source/ddb/detail-type/tenant-engagements
-      Type: String
-      Value: new-engagements-image-events
-
-  GISTablePrefix:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${AWS::StackName}/prefixes/ddb/GIS-Table-table
-      Type: String
-      Value: GISTable
-
   # Public Key ID - use parameter if provided, otherwise use default
   CloudFrontPublicKeyId:
     Type: AWS::SSM::Parameter
@@ -150,51 +104,6 @@ Resources:
         - UseProvidedCloudFrontKeys
         - !Ref CloudFrontPublicKeyIdParam
         - KJSZ8RHPSJO2B
-
-  # ---------- 2. EVB Rules ----------------------------------------------------------------
-  # ------------------------------------------------------------------------------------------
-  # ------------------------------------------------------------------------------------------
-
-  InvokeCreateUserDataLambdaRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: "Triggers to Create Tenant UserPool and update respective tenant tables"
-      EventBusName: default
-      EventPattern:
-        source:
-          - !GetAtt EventSourceEmployeeDataTable.Value
-        detail-type:
-          - !GetAtt EventDetailTypeEmployeeDataTable.Value
-      Targets:
-        - Arn: !GetAtt CreateUserPoolInfoLambda.Arn
-          Id: "TargetFunction-For-userPool"
-        - Arn: !GetAtt UpdateEmployeeGroupsLambda.Arn
-          Id: "TargetFunction-For-UpdateEmployeeGroupsLambda"
-
-  InvokeTenantEngagementLambdaRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: "Triggers for outbound integrations"
-      EventBusName: default
-      EventPattern:
-        source:
-          - !GetAtt EventSourceTenantEngagementTable.Value
-        detail-type:
-          - !GetAtt EventDetailTypeTenantEngagementTable.Value
-      Targets:
-        - Arn: !Ref TenantOutboundIntegrationsSNS
-          Id: "TargetFunction-For-TenantOutboundIntegrationsSNS"
-
-  InvokeStartRewardRuleTransactionLambdaRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: "Triggers Start Reward Rule Transaction Lambda"
-      ScheduleExpression: "cron(50 17 * * ? *)"
-      EventBusName: default
-      State: "ENABLED"
-      Targets:
-        - Arn: !GetAtt StartRewardsRuleTransactionLambda.Arn
-          Id: "TargetFunction-Regular-Invocation-of-start-reward-rule-lambda"
 
   # ---------- 3. API gateway ----------------------------------------------------------------
   # ------------------------------------------------------------------------------------------
