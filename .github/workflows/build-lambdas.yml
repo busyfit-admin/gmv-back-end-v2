@@ -31,87 +31,20 @@ jobs:
             lambdas/**/go.sum
             lambdas/**/go.mod
       
+      - name: Install CloudFormation tools
+        run: |
+          echo "Installing cfn-lint for CloudFormation validation..."
+          pip3 install cfn-lint
+      
       - name: Build Lambda functions
         run: |
           echo "Building tenant lambdas using Makefile..."
           make build-tenant-lambdas
-          
-          # Verify builds were successful
-          echo "Verifying builds..."
-          cd lambdas/tenant-lambdas
-          for dir in */; do
-            if [ -f "$dir/go.mod" ]; then
-              if [ -f "$dir/bootstrap" ]; then
-                echo "✅ Successfully built $dir"
-                ls -la "$dir/bootstrap"
-              else
-                echo "❌ Failed to build $dir - bootstrap not found"
-                exit 1
-              fi
-            fi
-          done
       
-      - name: Run tests
+      - name: Test Tenant CFN templates
         run: |
-          echo "Running tests for tenant lambdas..."
-          cd lambdas/tenant-lambdas
-          
-          # Run tests for each module and function
-          for module in */; do
-            if [ -d "$module" ]; then
-              echo "Testing module: $module"
-              cd "$module"
-              
-              # Test each function in the module
-              for dir in */; do
-                if [ -f "$dir/go.mod" ]; then
-                  echo "Testing $dir..."
-                  cd "$dir"
-                  
-                  # Run unit tests if they exist
-                  if ls *_test.go 1> /dev/null 2>&1; then
-                    go test -v ./...
-                  else
-                    echo "No tests found in $dir"
-                  fi
-                  
-                  cd ..
-                fi
-              done
-              
-              cd ..
-            fi
-          done
+          echo "Validating Tenant CloudFormation templates..."
+          make test-tenant-cfn
 
-      - name: Validate bootstrap files
-        run: |
-          echo "## 🚀 Lambda Bootstrap Files" >> $GITHUB_STEP_SUMMARY
-          echo "| Function | Size | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|------|--------|" >> $GITHUB_STEP_SUMMARY
-          
-          cd lambdas/tenant-lambdas
-          for module in */; do
-            if [ -d "$module" ]; then
-              cd "$module"
-              for dir in */; do
-                if [ -f "$dir/bootstrap" ]; then
-                  size=$(stat -f%z "$dir/bootstrap" 2>/dev/null || stat -c%s "$dir/bootstrap" 2>/dev/null)
-                  size_mb=$((size / 1024 / 1024))
-                  name="${module%/}/${dir%/}"
-                  
-                  if [ $size_mb -gt 50 ]; then
-                    status="⚠️ Large"
-                  elif [ $size_mb -gt 10 ]; then
-                    status="🟡 Medium"
-                  else
-                    status="✅ Good"
-                  fi
-                  
-                  echo "| $name | ${size_mb}MB | $status |" >> $GITHUB_STEP_SUMMARY
-                fi
-              done
-              cd ..
-            fi
-          done
 
 

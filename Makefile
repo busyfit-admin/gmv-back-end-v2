@@ -5,6 +5,9 @@ ARTIFACT := artifact-$(REVISION).tar.bz2
 
 test: $(SUBDIRS)
 
+test-tenant-cfn:
+	$(MAKE) -C cfn/tenant-cfn test
+
 build: $(SUBDIRS)
 
 build-tenant-lambdas:
