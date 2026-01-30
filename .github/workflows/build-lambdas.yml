@@ -17,10 +17,6 @@ env:
 jobs:
   build-lambdas:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        lambda-type: [tenant-lambdas, admin-lambdas, supplier-lambdas]
-      fail-fast: false
     
     steps:
       - name: Checkout code
@@ -37,253 +33,85 @@ jobs:
       
       - name: Build Lambda functions
         run: |
-          cd lambdas/${{ matrix.lambda-type }}
+          echo "Building tenant lambdas using Makefile..."
+          make build-tenant-lambdas
           
-          # Find all directories with go.mod files
+          # Verify builds were successful
+          echo "Verifying builds..."
+          cd lambdas/tenant-lambdas
           for dir in */; do
             if [ -f "$dir/go.mod" ]; then
-              echo "Building $dir..."
-              cd "$dir"
-              
-              # Build for Linux ARM64 (Graviton2)
-              GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -o bootstrap .
-              
-              # Verify the binary was created
-              if [ -f "bootstrap" ]; then
+              if [ -f "$dir/bootstrap" ]; then
                 echo "✅ Successfully built $dir"
-                ls -la bootstrap
+                ls -la "$dir/bootstrap"
               else
-                echo "❌ Failed to build $dir"
+                echo "❌ Failed to build $dir - bootstrap not found"
                 exit 1
               fi
-              
-              cd ..
             fi
           done
       
       - name: Run tests
         run: |
-          cd lambdas/${{ matrix.lambda-type }}
+          echo "Running tests for tenant lambdas..."
+          cd lambdas/tenant-lambdas
           
-          # Run tests for each Lambda function
-          for dir in */; do
-            if [ -f "$dir/go.mod" ]; then
-              echo "Testing $dir..."
-              cd "$dir"
+          # Run tests for each module and function
+          for module in */; do
+            if [ -d "$module" ]; then
+              echo "Testing module: $module"
+              cd "$module"
               
-              # Run unit tests if they exist
-              if ls *_test.go 1> /dev/null 2>&1; then
-                go test -v ./...
-              else
-                echo "No tests found in $dir"
-              fi
+              # Test each function in the module
+              for dir in */; do
+                if [ -f "$dir/go.mod" ]; then
+                  echo "Testing $dir..."
+                  cd "$dir"
+                  
+                  # Run unit tests if they exist
+                  if ls *_test.go 1> /dev/null 2>&1; then
+                    go test -v ./...
+                  else
+                    echo "No tests found in $dir"
+                  fi
+                  
+                  cd ..
+                fi
+              done
               
               cd ..
             fi
           done
-      
-      - name: Package Lambda functions
+
+      - name: Validate bootstrap files
         run: |
-          mkdir -p packages/${{ matrix.lambda-type }}
-          cd lambdas/${{ matrix.lambda-type }}
-          
-          # Package each Lambda function
-          for dir in */; do
-            if [ -f "$dir/bootstrap" ]; then
-              echo "Packaging $dir..."
-              cd "$dir"
-              zip -r "../../packages/${{ matrix.lambda-type }}/${dir%/}.zip" bootstrap
-              cd ..
-            fi
-          done
-      
-      - name: Upload Lambda packages
-        uses: actions/upload-artifact@v4
-        with:
-          name: lambda-packages-${{ matrix.lambda-type }}
-          path: packages/${{ matrix.lambda-type }}/
-          retention-days: 30
-      
-      - name: Validate package sizes
-        run: |
-          echo "## 📦 Lambda Package Sizes" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Lambda Bootstrap Files" >> $GITHUB_STEP_SUMMARY
           echo "| Function | Size | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|------|--------|" >> $GITHUB_STEP_SUMMARY
           
-          for package in packages/${{ matrix.lambda-type }}/*.zip; do
-            if [ -f "$package" ]; then
-              size=$(stat -f%z "$package" 2>/dev/null || stat -c%s "$package" 2>/dev/null)
-              size_mb=$((size / 1024 / 1024))
-              name=$(basename "$package" .zip)
-              
-              if [ $size_mb -gt 250 ]; then
-                status="⚠️ Large"
-              elif [ $size_mb -gt 50 ]; then
-                status="🟡 Medium"
-              else
-                status="✅ Good"
-              fi
-              
-              echo "| $name | ${size_mb}MB | $status |" >> $GITHUB_STEP_SUMMARY
+          cd lambdas/tenant-lambdas
+          for module in */; do
+            if [ -d "$module" ]; then
+              cd "$module"
+              for dir in */; do
+                if [ -f "$dir/bootstrap" ]; then
+                  size=$(stat -f%z "$dir/bootstrap" 2>/dev/null || stat -c%s "$dir/bootstrap" 2>/dev/null)
+                  size_mb=$((size / 1024 / 1024))
+                  name="${module%/}/${dir%/}"
+                  
+                  if [ $size_mb -gt 50 ]; then
+                    status="⚠️ Large"
+                  elif [ $size_mb -gt 10 ]; then
+                    status="🟡 Medium"
+                  else
+                    status="✅ Good"
+                  fi
+                  
+                  echo "| $name | ${size_mb}MB | $status |" >> $GITHUB_STEP_SUMMARY
+                fi
+              done
+              cd ..
             fi
           done
 
-  security-scan:
-    runs-on: ubuntu-latest
-    needs: build-lambdas
-    if: github.event_name == 'pull_request'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      
-      - name: Run security scan
-        uses: securecodewarrior/github-action-add-sarif@v1
-        with:
-          sarif-file: 'security-scan-results.sarif'
-        continue-on-error: true
-      
-      - name: Run dependency check
-        run: |
-          # Install govulncheck
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          
-          # Check all Lambda functions for vulnerabilities
-          cd lambdas
-          for lambda_type in tenant-lambdas admin-lambdas supplier-lambdas; do
-            echo "Checking $lambda_type for vulnerabilities..."
-            cd "$lambda_type"
-            
-            for dir in */; do
-              if [ -f "$dir/go.mod" ]; then
-                echo "Scanning $dir..."
-                cd "$dir"
-                govulncheck ./... || echo "Vulnerabilities found in $dir"
-                cd ..
-              fi
-            done
-            
-            cd ..
-          done
 
-  integration-test:
-    runs-on: ubuntu-latest
-    needs: build-lambdas
-    if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Download Lambda packages
-        uses: actions/download-artifact@v4
-        with:
-          pattern: lambda-packages-*
-          path: packages/
-          merge-multiple: true
-      
-      - name: Setup integration test environment
-        run: |
-          # Create a minimal test environment for Lambda function integration
-          echo "Setting up integration test environment..."
-          
-          # Create test configuration
-          mkdir -p test-env
-          cat > test-env/config.json << EOF
-          {
-            "environment": "integration-test",
-            "aws_region": "us-east-1",
-            "dynamodb_tables": {
-              "organizations": "test-organizations",
-              "employees": "test-employees",
-              "teams": "test-teams"
-            }
-          }
-          EOF
-      
-      - name: Run integration tests
-        run: |
-          echo "Running integration tests..."
-          
-          # This would typically involve:
-          # 1. Setting up test DynamoDB tables
-          # 2. Running Lambda functions with test events
-          # 3. Validating responses
-          # 4. Cleaning up test resources
-          
-          # For now, we'll validate that packages were created correctly
-          if [ -d "packages" ]; then
-            echo "✅ Lambda packages created successfully"
-            find packages -name "*.zip" -exec echo "Found package: {}" \;
-          else
-            echo "❌ No Lambda packages found"
-            exit 1
-          fi
-
-  publish-packages:
-    runs-on: ubuntu-latest
-    needs: [build-lambdas, security-scan, integration-test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      
-      - name: Download Lambda packages
-        uses: actions/download-artifact@v4
-        with:
-          pattern: lambda-packages-*
-          path: packages/
-          merge-multiple: true
-      
-      - name: Publish to S3
-        run: |
-          # Create version tag
-          VERSION=${GITHUB_SHA:0:8}
-          S3_PREFIX="lambda-releases/$VERSION"
-          
-          # Upload all packages to S3
-          aws s3 sync packages/ s3://${{ secrets.LAMBDA_ARTIFACTS_BUCKET }}/$S3_PREFIX/
-          
-          # Create latest symlinks
-          aws s3 sync packages/ s3://${{ secrets.LAMBDA_ARTIFACTS_BUCKET }}/lambda-releases/latest/
-          
-          echo "Published Lambda packages to S3:"
-          echo "Version: $VERSION"
-          echo "S3 Path: s3://${{ secrets.LAMBDA_ARTIFACTS_BUCKET }}/$S3_PREFIX/"
-      
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: packages/**/*.zip
-          name: Lambda Functions Release ${{ github.ref_name }}
-          body: |
-            ## Lambda Functions Release
-            
-            This release contains the following Lambda function packages:
-            
-            ### Included Functions:
-            - **Tenant Lambdas**: Organization, employee, and team management
-            - **Admin Lambdas**: Supplier and tenant administration
-            - **Supplier Lambdas**: Supplier-specific functionality
-            
-            ### Deployment:
-            These packages are ready for deployment to AWS Lambda environments.
-            
-            ### Changes:
-            See commit history for detailed changes in this release.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

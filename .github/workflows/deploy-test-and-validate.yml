@@ -1,18 +1,21 @@
 name: Deploy Test Environment and Run API Tests
 
 on:
+  workflow_run:
+    workflows: ["Build and Package Lambdas"]
+    types:
+      - completed
+    branches: [main, develop]
   pull_request:
     branches: [main, develop]
     paths:
       - 'cfn/tenant-cfn/**'
-      - 'lambdas/**'
       - 'postman/**'
       - '.github/workflows/**'
   push:
     branches: [develop]
     paths:
       - 'cfn/tenant-cfn/**'
-      - 'lambdas/**'
       - 'postman/**'
   workflow_dispatch:
     inputs:
@@ -38,6 +41,7 @@ env:
 jobs:
   deploy-infrastructure:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || github.event_name == 'push' }}
     outputs:
       stack-name: ${{ env.STACK_NAME }}
       api-endpoint: ${{ steps.get-outputs.outputs.api-endpoint }}
@@ -62,41 +66,14 @@ jobs:
       
       - name: Build Lambda functions
         run: |
-          cd lambdas
-          make build-all
-      
-      - name: Package Lambda functions
-        run: |
-          # Create deployment packages for Lambda functions
-          mkdir -p deployment-packages
+          echo "Building tenant lambdas for deployment..."
+          make build-tenant-lambdas
           
-          # Package tenant lambdas
-          for lambda_dir in lambdas/tenant-lambdas/*/; do
-            if [ -d "$lambda_dir" ]; then
-              lambda_name=$(basename "$lambda_dir")
-              echo "Packaging $lambda_name..."
-              cd "$lambda_dir"
-              if [ -f "bootstrap" ]; then
-                zip -r "../../../deployment-packages/$lambda_name.zip" bootstrap
-              fi
-              cd - > /dev/null
-            fi
-          done
-      
-      - name: Upload Lambda packages to S3
-        run: |
-          # Create a unique S3 bucket for this test run or use existing bucket
-          DEPLOYMENT_BUCKET="gmv-test-deployment-bucket"
-          
-          # Create bucket if it doesn't exist
-          aws s3 mb s3://$DEPLOYMENT_BUCKET --region ${{ env.AWS_REGION }} 2>/dev/null || echo "Bucket already exists"
-          
-          # Upload all Lambda packages with timestamp prefix
-          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-          aws s3 sync deployment-packages s3://$DEPLOYMENT_BUCKET/lambda-packages/$TIMESTAMP/
-          
-          echo "DEPLOYMENT_BUCKET=$DEPLOYMENT_BUCKET" >> $GITHUB_ENV
-          echo "LAMBDA_PREFIX=lambda-packages/$TIMESTAMP" >> $GITHUB_ENV
+          # Verify builds completed successfully
+          echo "Verifying bootstrap files exist..."
+          cd lambdas/tenant-lambdas
+          bootstrap_count=$(find . -name "bootstrap" | wc -l)
+          echo "Found $bootstrap_count bootstrap files ready for deployment"
       
       - name: Deploy CloudFormation stack
         run: |

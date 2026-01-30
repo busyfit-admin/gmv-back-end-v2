@@ -7,6 +7,9 @@ test: $(SUBDIRS)
 
 build: $(SUBDIRS)
 
+build-tenant-lambdas:
+	$(MAKE) -C lambdas/tenant-lambdas
+
 tidy-v2:
 	$(MAKE) -C lambdas/tenant-lambdas/org-module tidy
 
