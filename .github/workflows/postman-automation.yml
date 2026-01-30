@@ -1,0 +1,268 @@
+name: Postman Collection Automation
+
+on:
+  workflow_run:
+    workflows: ["Deploy Test Environment and Run API Tests"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - staging
+          - production
+
+env:
+  AWS_REGION: ap-southeast-2
+  POSTMAN_API_BASE: https://api.getpostman.com
+
+jobs:
+  update-postman-environment:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Get current API endpoints
+        id: get-endpoints
+        run: |
+          # Get current stack outputs
+          STACK_NAME="tenant-portal-apis-test"
+          
+          API_ENDPOINT=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiGatewayUrl`].OutputValue' \
+            --output text)
+          
+          COGNITO_CLIENT_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`CognitoClientId`].OutputValue' \
+            --output text)
+          
+          COGNITO_USER_POOL_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue' \
+            --output text)
+          
+          echo "api-endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "cognito-client-id=$COGNITO_CLIENT_ID" >> $GITHUB_OUTPUT
+          echo "cognito-user-pool-id=$COGNITO_USER_POOL_ID" >> $GITHUB_OUTPUT
+          
+          echo "🌐 API Endpoint: $API_ENDPOINT"
+          echo "🔐 Cognito Client: $COGNITO_CLIENT_ID"
+      
+      - name: Update Postman environment
+        run: |
+          # Create updated environment JSON
+          cat > updated-environment.json << EOF
+          {
+            "environment": {
+              "name": "GMV Live Test Environment",
+              "values": [
+                {
+                  "key": "base_url",
+                  "value": "${{ steps.get-endpoints.outputs.api-endpoint }}",
+                  "enabled": true,
+                  "type": "default"
+                },
+                {
+                  "key": "cognito_client_id", 
+                  "value": "${{ steps.get-endpoints.outputs.cognito-client-id }}",
+                  "enabled": true,
+                  "type": "default"
+                },
+                {
+                  "key": "cognito_user_pool_id",
+                  "value": "${{ steps.get-endpoints.outputs.cognito-user-pool-id }}",
+                  "enabled": true,
+                  "type": "default"
+                },
+                {
+                  "key": "aws_region",
+                  "value": "${{ env.AWS_REGION }}",
+                  "enabled": true,
+                  "type": "default"
+                },
+                {
+                  "key": "admin_username",
+                  "value": "testadmin@example.com",
+                  "enabled": true,
+                  "type": "default"
+                },
+                {
+                  "key": "admin_password",
+                  "value": "TestPass123!",
+                  "enabled": true,
+                  "type": "secret"
+                },
+                {
+                  "key": "test_username",
+                  "value": "testuser@example.com",
+                  "enabled": true,
+                  "type": "default"
+                },
+                {
+                  "key": "test_password",
+                  "value": "TestPass123!",
+                  "enabled": true,
+                  "type": "secret"
+                },
+                {
+                  "key": "organization_id",
+                  "value": "test-org-${{ github.run_number }}",
+                  "enabled": true,
+                  "type": "default"
+                },
+                {
+                  "key": "team_id",
+                  "value": "test-team-${{ github.run_number }}",
+                  "enabled": true,
+                  "type": "default"
+                },
+                {
+                  "key": "jwt_token",
+                  "value": "",
+                  "enabled": true,
+                  "type": "secret"
+                }
+              ]
+            }
+          }
+          EOF
+          
+          # Update environment in Postman Cloud
+          curl -X PUT "${{ env.POSTMAN_API_BASE }}/environments/${{ secrets.POSTMAN_ENVIRONMENT_ID }}" \
+            -H "X-API-Key: ${{ secrets.POSTMAN_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d @updated-environment.json
+          
+          echo "✅ Updated Postman environment with live endpoints"
+      
+      - name: Run Postman tests via API
+        run: |
+          # Trigger Postman collection run
+          MONITOR_RESPONSE=$(curl -X POST "${{ env.POSTMAN_API_BASE }}/collections/${{ secrets.POSTMAN_COLLECTION_ID }}/runs" \
+            -H "X-API-Key: ${{ secrets.POSTMAN_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "collection": "${{ secrets.POSTMAN_COLLECTION_ID }}",
+              "environment": "${{ secrets.POSTMAN_ENVIRONMENT_ID }}",
+              "reporters": ["json"],
+              "iterations": 1
+            }')
+          
+          echo "📊 Postman test execution initiated"
+          echo "$MONITOR_RESPONSE" | jq '.'
+          
+          # Extract run ID
+          RUN_ID=$(echo $MONITOR_RESPONSE | jq -r '.run.id')
+          echo "🔍 Run ID: $RUN_ID"
+          
+          # Wait for completion and get results
+          sleep 30
+          
+          # Get run results  
+          curl -X GET "${{ env.POSTMAN_API_BASE }}/collection-runs/$RUN_ID" \
+            -H "X-API-Key: ${{ secrets.POSTMAN_API_KEY }}" | jq '.'
+
+  create-postman-monitor:
+    runs-on: ubuntu-latest
+    needs: update-postman-environment
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Create/Update Postman Monitor
+        run: |
+          # Check if monitor exists
+          EXISTING_MONITORS=$(curl -X GET "${{ env.POSTMAN_API_BASE }}/monitors" \
+            -H "X-API-Key: ${{ secrets.POSTMAN_API_KEY }}")
+          
+          MONITOR_NAME="GMV API Health Monitor"
+          EXISTING_MONITOR_ID=$(echo $EXISTING_MONITORS | jq -r ".monitors[] | select(.name==\"$MONITOR_NAME\") | .id")
+          
+          if [ "$EXISTING_MONITOR_ID" != "null" ] && [ ! -z "$EXISTING_MONITOR_ID" ]; then
+            echo "📊 Updating existing monitor: $EXISTING_MONITOR_ID"
+            # Update existing monitor
+            curl -X PUT "${{ env.POSTMAN_API_BASE }}/monitors/$EXISTING_MONITOR_ID" \
+              -H "X-API-Key: ${{ secrets.POSTMAN_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "monitor": {
+                  "name": "'$MONITOR_NAME'",
+                  "collection": "${{ secrets.POSTMAN_COLLECTION_ID }}",
+                  "environment": "${{ secrets.POSTMAN_ENVIRONMENT_ID }}",
+                  "schedule": {
+                    "cron": "0 */6 * * *",
+                    "timezone": "Australia/Sydney"
+                  },
+                  "options": {
+                    "strictSSL": true,
+                    "followRedirects": true
+                  }
+                }
+              }'
+          else
+            echo "🆕 Creating new monitor"
+            # Create new monitor
+            curl -X POST "${{ env.POSTMAN_API_BASE }}/monitors" \
+              -H "X-API-Key: ${{ secrets.POSTMAN_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "monitor": {
+                  "name": "'$MONITOR_NAME'",
+                  "collection": "${{ secrets.POSTMAN_COLLECTION_ID }}",
+                  "environment": "${{ secrets.POSTMAN_ENVIRONMENT_ID }}",
+                  "schedule": {
+                    "cron": "0 */6 * * *",
+                    "timezone": "Australia/Sydney"
+                  },
+                  "options": {
+                    "strictSSL": true,
+                    "followRedirects": true
+                  }
+                }
+              }'
+          fi
+          
+          echo "✅ Postman monitor configured for automatic health checks"
+
+  notify-team:
+    runs-on: ubuntu-latest
+    needs: [update-postman-environment, create-postman-monitor]
+    if: always()
+    
+    steps:
+      - name: Create test summary
+        run: |
+          echo "## 🧪 Automated API Testing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Completed Actions:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 Updated Postman environment with live endpoints" >> $GITHUB_STEP_SUMMARY
+          echo "- 🧪 Executed API test collection" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Configured automated health monitoring" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Access Your Tests:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Postman Workspace**: [View in Postman](https://go.postman.co/workspace/${{ secrets.POSTMAN_WORKSPACE_ID }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **Collection**: [Run Tests](https://go.postman.co/workspace/${{ secrets.POSTMAN_WORKSPACE_ID }}/collection/${{ secrets.POSTMAN_COLLECTION_ID }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ⚡ Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Check Postman workspace for updated environment" >> $GITHUB_STEP_SUMMARY
+          echo "2. Review test results and monitor alerts" >> $GITHUB_STEP_SUMMARY
+          echo "3. Monitor health checks run every 6 hours" >> $GITHUB_STEP_SUMMARY

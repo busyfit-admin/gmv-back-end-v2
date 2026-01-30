@@ -664,20 +664,40 @@ Resources:
             ProjectionType: "ALL"
 
   # -- Organization related DDB Tables ---
-  OrganizationTable:
+  # This table stores organization information with user memberships
+  # PK: OrganizationId (e.g., ORG#uuid)
+  # SK: METADATA or USER#username
+  # GSI1: UserName-OrganizationId for querying all organizations for a user
+  OrgsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub OrganizationTable-${Environment}
+      TableName: !Sub OrgsTable-${Environment}
       AttributeDefinitions:
-        - AttributeName: OrganizationId
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
           AttributeType: S
         - AttributeName: PlanType
           AttributeType: S
       KeySchema:
-        - AttributeName: OrganizationId
+        - AttributeName: PK
           KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
       BillingMode: "PAY_PER_REQUEST"
       GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: "GSI1PK"
+              KeyType: "HASH"
+            - AttributeName: "GSI1SK"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
         - IndexName: PlanType-index
           KeySchema:
             - AttributeName: "PlanType"
@@ -2976,7 +2996,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
-          ORGANIZATION_TABLE: !Ref OrganizationTable
+          ORGANIZATION_TABLE: !Ref OrgsTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
           PROMO_CODES_TABLE: !Ref PromoCodesTable
@@ -3006,7 +3026,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
-          ORGANIZATION_TABLE: !Ref OrganizationTable
+          ORGANIZATION_TABLE: !Ref OrgsTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
 
@@ -3035,7 +3055,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
-          ORGANIZATION_TABLE: !Ref OrganizationTable
+          ORGANIZATION_TABLE: !Ref OrgsTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
 
@@ -3064,7 +3084,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
-          ORGANIZATION_TABLE: !Ref OrganizationTable
+          ORGANIZATION_TABLE: !Ref OrgsTable
           PROMO_CODES_TABLE: !Ref PromoCodesTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
@@ -3094,7 +3114,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
-          ORGANIZATION_TABLE: !Ref OrganizationTable
+          ORGANIZATION_TABLE: !Ref OrgsTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
 
@@ -3150,8 +3170,8 @@ Resources:
                   - dynamodb:TransactWriteItems
                   - dynamodb:DeleteItem
                 Resource:
-                  - !GetAtt OrganizationTable.Arn
-                  - !Sub ${OrganizationTable.Arn}/index/*
+                  - !GetAtt OrgsTable.Arn
+                  - !Sub ${OrgsTable.Arn}/index/*
                   - !GetAtt PromoCodesTable.Arn
                   - !Sub ${PromoCodesTable.Arn}/index/*
                   - !GetAtt EmployeeDataTable.Arn
@@ -3160,7 +3180,7 @@ Resources:
                 Action:
                   - dynamodb:TransactWriteItems
                 Resource:
-                  - !GetAtt OrganizationTable.Arn
+                  - !GetAtt OrgsTable.Arn
                   - !GetAtt PromoCodesTable.Arn
                   - !GetAtt EmployeeDataTable.Arn 
               - Effect: Allow

@@ -1,0 +1,281 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'GitHub Actions IAM User for GMV CI/CD with minimal required permissions'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: gmv
+    Description: Project name for resource naming
+  
+  Environment:
+    Type: String 
+    Default: ci-cd
+    Description: Environment identifier
+
+  S3DeploymentBucket:
+    Type: String
+    Default: gmv-test-deployment-bucket
+    Description: S3 bucket name for Lambda deployment packages
+
+Resources:
+  # IAM Policy for GitHub Actions CI/CD
+  GitHubActionsCIPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub '${ProjectName}-github-actions-ci-policy'
+      Description: 'Minimal permissions for GitHub Actions CI/CD pipeline'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # CloudFormation permissions for specific stack
+          - Sid: CloudFormationAccess
+            Effect: Allow
+            Action:
+              - cloudformation:CreateStack
+              - cloudformation:UpdateStack
+              - cloudformation:DeleteStack
+              - cloudformation:DescribeStacks
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeStackResources
+              - cloudformation:GetTemplate
+              - cloudformation:ValidateTemplate
+              - cloudformation:ListStacks
+              - cloudformation:ListStackResources
+            Resource:
+              - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/tenant-portal-apis-test/*'
+              - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/tenant-portal-apis-test'
+
+          # S3 permissions for deployment bucket
+          - Sid: S3DeploymentBucketAccess
+            Effect: Allow
+            Action:
+              - s3:CreateBucket
+              - s3:DeleteBucket
+              - s3:PutObject
+              - s3:GetObject
+              - s3:DeleteObject
+              - s3:ListBucket
+              - s3:PutBucketVersioning
+              - s3:PutBucketPublicAccessBlock
+              - s3:GetBucketLocation
+              - s3:ListBucketVersions
+            Resource:
+              - !Sub 'arn:aws:s3:::${S3DeploymentBucket}'
+              - !Sub 'arn:aws:s3:::${S3DeploymentBucket}/*'
+
+          # Lambda permissions
+          - Sid: LambdaAccess
+            Effect: Allow
+            Action:
+              - lambda:CreateFunction
+              - lambda:UpdateFunctionCode
+              - lambda:UpdateFunctionConfiguration
+              - lambda:DeleteFunction
+              - lambda:GetFunction
+              - lambda:ListFunctions
+              - lambda:AddPermission
+              - lambda:RemovePermission
+              - lambda:InvokeFunction
+              - lambda:GetFunctionConfiguration
+              - lambda:PublishVersion
+              - lambda:CreateAlias
+              - lambda:UpdateAlias
+              - lambda:DeleteAlias
+            Resource: 
+              - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tenant-portal-*'
+
+          # API Gateway permissions
+          - Sid: APIGatewayAccess
+            Effect: Allow
+            Action:
+              - apigateway:GET
+              - apigateway:POST
+              - apigateway:PUT
+              - apigateway:DELETE
+              - apigateway:PATCH
+            Resource: !Sub 'arn:aws:apigateway:${AWS::Region}::/*'
+
+          # Cognito permissions
+          - Sid: CognitoAccess
+            Effect: Allow
+            Action:
+              - cognito-idp:CreateUserPool
+              - cognito-idp:UpdateUserPool
+              - cognito-idp:DeleteUserPool
+              - cognito-idp:DescribeUserPool
+              - cognito-idp:CreateUserPoolClient
+              - cognito-idp:UpdateUserPoolClient
+              - cognito-idp:DeleteUserPoolClient
+              - cognito-idp:DescribeUserPoolClient
+              - cognito-idp:AdminCreateUser
+              - cognito-idp:AdminSetUserPassword
+              - cognito-idp:AdminDeleteUser
+              - cognito-idp:ListUsers
+              - cognito-idp:ListUserPoolClients
+              - cognito-idp:ListUserPools
+              - cognito-idp:AdminInitiateAuth
+              - cognito-idp:AdminRespondToAuthChallenge
+            Resource:
+              - !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*'
+
+          # DynamoDB permissions
+          - Sid: DynamoDBAccess
+            Effect: Allow
+            Action:
+              - dynamodb:CreateTable
+              - dynamodb:UpdateTable
+              - dynamodb:DeleteTable
+              - dynamodb:DescribeTable
+              - dynamodb:ListTables
+              - dynamodb:PutItem
+              - dynamodb:GetItem
+              - dynamodb:DeleteItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:CreateGlobalSecondaryIndex
+              - dynamodb:UpdateGlobalSecondaryIndex
+              - dynamodb:DeleteGlobalSecondaryIndex
+            Resource:
+              - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/tenant-portal-*'
+              - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/tenant-portal-*/index/*'
+
+          # IAM permissions for role management
+          - Sid: IAMRoleManagement
+            Effect: Allow
+            Action:
+              - iam:CreateRole
+              - iam:DeleteRole
+              - iam:GetRole
+              - iam:PassRole
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
+              - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
+              - iam:GetRolePolicy
+              - iam:ListRolePolicies
+              - iam:ListAttachedRolePolicies
+              - iam:UpdateAssumeRolePolicy
+            Resource:
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/tenant-portal-*'
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/lambda-execution-*'
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/*-lambda-role'
+
+          # CloudWatch Logs permissions
+          - Sid: CloudWatchLogsAccess
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogGroups
+              - logs:DescribeLogStreams
+              - logs:DeleteLogGroup
+              - logs:PutRetentionPolicy
+            Resource: 
+              - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tenant-portal-*'
+              - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*'
+
+          # Additional permissions for CloudFormation service role
+          - Sid: AdditionalAWSServicesAccess
+            Effect: Allow
+            Action:
+              - sts:GetCallerIdentity
+              - cloudformation:ListExports
+              - cloudformation:ListImports
+              - events:PutRule
+              - events:DeleteRule
+              - events:PutTargets
+              - events:RemoveTargets
+              - events:DescribeRule
+            Resource: '*'
+
+  # IAM User for GitHub Actions
+  GitHubActionsUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub '${ProjectName}-github-actions-ci'
+      ManagedPolicyArns:
+        - !Ref GitHubActionsCIPolicy
+      Tags:
+        - Key: Purpose
+          Value: GitHub Actions CI/CD
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: CreatedBy
+          Value: CloudFormation
+
+  # Access Key for GitHub Actions User
+  GitHubActionsAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref GitHubActionsUser
+
+  # S3 Bucket for deployment artifacts
+  DeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3DeploymentBucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+          - Id: DeleteOldArtifacts
+            Status: Enabled
+            ExpirationInDays: 90
+      Tags:
+        - Key: Purpose
+          Value: GitHub Actions CI/CD Artifacts
+        - Key: Project
+          Value: !Ref ProjectName
+
+Outputs:
+  IAMUserName:
+    Description: 'GitHub Actions IAM User Name'
+    Value: !Ref GitHubActionsUser
+    Export:
+      Name: !Sub '${ProjectName}-github-actions-user'
+
+  AccessKeyId:
+    Description: 'Access Key ID for GitHub Actions'
+    Value: !Ref GitHubActionsAccessKey
+    Export:
+      Name: !Sub '${ProjectName}-github-actions-access-key-id'
+
+  SecretAccessKey:
+    Description: 'Secret Access Key for GitHub Actions (Handle with care!)'
+    Value: !GetAtt GitHubActionsAccessKey.SecretAccessKey
+    Export:
+      Name: !Sub '${ProjectName}-github-actions-secret-key'
+
+  S3BucketName:
+    Description: 'S3 Bucket for deployment artifacts'
+    Value: !Ref DeploymentBucket
+    Export:
+      Name: !Sub '${ProjectName}-deployment-bucket'
+
+  PolicyArn:
+    Description: 'GitHub Actions Policy ARN'
+    Value: !Ref GitHubActionsCIPolicy
+    Export:
+      Name: !Sub '${ProjectName}-github-actions-policy'
+
+  SetupCommands:
+    Description: 'Commands to configure GitHub secrets'
+    Value: !Sub |
+      # Add these secrets to your GitHub repository:
+      # Settings > Secrets and variables > Actions > New repository secret
+      
+      AWS_ACCESS_KEY_ID: ${GitHubActionsAccessKey}
+      AWS_SECRET_ACCESS_KEY: ${GitHubActionsAccessKey.SecretAccessKey}
+      LAMBDA_ARTIFACTS_BUCKET: ${DeploymentBucket}
