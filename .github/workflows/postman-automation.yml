@@ -1,21 +1,24 @@
 name: Postman Collection Automation
 
-on:
-  workflow_run:
-    workflows: ["Deploy Test Environment and Run API Tests"]
-    types:
-      - completed
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to test'
-        required: true
-        default: 'test'
-        type: choice
-        options:
-          - test
-          - staging
-          - production
+# DISABLED - uncomment to re-enable
+# on:
+#   workflow_run:
+#     workflows: ["Deploy Test Environment and Run API Tests"]
+#     types:
+#       - completed
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Environment to test'
+#         required: true
+#         default: 'test'
+#         type: choice
+#         options:
+#           - test
+#           - staging
+#           - production
+
+on: []  # Disabled
 
 env:
   AWS_REGION: ap-southeast-2

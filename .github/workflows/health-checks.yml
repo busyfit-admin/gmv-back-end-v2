@@ -1,19 +1,22 @@
 name: Scheduled API Health Checks
 
-on:
-  schedule:
-    # Run health checks every 6 hours
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to test'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
+# DISABLED - uncomment to re-enable
+# on:
+#   schedule:
+#     # Run health checks every 6 hours
+#     - cron: '0 */6 * * *'
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Environment to test'
+#         required: true
+#         default: 'staging'
+#         type: choice
+#         options:
+#           - staging
+#           - production
+
+on: []  # Disabled
 
 env:
   AWS_REGION: us-east-1

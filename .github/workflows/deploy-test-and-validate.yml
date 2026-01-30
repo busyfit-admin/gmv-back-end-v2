@@ -1,37 +1,40 @@
 name: Deploy Test Environment and Run API Tests
 
-on:
-  workflow_run:
-    workflows: ["Build and Package Lambdas"]
-    types:
-      - completed
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'cfn/tenant-cfn/**'
-      - 'postman/**'
-      - '.github/workflows/**'
-  push:
-    branches: [develop]
-    paths:
-      - 'cfn/tenant-cfn/**'
-      - 'postman/**'
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        default: 'test'
-        type: choice
-        options:
-          - test
-          - staging
-      run_cleanup:
-        description: 'Clean up resources after tests'
-        required: false
-        default: true
-        type: boolean
+# DISABLED - uncomment to re-enable
+# on:
+#   workflow_run:
+#     workflows: ["Build and Package Lambdas"]
+#     types:
+#       - completed
+#     branches: [main, develop]
+#   pull_request:
+#     branches: [main, develop]
+#     paths:
+#       - 'cfn/tenant-cfn/**'
+#       - 'postman/**'
+#       - '.github/workflows/**'
+#   push:
+#     branches: [develop]
+#     paths:
+#       - 'cfn/tenant-cfn/**'
+#       - 'postman/**'
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Environment to deploy to'
+#         required: true
+#         default: 'test'
+#         type: choice
+#         options:
+#           - test
+#           - staging
+#       run_cleanup:
+#         description: 'Clean up resources after tests'
+#         required: false
+#         default: true
+#         type: boolean
+
+on: []  # Disabled
 
 env:
   AWS_REGION: ap-southeast-2
@@ -62,7 +65,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: '1.25.3'
       
       - name: Build Lambda functions
         run: |
