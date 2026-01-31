@@ -1,4 +1,4 @@
-name: Build and Package Lambdas
+name: Build and deploy Test Environment
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ env:
   ENVIRONMENT: test
   
 jobs:
-  build-lambdas:
+  build-and-deploy:
     runs-on: ubuntu-latest
     environment: test
     
