@@ -62,6 +62,7 @@ Resources:
             Resource: 
               # arn:aws:s3:::artifactory-ap-southeast-2-622778846370
               - !Sub 'arn:aws:s3:::artifactory-ap-southeast-2-${AWS::AccountId}'
+              - !Sub 'arn:aws:s3:::artifactory-ap-southeast-2-${AWS::AccountId}/*'
 
           # Lambda permissions
           - Sid: LambdaAccess
