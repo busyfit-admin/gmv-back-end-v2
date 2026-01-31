@@ -59,9 +59,9 @@ Resources:
               - s3:PutBucketPublicAccessBlock
               - s3:GetBucketLocation
               - s3:ListBucketVersions
-            Resource:
-              - !Sub 'arn:aws:s3:::${S3DeploymentBucket}'
-              - !Sub 'arn:aws:s3:::${S3DeploymentBucket}/*'
+            Resource: 
+              # arn:aws:s3:::artifactory-ap-southeast-2-622778846370
+              - !Sub 'arn:aws:s3:::artifactory-ap-southeast-2-${AWS::AccountId}'
 
           # Lambda permissions
           - Sid: LambdaAccess
