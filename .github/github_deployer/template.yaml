@@ -33,77 +33,34 @@ Resources:
             Action:
               - cloudformation:*
             Resource: '*'
+            
           # S3 permissions for deployment bucket
           - Sid: S3DeploymentBucketAccess
             Effect: Allow
             Action:
-              - s3:CreateBucket
-              - s3:DeleteBucket
-              - s3:PutObject
-              - s3:GetObject
-              - s3:DeleteObject
-              - s3:ListBucket
-              - s3:PutBucketVersioning
-              - s3:PutBucketPublicAccessBlock
-              - s3:GetBucketLocation
-              - s3:ListBucketVersions
-            Resource: 
-              # arn:aws:s3:::artifactory-ap-southeast-2-622778846370
-              - !Sub 'arn:aws:s3:::artifactory-ap-southeast-2-${AWS::AccountId}'
-              - !Sub 'arn:aws:s3:::artifactory-ap-southeast-2-${AWS::AccountId}/*'
-
+              - s3:*
+            Resource: '*'
+      
           # Lambda permissions
           - Sid: LambdaAccess
             Effect: Allow
             Action:
-              - lambda:CreateFunction
-              - lambda:UpdateFunctionCode
-              - lambda:UpdateFunctionConfiguration
-              - lambda:DeleteFunction
-              - lambda:GetFunction
-              - lambda:ListFunctions
-              - lambda:AddPermission
-              - lambda:RemovePermission
-              - lambda:InvokeFunction
-              - lambda:GetFunctionConfiguration
-              - lambda:PublishVersion
-              - lambda:CreateAlias
-              - lambda:UpdateAlias
-              - lambda:DeleteAlias
+              - lambda:*
             Resource: 
-              - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tenant-portal-*'
+              - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:*'
 
           # API Gateway permissions
           - Sid: APIGatewayAccess
             Effect: Allow
             Action:
-              - apigateway:GET
-              - apigateway:POST
-              - apigateway:PUT
-              - apigateway:DELETE
-              - apigateway:PATCH
+              - apigateway:*
             Resource: !Sub 'arn:aws:apigateway:${AWS::Region}::/*'
 
           # Cognito permissions
           - Sid: CognitoAccess
             Effect: Allow
-            Action:
-              - cognito-idp:CreateUserPool
-              - cognito-idp:UpdateUserPool
-              - cognito-idp:DeleteUserPool
-              - cognito-idp:DescribeUserPool
-              - cognito-idp:CreateUserPoolClient
-              - cognito-idp:UpdateUserPoolClient
-              - cognito-idp:DeleteUserPoolClient
-              - cognito-idp:DescribeUserPoolClient
-              - cognito-idp:AdminCreateUser
-              - cognito-idp:AdminSetUserPassword
-              - cognito-idp:AdminDeleteUser
-              - cognito-idp:ListUsers
-              - cognito-idp:ListUserPoolClients
-              - cognito-idp:ListUserPools
-              - cognito-idp:AdminInitiateAuth
-              - cognito-idp:AdminRespondToAuthChallenge
+            Action: 
+              - cognito-idp:*
             Resource:
               - !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*'
 
@@ -111,61 +68,21 @@ Resources:
           - Sid: DynamoDBAccess
             Effect: Allow
             Action:
-              - dynamodb:CreateTable
-              - dynamodb:UpdateTable
-              - dynamodb:DeleteTable
-              - dynamodb:DescribeTable
-              - dynamodb:ListTables
-              - dynamodb:PutItem
-              - dynamodb:GetItem
-              - dynamodb:DeleteItem
-              - dynamodb:Query
-              - dynamodb:Scan
-              - dynamodb:UpdateItem
-              - dynamodb:BatchGetItem
-              - dynamodb:BatchWriteItem
-              - dynamodb:CreateGlobalSecondaryIndex
-              - dynamodb:UpdateGlobalSecondaryIndex
-              - dynamodb:DeleteGlobalSecondaryIndex
-            Resource:
-              - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/tenant-portal-*'
-              - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/tenant-portal-*/index/*'
+              - dynamodb:*
+            Resource: '*'
 
           # IAM permissions for role management
           - Sid: IAMRoleManagement
             Effect: Allow
             Action:
-              - iam:CreateRole
-              - iam:DeleteRole
-              - iam:GetRole
-              - iam:PassRole
-              - iam:AttachRolePolicy
-              - iam:DetachRolePolicy
-              - iam:PutRolePolicy
-              - iam:DeleteRolePolicy
-              - iam:GetRolePolicy
-              - iam:ListRolePolicies
-              - iam:ListAttachedRolePolicies
-              - iam:UpdateAssumeRolePolicy
-            Resource:
-              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/tenant-portal-*'
-              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/lambda-execution-*'
-              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/*-lambda-role'
+              - iam:'*'
+            Resource: '*'
 
           # CloudWatch Logs permissions
           - Sid: CloudWatchLogsAccess
             Effect: Allow
-            Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-              - logs:DescribeLogGroups
-              - logs:DescribeLogStreams
-              - logs:DeleteLogGroup
-              - logs:PutRetentionPolicy
-            Resource: 
-              - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tenant-portal-*'
-              - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*'
+            Action: '*'
+            Resource: '*'
 
           # Additional permissions for CloudFormation service role
           - Sid: AdditionalAWSServicesAccess
