@@ -1,10 +1,6 @@
 name: Build and Package Lambdas
 
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'lambdas/**'
   pull_request:
     branches: [main, develop]
     paths:
@@ -13,6 +9,9 @@ on:
 
 env:
   GO_VERSION: '1.25.3'
+  AWS_REGION: ap-southeast-2
+  ENVIRONMENT: test
+  TEST_ENV_PREFIX: test
   
 jobs:
   build-lambdas:
@@ -46,5 +45,15 @@ jobs:
           echo "Validating Tenant CloudFormation templates..."
           make test-tenant-cfn
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: test aws cli
+        run: |
+          aws s3 ls    
 
 
