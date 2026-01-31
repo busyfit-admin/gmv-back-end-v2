@@ -31,20 +31,8 @@ Resources:
           - Sid: CloudFormationAccess
             Effect: Allow
             Action:
-              - cloudformation:CreateStack
-              - cloudformation:UpdateStack
-              - cloudformation:DeleteStack
-              - cloudformation:DescribeStacks
-              - cloudformation:DescribeStackEvents
-              - cloudformation:DescribeStackResources
-              - cloudformation:GetTemplate
-              - cloudformation:ValidateTemplate
-              - cloudformation:ListStacks
-              - cloudformation:ListStackResources
-            Resource:
-              - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/tenant-portal-apis-test/*'
-              - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/tenant-portal-apis-test'
-
+              - cloudformation:*
+            Resource: '*'
           # S3 permissions for deployment bucket
           - Sid: S3DeploymentBucketAccess
             Effect: Allow
