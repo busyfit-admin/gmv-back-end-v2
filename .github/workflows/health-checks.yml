@@ -1,0 +1,128 @@
+name: Scheduled API Health Checks
+
+# DISABLED - uncomment to re-enable
+# on:
+#   schedule:
+#     # Run health checks every 6 hours
+#     - cron: '0 */6 * * *'
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Environment to test'
+#         required: true
+#         default: 'staging'
+#         type: choice
+#         options:
+#           - staging
+#           - production
+
+on: []  # Disabled
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [staging, production]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install Newman
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+      
+      - name: Create health check environment
+        run: |
+          # Create environment file for health checks
+          case "${{ matrix.environment }}" in
+            "staging")
+              BASE_URL="${{ secrets.STAGING_API_URL }}"
+              CLIENT_ID="${{ secrets.STAGING_COGNITO_CLIENT_ID }}"
+              USER_POOL_ID="${{ secrets.STAGING_USER_POOL_ID }}"
+              ;;
+            "production")
+              BASE_URL="${{ secrets.PROD_API_URL }}"
+              CLIENT_ID="${{ secrets.PROD_COGNITO_CLIENT_ID }}"
+              USER_POOL_ID="${{ secrets.PROD_USER_POOL_ID }}"
+              ;;
+          esac
+          
+          cat > postman/health-check-environment.json << EOF
+          {
+            "id": "health-check-${{ matrix.environment }}",
+            "name": "Health Check - ${{ matrix.environment }}",
+            "values": [
+              {
+                "key": "base_url",
+                "value": "$BASE_URL",
+                "enabled": true
+              },
+              {
+                "key": "cognito_client_id",
+                "value": "$CLIENT_ID",
+                "enabled": true
+              },
+              {
+                "key": "cognito_user_pool_id",
+                "value": "$USER_POOL_ID",
+                "enabled": true
+              },
+              {
+                "key": "aws_region",
+                "value": "${{ env.AWS_REGION }}",
+                "enabled": true
+              },
+              {
+                "key": "health_check_mode",
+                "value": "true",
+                "enabled": true
+              }
+            ]
+          }
+          EOF
+      
+      - name: Run Health Check Tests
+        run: |
+          newman run postman/GMV_API_Collection.json \
+            --environment postman/health-check-environment.json \
+            --folder "Health Checks" \
+            --reporters cli,htmlextra,json \
+            --reporter-htmlextra-export reports/health-check-${{ matrix.environment }}.html \
+            --reporter-htmlextra-title "Health Check - ${{ matrix.environment }} - $(date)" \
+            --reporter-json-export reports/health-check-${{ matrix.environment }}.json \
+            --timeout-request 10000 \
+            --suppress-exit-code
+      
+      - name: Upload health check reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: health-check-reports-${{ matrix.environment }}
+          path: reports/
+          retention-days: 7
+      
+      - name: Check health status
+        run: |
+          if [ -f "reports/health-check-${{ matrix.environment }}.json" ]; then
+            FAILED_TESTS=$(jq '.run.stats.tests.failed' reports/health-check-${{ matrix.environment }}.json)
+            
+            if [ "$FAILED_TESTS" != "0" ]; then
+              echo "❌ Health check failed for ${{ matrix.environment }}"
+              # Send notification (integrate with Slack, email, etc.)
+              exit 1
+            else
+              echo "✅ Health check passed for ${{ matrix.environment }}"
+            fi
+          fi

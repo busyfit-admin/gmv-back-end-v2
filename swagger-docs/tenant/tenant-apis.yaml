@@ -8,568 +8,8 @@ x-amazon-apigateway-request-validators:
     validateRequestBody: true
 x-amazon-apigateway-request-validator: all
 paths:
-  /v1/upload-employee-data:
-    post:
-      summary: Upload Tenant Users CSV file to S3 Bucket
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadCSVFileLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/get-employee-groups-data:
-    get:
-      summary: The filtered Employee Groups are called here # need to modify
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetEmployeeGroupsLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/rm/manage-rewards-rules:
-    get:
-      summary: manages employee rewards rules
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageRewardRulesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    post:
-      summary: manages employee rewards rules
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageRewardRulesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    patch:
-      summary: Patches employee rewards rules
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageRewardRulesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    delete:
-      summary: Deletes on employee rewards rules
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageRewardRulesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/manage-rewards-transfer-logs:
-    get:
-      summary: manages employee rewards transfer logs
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RewardTransferLogsLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/manage-employee-data:
-    get:
-      summary: To get the information of the Employees
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantEmployeesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    post:
-      summary: To perform creation of the employees data
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantEmployeesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    patch:
-      summary: Performs updates on employee data
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantEmployeesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/manage-employee-groups:
-    get:
-      summary: To get the information of the Employee Groups
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeGroupsLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/manage-employee-profile:
-    get:
-      summary: To get the information of the Employee Profile
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-    post:
-      summary: To post the information of the Employee Profile
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-    delete:
-      summary: To delete the information of the Employee Profile
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageEmployeeProfileLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/manage-cards-template:
-    post:
-      summary: To put an object in s3 and update cardsMetadata ddb table # need to modify
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageCardTemplateLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-    get:
-      summary: To get the metadata generated in the cardsMetadata ddb table # need to modify
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageCardTemplateLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-    patch:
-      summary: To update the metadata in the cardsMetadata ddb table # need to modify
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageCardTemplateLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-      summary: To get the information of the tenant teams
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageCardTemplateLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/manage-tenant-engagements:
-    post:
-      summary: To post skills, values and appreciations
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantEngagementLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-    get:
-      summary: To get skills, values and appreciations
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantEngagementLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-    delete:
-      summary: To delete skills or values
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantEngagementLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/manage-tenant-certificates:
-    get:
-      summary: To get the information of the tenant certificates
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantCertificatesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    post:
-      summary: To perform create ops on tenant certificates
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantCertificatesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    patch:
-      summary: To perform update ops on tenant certificates
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantCertificatesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-    delete:
-      summary: To perform delete ops on  tenant certificates
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTenantCertificatesLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/manage-surveys:
-    get:
-      summary: To get the information of the Survey questions and responses
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageSurveysLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-    post:
-      summary: To submit the survey responses
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageSurveysLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/handle-create-cards:
-    get:
-      summary: Get all the details of cardorder
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HandleCreateCardsLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-    post:
-      summary: send the requets of creating cards to step function.
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HandleCreateCardsLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  /v1/get-locations:
-    get:
-      summary: Get all Tenant Profiles
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetGISDataLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-  /v1/post-locations:
-    post:
-      summary: Get all Tenant Profiles
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostGISDataLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-      security:
-        - UserPool: []
-
-  # ---------- Teams Management APIs ----------
+  
+# ---------- Teams Management APIs ----------
 
   /v2/teams:
     get:
@@ -1125,6 +565,406 @@ paths:
       security:
         - UserPool: []
 
+  # --------------- Organization Management Endpoints ---------------
+  
+  /v2/organization:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        "200":
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    post:
+      summary: Create Organization
+      description: Create a new organization with client and industry-specific details
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateOrganizationLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+
+  /v2/organization/{organizationId}:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        "200":
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    get:
+      summary: Get Organization Details
+      description: Retrieve comprehensive organization information including client details and subscription status
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrganizationLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+    put:
+      summary: Update Organization
+      description: Update organization details including client information and industry-specific data
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrganizationLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+
+  /v2/organization/list:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        "200":
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    get:
+      summary: List User Organizations
+      description: List all organizations where the authenticated user is an admin
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListUserOrganizationsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+
+  /v2/organization/{organizationId}/subscription:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        "200":
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    get:
+      summary: Get Subscription Plans
+      description: Retrieve available subscription plans with pricing and feature comparison
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageSubscriptionLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+    put:
+      summary: Update Subscription
+      description: Switch between subscription plans and update billing cycle
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageSubscriptionLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+
+  /v2/organization/{organizationId}/promo-code:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        "200":
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    post:
+      summary: Apply Promo Code
+      description: Apply promotional codes for percentage discounts or free trial periods
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePromoCodesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+    get:
+      summary: Get Active Promo Code Details
+      description: Get details of currently active promo code for the organization
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePromoCodesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+
 components:
   schemas:
     Tenantrequestbody:
@@ -1202,6 +1042,314 @@ components:
       properties:
         errorText:
           type: string
+
+    # --------------- Organization Management Schemas ---------------
+    
+    CreateOrganizationRequest:
+      type: object
+      required:
+        - organizationName
+        - subscriptionPlan
+        - billingCycle
+      properties:
+        organizationName:
+          type: string
+          minLength: 3
+          maxLength: 100
+          description: Official organization name
+        displayName:
+          type: string
+          maxLength: 50
+          description: Display name for the organization
+        industry:
+          type: string
+          maxLength: 50
+          description: Industry category
+        description:
+          type: string
+          maxLength: 500
+          description: Organization description
+        clientDetails:
+          $ref: '#/components/schemas/ClientDetails'
+        subscriptionPlan:
+          type: string
+          enum: [BASIC, PROFESSIONAL, ENTERPRISE]
+          description: Initial subscription plan
+        billingCycle:
+          type: string
+          enum: [MONTHLY, YEARLY]
+          description: Billing cycle preference
+
+    ClientDetails:
+      type: object
+      properties:
+        companySize:
+          type: string
+          enum: ["1-10", "11-50", "51-200", "201-1000", "1000+"]
+          description: Number of employees
+        headquarters:
+          type: string
+          maxLength: 100
+          description: Primary business location
+        website:
+          type: string
+          format: uri
+          description: Company website URL
+        primaryContact:
+          $ref: '#/components/schemas/ContactInfo'
+        businessType:
+          type: string
+          enum: [B2B, B2C, B2B2C]
+          description: Business model type
+        annualRevenue:
+          type: string
+          enum: ["<$1M", "$1M-10M", "$10M-50M", "$50M-100M", "$100M+"]
+          description: Annual revenue range
+
+    ContactInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 20
+
+    UpdateOrganizationRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+          maxLength: 50
+        industry:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          maxLength: 500
+        clientDetails:
+          $ref: '#/components/schemas/ClientDetails'
+
+    CreateOrganizationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        organizationId:
+          type: string
+          description: Unique identifier for the created organization
+        data:
+          $ref: '#/components/schemas/OrganizationResponse'
+
+    OrganizationResponse:
+      type: object
+      properties:
+        organizationId:
+          type: string
+        organizationName:
+          type: string
+        displayName:
+          type: string
+        industry:
+          type: string
+        description:
+          type: string
+        clientDetails:
+          $ref: '#/components/schemas/ClientDetails'
+        planType:
+          type: string
+          enum: [BASIC, PROFESSIONAL, ENTERPRISE]
+        billingCycle:
+          type: string
+          enum: [MONTHLY, YEARLY]
+        teamLimit:
+          type: integer
+          description: Maximum teams allowed
+        currentTeamCount:
+          type: integer
+          description: Current number of teams
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        lastUpdated:
+          type: string
+          format: date-time
+        admins:
+          type: array
+          items:
+            type: string
+          description: List of admin user IDs
+        activePromoCode:
+          type: string
+          nullable: true
+          description: Currently active promo code
+
+    OrganizationListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationSummary'
+
+    OrganizationSummary:
+      type: object
+      properties:
+        organizationId:
+          type: string
+        organizationName:
+          type: string
+        displayName:
+          type: string
+        industry:
+          type: string
+        planType:
+          type: string
+        currentTeamCount:
+          type: integer
+        teamLimit:
+          type: integer
+        isActive:
+          type: boolean
+        role:
+          type: string
+          enum: [ADMIN]
+          description: User's role in the organization
+
+    SubscriptionPlansResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        currentPlan:
+          $ref: '#/components/schemas/SubscriptionDetails'
+        availablePlans:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionPlan'
+
+    SubscriptionDetails:
+      type: object
+      properties:
+        planType:
+          type: string
+        billingCycle:
+          type: string
+        price:
+          type: number
+        teamLimit:
+          type: integer
+        isActive:
+          type: boolean
+        nextBillingDate:
+          type: string
+          format: date-time
+
+    SubscriptionPlan:
+      type: object
+      properties:
+        planType:
+          type: string
+          enum: [BASIC, PROFESSIONAL, ENTERPRISE]
+        features:
+          type: array
+          items:
+            type: string
+        teamLimit:
+          type: integer
+        pricing:
+          type: object
+          properties:
+            monthly:
+              type: number
+            yearly:
+              type: number
+            yearlyDiscount:
+              type: number
+              description: Percentage discount for yearly billing
+
+    UpdateSubscriptionRequest:
+      type: object
+      required:
+        - planType
+        - billingCycle
+      properties:
+        planType:
+          type: string
+          enum: [BASIC, PROFESSIONAL, ENTERPRISE]
+        billingCycle:
+          type: string
+          enum: [MONTHLY, YEARLY]
+
+    SubscriptionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        subscription:
+          $ref: '#/components/schemas/SubscriptionDetails'
+
+    ApplyPromoCodeRequest:
+      type: object
+      required:
+        - promoCode
+      properties:
+        promoCode:
+          type: string
+          minLength: 3
+          maxLength: 20
+          description: Promotional code to apply
+
+    PromoCodeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        promoDetails:
+          type: object
+          properties:
+            promoCode:
+              type: string
+            discountType:
+              type: string
+              enum: [PERCENTAGE, FREE_TRIAL]
+            discountValue:
+              type: number
+              description: Percentage off or trial days
+            description:
+              type: string
+            expiresAt:
+              type: string
+              format: date-time
+            isActive:
+              type: boolean
+
+    OrganizationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
 
 securityDefinitions:
   UserPool:

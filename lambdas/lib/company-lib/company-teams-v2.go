@@ -27,14 +27,17 @@ const (
 type TeamMemberRole string
 
 const (
-	TeamMemberRoleAdmin  TeamMemberRole = "ADMIN"
-	TeamMemberRoleMember TeamMemberRole = "MEMBER"
+	TeamMemberRoleAdmin  TeamMemberRole = "ADMIN"  // Can manage team creation, members, and settings
+	TeamMemberRoleOwner  TeamMemberRole = "OWNER"  // Can handle team management and lifecycle
+	TeamMemberRoleMember TeamMemberRole = "MEMBER" // Regular team member with standard access
+	TeamMemberRoleGuest  TeamMemberRole = "GUEST"  // Limited access member - view only
 )
 
 // TeamMetadata represents team information
 type TeamMetadata struct {
-	PK          string     `dynamodbav:"PK" json:"-"` // TEAM#uuid
-	SK          string     `dynamodbav:"SK" json:"-"` // METADATA
+	PK          string     `dynamodbav:"PK" json:"-"`        // TEAM#uuid
+	SK          string     `dynamodbav:"SK" json:"-"`        // METADATA
+	OrgId       string     `dynamodbav:"OrgId" json:"orgId"` // entered during team creation. Cannot be null
 	TeamId      string     `dynamodbav:"TeamId" json:"teamId"`
 	TeamName    string     `dynamodbav:"TeamName" json:"teamName"`
 	TeamDesc    string     `dynamodbav:"TeamDesc" json:"teamDesc"`
@@ -75,6 +78,7 @@ type UserTeamInfo struct {
 type CreateTeamInput struct {
 	TeamName string `json:"teamName" validate:"required"`
 	TeamDesc string `json:"teamDesc"`
+	OrgId    string `json:"orgId" validate:"required"`
 	UserName string `json:"-"` // Set from auth context
 }
 
@@ -131,6 +135,7 @@ func (svc *TeamsServiceV2) CreateTeam(input CreateTeamInput) (*TeamMetadata, err
 	teamMetadata := TeamMetadata{
 		PK:          teamId,
 		SK:          "METADATA",
+		OrgId:       input.OrgId,
 		TeamId:      teamId,
 		TeamName:    input.TeamName,
 		TeamDesc:    input.TeamDesc,

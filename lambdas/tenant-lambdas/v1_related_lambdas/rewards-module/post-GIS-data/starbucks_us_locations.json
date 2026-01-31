@@ -1,0 +1,6727 @@
+[
+  {
+    "position": {
+      "lat": 61.21759217,
+      "lng": -149.8935557
+    },
+    "name": "Starbucks - AK - Anchorage  00001",
+    "address": "601 West Street_601 West 5th Avenue_Anchorage, Alaska 99501",
+    "phone": "907-277-2477"
+  },
+  {
+    "position": {
+      "lat": 61.19533942,
+      "lng": -149.9054948
+    },
+    "name": "Starbucks - AK - Anchorage  00002",
+    "address": "Carrs-Anchorage #1805_1650 W Northern Lights Blvd_Anchorage, Alaska 99503",
+    "phone": "907-339-0500"
+  },
+  {
+    "position": {
+      "lat": 61.2297,
+      "lng": -149.7522
+    },
+    "name": "Starbucks - AK - Anchorage  00003",
+    "address": "Elmendorf AFB_Bldg 5800 Westover Avenue_Anchorage, Alaska 99506"
+  },
+  {
+    "position": {
+      "lat": 61.19525062,
+      "lng": -149.8643361
+    },
+    "name": "Starbucks - AK - Anchorage  00004",
+    "address": "Fred Meyer - Anchorage #11_1000 E Northern Lights Blvd_Anchorage, Alaska 995084283",
+    "phone": "907-264-9600"
+  },
+  {
+    "position": {
+      "lat": 61.13751355,
+      "lng": -149.8379726
+    },
+    "name": "Starbucks - AK - Anchorage  00005",
+    "address": "Fred Meyer - Anchorage #656_2300 Abbott Road_Anchorage, Alaska 99507",
+    "phone": "907-365-2000"
+  },
+  {
+    "position": {
+      "lat": 61.13994658,
+      "lng": -149.9092788
+    },
+    "name": "Starbucks - AK - Anchorage  00006",
+    "address": "Fred Meyer - Anchorage (Dimond) #71_2000 W Dimond Blvd_Anchorage, Alaska 995151400",
+    "phone": "907-267-6700"
+  },
+  {
+    "position": {
+      "lat": 61.19533265,
+      "lng": -149.7364877
+    },
+    "name": "Starbucks - AK - Anchorage  00007",
+    "address": "Safeway-Anchorage #1817_7731 E Northern Lights Blvd_Anchorage, Alaska 99504",
+    "phone": "907-331-1700"
+  },
+  {
+    "position": {
+      "lat": 61.2156,
+      "lng": -149.8211
+    },
+    "name": "Starbucks - AK - Anchorage  00008",
+    "address": "Safeway - Anchorage #520_3101 PENLAND PKWY._Anchorage, Alaska 99508"
+  },
+  {
+    "position": {
+      "lat": 61.13806145,
+      "lng": -149.8445832
+    },
+    "name": "Starbucks - AK - Anchorage  00009",
+    "address": "Safeway-Anchorage #2628_1725 Abbott Rd_Anchorage, Alaska 99507",
+    "phone": "907-339-2800"
+  },
+  {
+    "position": {
+      "lat": 61.176693,
+      "lng": -149.9728678
+    },
+    "name": "Starbucks - AK - Anchorage [A]  00010",
+    "address": "ANC Anchorage_5000 W. Int'l Airport Rd._Anchorage, Alaska 99502",
+    "phone": "907-243-4331"
+  },
+  {
+    "position": {
+      "lat": 61.14473454,
+      "lng": -149.8638034
+    },
+    "name": "Starbucks - AK - Anchorage [D]  00011",
+    "address": "Old Seward & Dimond_1005 E Dimond Blvd_Anchorage, Alaska 99515",
+    "phone": "907-344-4160"
+  },
+  {
+    "position": {
+      "lat": 61.18081843,
+      "lng": -149.8359225
+    },
+    "name": "Starbucks - AK - Anchorage [D]  00012",
+    "address": "Tudor & Lake Otis- Anchorage_2421 East Tudor Road_Anchorage, Alaska 99507",
+    "phone": "907-561-1644"
+  },
+  {
+    "position": {
+      "lat": 61.180763,
+      "lng": -149.88695
+    },
+    "name": "Starbucks - AK - Anchorage [D]  00013",
+    "address": "Tudor Rd and C Street_110 W. Tudor Rd_Anchorage, Alaska 99503",
+    "phone": "907-561-3141"
+  },
+  {
+    "position": {
+      "lat": 61.345921,
+      "lng": -149.552503
+    },
+    "name": "Starbucks - AK - Eagle River  00014",
+    "address": "Fred Meyer-Eagle River #668_13401 Old Glenn Hwy_Eagle River, Alaska 99577"
+  },
+  {
+    "position": {
+      "lat": 61.32360721,
+      "lng": -149.5708432
+    },
+    "name": "Starbucks - AK - Eagle River  00015",
+    "address": "Safeway-Eagle River #1807_11409 Business Blvd_Eagle River, Alaska 99577",
+    "phone": "907-696-6400"
+  },
+  {
+    "position": {
+      "lat": 61.3252,
+      "lng": -149.571083
+    },
+    "name": "Starbucks - AK - Eagle River [D]  00016",
+    "address": "Coronado Rd- Eagle River_16707 Coronado Road_Eagle River, Alaska 99577",
+    "phone": "907-696-6055"
+  },
+  {
+    "position": {
+      "lat": 64.8522227,
+      "lng": -147.690082
+    },
+    "name": "Starbucks - AK - Fairbanks  00017",
+    "address": "Fred Meyer - Fairbanks #224_930 Old Steese Hwy_Fairbanks, Alaska 99701",
+    "phone": "907-459-4629"
+  },
+  {
+    "position": {
+      "lat": 64.85064492,
+      "lng": -147.7044254
+    },
+    "name": "Starbucks - AK - Fairbanks  00018",
+    "address": "Safeway-Fairbanks #3410_30 College Rd_Fairbanks, Alaska 99701",
+    "phone": "907-374-4100"
+  },
+  {
+    "position": {
+      "lat": 64.83696195,
+      "lng": -147.8222994
+    },
+    "name": "Starbucks - AK - Fairbanks  00019",
+    "address": "Fred Meyer-Fairbanks #485_3755 Airport Way_Fairbanks, Alaska 997094610",
+    "phone": "907-474-1403"
+  },
+  {
+    "position": {
+      "lat": 59.64204,
+      "lng": -151.53123
+    },
+    "name": "Starbucks - AK - Homer  00020",
+    "address": "Safeway-Homer #1832_90 Sterling Hwy_Homer, Alaska 99603"
+  },
+  {
+    "position": {
+      "lat": 58.3601,
+      "lng": -134.5621
+    },
+    "name": "Starbucks - AK - Juneau  00021",
+    "address": "Fred Meyer-Juneau #158_8181 Old Glacier Hwy_Juneau, Alaska 998018035"
+  },
+  {
+    "position": {
+      "lat": 55.35173351,
+      "lng": -131.680747
+    },
+    "name": "Starbucks - AK - Ketchikan  00022",
+    "address": "Carrs-Ketchikan #1818_2417 Tongass Ave_Ketchikan, Alaska 99901",
+    "phone": "907-228-1900"
+  },
+  {
+    "position": {
+      "lat": 57.81208717,
+      "lng": -152.3609342
+    },
+    "name": "Starbucks - AK - Kodiak  00023",
+    "address": "Safeway-Kodiak #1090_2685 Mill Bay Rd_Kodiak, Alaska 99615",
+    "phone": "907-481-1500"
+  },
+  {
+    "position": {
+      "lat": 61.60093654,
+      "lng": -149.1183292
+    },
+    "name": "Starbucks - AK - Palmer  00024",
+    "address": "Fred Meyer - Palmer #671_650 N Cobb St_Palmer, Alaska 99645",
+    "phone": "907-761-4200"
+  },
+  {
+    "position": {
+      "lat": 60.12892832,
+      "lng": -149.4331873
+    },
+    "name": "Starbucks - AK - Seward  00025",
+    "address": "Safeway-Seward #2728_1907 Seward Hwy_Seward, Alaska 99664"
+  },
+  {
+    "position": {
+      "lat": 60.49443906,
+      "lng": -151.0417651
+    },
+    "name": "Starbucks - AK - Soldotna  00026",
+    "address": "Safeway-Soldotna #548_44428 Sterling Hwy S_Soldotna, Alaska 99669"
+  },
+  {
+    "position": {
+      "lat": 60.489986,
+      "lng": -151.051614
+    },
+    "name": "Starbucks - AK - Soldotna  00027",
+    "address": "Fred Meyer-Soldotna #17_43843 Sterling Hwy_Soldotna, Alaska 99669",
+    "phone": "907-262-2200"
+  },
+  {
+    "position": {
+      "lat": 61.57691,
+      "lng": -149.40958
+    },
+    "name": "Starbucks - AK - Wasilla  00028",
+    "address": "Fred Meyer - Wasilla #653_1501 East Parks Highway_Wasilla, Alaska 99654",
+    "phone": "907-352-5000"
+  },
+  {
+    "position": {
+      "lat": 33.2152,
+      "lng": -86.827626
+    },
+    "name": "Starbucks - AL - Alabaster [WD]  00029",
+    "address": "Hwy 119 & Kent Dairy_2171 Kent Dairy Rd_Alabaster, Alabama 35007",
+    "phone": "205-685-9705"
+  },
+  {
+    "position": {
+      "lat": 34.785059,
+      "lng": -86.949656
+    },
+    "name": "Starbucks - AL - Athens [WD]  00030",
+    "address": "Hwy 72 & Braly_1286 Hwy 72 East_Athens, Alabama 35611",
+    "phone": "256-230-9298"
+  },
+  {
+    "position": {
+      "lat": 33.50904809,
+      "lng": -86.78842024
+    },
+    "name": "Starbucks - AL - Birmingham  00031",
+    "address": "Saint Vincents Hospital_810 Saint Vincents Dr_Birmingham, Alabama 35202"
+  },
+  {
+    "position": {
+      "lat": 33.447522,
+      "lng": -86.826127
+    },
+    "name": "Starbucks - AL - Birmingham  00032",
+    "address": "State Farm & Lakeshore_231 State Farm Pkwy_Birmingham, Alabama 35209",
+    "phone": "205-945-2512"
+  },
+  {
+    "position": {
+      "lat": 33.42956176,
+      "lng": -86.7102897
+    },
+    "name": "Starbucks - AL - Birmingham  00033",
+    "address": "Super Target Birmingham ST-1772_4616 Highway 280_Birmingham, Alabama 35242",
+    "phone": "205-408-7687"
+  },
+  {
+    "position": {
+      "lat": 33.5062,
+      "lng": -86.8018
+    },
+    "name": "Starbucks - AL - Birmingham  00034",
+    "address": "UAB Hospital North Pavilion Food Ct_619 19th Street_Birmingham, Alabama 352336544"
+  },
+  {
+    "position": {
+      "lat": 33.37312732,
+      "lng": -86.8113765
+    },
+    "name": "Starbucks - AL - Birmingham [WD]  00035",
+    "address": "Hwy 150 & I-459 FLY_3032 John Hawkins Pkwy_Birmingham, Alabama 35244",
+    "phone": "205-985-0622"
+  },
+  {
+    "position": {
+      "lat": 33.41838757,
+      "lng": -86.66982766
+    },
+    "name": "Starbucks - AL - Birmingham [WD]  00036",
+    "address": "Hwy 280 & Hwy 119_5405 US-280 East_Birmingham, Alabama 35242",
+    "phone": "205-995-1408"
+  },
+  {
+    "position": {
+      "lat": 33.5868,
+      "lng": -86.7011
+    },
+    "name": "Starbucks - AL - Birmingham [WD]  00037",
+    "address": "Parkway East @ Roebuck Plaza Dr_9190 Parkway East_Birmingham, Alabama 35206",
+    "phone": "205-836-8201"
+  },
+  {
+    "position": {
+      "lat": 33.50263454,
+      "lng": -86.75620223
+    },
+    "name": "Starbucks - AL - Birmingham [W]  00038",
+    "address": "Church at Euclid_81 Church Street_Birmingham, Alabama 35213",
+    "phone": "205-870-1554"
+  },
+  {
+    "position": {
+      "lat": 33.50040126,
+      "lng": -86.79644474
+    },
+    "name": "Starbucks - AL - Birmingham [W]  00039",
+    "address": "Munger Bldg_1927 11th Avenue South_Birmingham, Alabama 35205",
+    "phone": "205-930-0802"
+  },
+  {
+    "position": {
+      "lat": 33.504689,
+      "lng": -86.799091
+    },
+    "name": "Starbucks - AL - Birmingham [W]  00040",
+    "address": "University & 20th_801 20th Street South_Birmingham, Alabama 35233",
+    "phone": "205-731-1053"
+  },
+  {
+    "position": {
+      "lat": 30.601019,
+      "lng": -87.898099
+    },
+    "name": "Starbucks - AL - Daphne [WD]  00041",
+    "address": "Hwy 98 near Daphne Rd_1650 US Hwy 98_Daphne, Alabama 36526",
+    "phone": "251-621-3033"
+  },
+  {
+    "position": {
+      "lat": 30.377666,
+      "lng": -87.683099
+    },
+    "name": "Starbucks - AL - Foley [WD]  00042",
+    "address": "Hwy 59 @ Riviera Center_2601 S. McKenzie Road_Foley, Alabama 36535",
+    "phone": "251-971-6536"
+  },
+  {
+    "position": {
+      "lat": 30.304936,
+      "lng": -87.682999
+    },
+    "name": "Starbucks - AL - Gulf Shores  00043",
+    "address": "Target Gulf Shores T-2154_3820 Gulf Shores Pkwy_Gulf Shores, Alabama 36542",
+    "phone": "251-967-7001"
+  },
+  {
+    "position": {
+      "lat": 33.38072249,
+      "lng": -86.80917035
+    },
+    "name": "Starbucks - AL - Hoover  00044",
+    "address": "River Chase Galleria_3000 Riverchase Galleria_Hoover, Alabama 35244",
+    "phone": "205-987-4867"
+  },
+  {
+    "position": {
+      "lat": 33.42254,
+      "lng": -86.69949
+    },
+    "name": "Starbucks - AL - Hoover [WD]  00045",
+    "address": "Hwy 280 & Inverness Ctr Dr_4710 Hwy 280 east_Hoover, Alabama 35242",
+    "phone": "205-980-2359"
+  },
+  {
+    "position": {
+      "lat": 34.7407,
+      "lng": -86.665699
+    },
+    "name": "Starbucks - AL - Huntsville  00046",
+    "address": "Madison Square Mall_5901 University Drive_Huntsville, Alabama 35806",
+    "phone": "256-890-0148"
+  },
+  {
+    "position": {
+      "lat": 34.74505961,
+      "lng": -86.68134336
+    },
+    "name": "Starbucks - AL - Huntsville  00047",
+    "address": "Super Target Huntsville ST-1346_6275 University Dr_Huntsville, Alabama 35806",
+    "phone": "256-922-0189"
+  },
+  {
+    "position": {
+      "lat": 34.68203745,
+      "lng": -86.55230743
+    },
+    "name": "Starbucks - AL - Huntsville  00048",
+    "address": "Super Target Huntsville ST-1367_2750 Carl T Jones Dr. SE_Huntsville, Alabama 35802"
+  },
+  {
+    "position": {
+      "lat": 34.769819,
+      "lng": -86.58647
+    },
+    "name": "Starbucks - AL - Huntsville [WD]  00049",
+    "address": "Memorial & Mastin Lake_3421 Memorial Drive NW_Huntsville, Alabama 35801",
+    "phone": "256-851-1463"
+  },
+  {
+    "position": {
+      "lat": 34.7266,
+      "lng": -86.575905
+    },
+    "name": "Starbucks - AL - Huntsville [WD]  00050",
+    "address": "Memorial Pkwy & Hwy 72_1015 North Memorial Pkwy_Huntsville, Alabama 35801_256 539-3466"
+  },
+  {
+    "position": {
+      "lat": 34.69111819,
+      "lng": -86.57429381
+    },
+    "name": "Starbucks - AL - Huntsville [W]  00051",
+    "address": "Airport Rd & Chateau Dr_800 Airport Rd_Huntsville, Alabama 35802",
+    "phone": "256-881-1240"
+  },
+  {
+    "position": {
+      "lat": 34.72002697,
+      "lng": -86.57919788
+    },
+    "name": "Starbucks - AL - Huntsville [W]  00052",
+    "address": "Whitesburg Dr @ Governors Dr_2003 Whitesburg Drive_Huntsville, Alabama 35801",
+    "phone": "256-534-2991"
+  },
+  {
+    "position": {
+      "lat": 30.68976,
+      "lng": -88.04221
+    },
+    "name": "Starbucks - AL - Mobile  00053",
+    "address": "Mobile Government_205 Government Plaza_Mobile, Alabama 36644",
+    "phone": "251-405-0006"
+  },
+  {
+    "position": {
+      "lat": 30.697309,
+      "lng": -88.143477
+    },
+    "name": "Starbucks - AL - Mobile  00054",
+    "address": "Old Shell & McGregor_4401 Old Shell Rd_Mobile, Alabama 36608",
+    "phone": "251-340-0130"
+  },
+  {
+    "position": {
+      "lat": 30.673693,
+      "lng": -88.12661
+    },
+    "name": "Starbucks - AL - Mobile  00055",
+    "address": "Palm- Bel Air Mall_3494 BEL AIR MALL_Mobile, Alabama 36606",
+    "phone": "251-473-3064"
+  },
+  {
+    "position": {
+      "lat": 30.67333454,
+      "lng": -88.2255057
+    },
+    "name": "Starbucks - AL - Mobile  00056",
+    "address": "Super Target Mobile ST-1376_790 Shillinger Road South_Mobile, Alabama 36695"
+  },
+  {
+    "position": {
+      "lat": 30.681004,
+      "lng": -88.196698
+    },
+    "name": "Starbucks - AL - Mobile [D]  00057",
+    "address": "Airport & Foreman_6601 Airport Blvd_Mobile, Alabama 36608"
+  },
+  {
+    "position": {
+      "lat": 30.680498,
+      "lng": -88.072584
+    },
+    "name": "Starbucks - AL - Mobile [D]  00058",
+    "address": "Government & Catherine_1510 Government St_Mobile, Alabama 36604",
+    "phone": "251-470-0227"
+  },
+  {
+    "position": {
+      "lat": 30.67621703,
+      "lng": -88.14309381
+    },
+    "name": "Starbucks - AL - Mobile [WD]  00059",
+    "address": "Airport Blvd & Downtowner_3901 Airport Blvd_Mobile, Alabama 36608",
+    "phone": "251-341-5672"
+  },
+  {
+    "position": {
+      "lat": 30.687603,
+      "lng": -88.130514
+    },
+    "name": "Starbucks - AL - Mobile [WD]  00060",
+    "address": "Dauphin & Du Rhu_9 Du Rhu Drive_Mobile, Alabama 36608",
+    "phone": "251-345-0865"
+  },
+  {
+    "position": {
+      "lat": 30.69911,
+      "lng": -88.22533
+    },
+    "name": "Starbucks - AL - Mobile [WD]  00061",
+    "address": "Airport Blvd & Schillinger_390 Schillinger Road_Mobile, Alabama 36608",
+    "phone": "251-633-7087"
+  },
+  {
+    "position": {
+      "lat": 30.6761,
+      "lng": -88.122539
+    },
+    "name": "Starbucks - AL - Mobile [WD]  00062",
+    "address": "I-65 @ Airport Blvd_3255 Airport Blvd_Mobile, Alabama 36606",
+    "phone": "251-473-6204"
+  },
+  {
+    "position": {
+      "lat": 30.661638,
+      "lng": -88.190499
+    },
+    "name": "Starbucks - AL - Mobile [WD]  00063",
+    "address": "Hillcrest & Greelot_1363 Hillcrest Rd_Mobile, Alabama 36695",
+    "phone": "251-776-1161"
+  },
+  {
+    "position": {
+      "lat": 32.338634,
+      "lng": -86.181656
+    },
+    "name": "Starbucks - AL - Montgomery [D]  00064",
+    "address": "Taylor & Vaughn_7790 Vaughn_Montgomery, Alabama 36116",
+    "phone": "334-277-2360"
+  },
+  {
+    "position": {
+      "lat": 32.3825,
+      "lng": -86.183853
+    },
+    "name": "Starbucks - AL - Montgomery [WD]  00065",
+    "address": "Atlanta Hwy & McLemore_6501 Atlanta Hwy_Montgomery, Alabama 36101",
+    "phone": "334-396-3036"
+  },
+  {
+    "position": {
+      "lat": 32.3399,
+      "lng": -86.18089
+    },
+    "name": "Starbucks - AL - Montgomery [WD]  00066",
+    "address": "I-85 & Taylor Rd_6911 East Chase Parkway_Montgomery, Alabama 36117",
+    "phone": "334-260-0538"
+  },
+  {
+    "position": {
+      "lat": 32.35239312,
+      "lng": -86.26356801
+    },
+    "name": "Starbucks - AL - Montgomery [WD]  00067",
+    "address": "Zelda Rd @ Carter Hill Rd_3110 Zelda Road_Montgomery, Alabama 36106",
+    "phone": "334-213-5491"
+  },
+  {
+    "position": {
+      "lat": 32.35217285,
+      "lng": -86.21922302
+    },
+    "name": "Starbucks - AL - Montgomery [W]  00068",
+    "address": "Eastern Blvd - Montgomery_2107  Eastern Blvd_Montgomery, Alabama 36107",
+    "phone": "334-271-2515"
+  },
+  {
+    "position": {
+      "lat": 33.484513,
+      "lng": -86.773962
+    },
+    "name": "Starbucks - AL - Mountain Brook [W]  00069",
+    "address": "Cahaba & Hollywood_2738 Cahabe Rd_Mountain Brook, Alabama 25223",
+    "phone": "205-868-9130"
+  },
+  {
+    "position": {
+      "lat": 32.6280937,
+      "lng": -85.40687104
+    },
+    "name": "Starbucks - AL - Opelika  00070",
+    "address": "Target Opelika T-1499_2130 Hamilton Place North_Opelika, Alabama 36801"
+  },
+  {
+    "position": {
+      "lat": 32.6548,
+      "lng": -85.3928
+    },
+    "name": "Starbucks - AL - Opelika [WD]  00071",
+    "address": "I-85 @ Hwy 280_2056 Interstate Drive_Opelika, Alabama 36801",
+    "phone": "334-745-0885"
+  },
+  {
+    "position": {
+      "lat": 33.5927,
+      "lng": -85.842
+    },
+    "name": "Starbucks - AL - Oxford  00072",
+    "address": "Target Oxford T-2153_400 Oxford Exchange Blvd_Oxford, Alabama 36203",
+    "phone": "256-231-2900"
+  },
+  {
+    "position": {
+      "lat": 33.60858102,
+      "lng": -85.82810247
+    },
+    "name": "Starbucks - AL - Oxford [D]  00073",
+    "address": "I-20 & Hwy 21_1011 Hwy 21 South_Oxford, Alabama 36203",
+    "phone": "256-832-3820"
+  },
+  {
+    "position": {
+      "lat": 30.669385,
+      "lng": -87.852027
+    },
+    "name": "Starbucks - AL - Spanish Fort [D]  00074",
+    "address": "I-10 & Hwy 181_30350 State Hwy 181_Spanish Fort, Alabama 36527",
+    "phone": "251-626-3180"
+  },
+  {
+    "position": {
+      "lat": 33.60234164,
+      "lng": -86.63801947
+    },
+    "name": "Starbucks - AL - Trussville  00075",
+    "address": "Super Target Trussville ST-1773_1654 Gadsden Highway_Trussville, Alabama 35235",
+    "phone": "205-655-6950"
+  },
+  {
+    "position": {
+      "lat": 33.59541,
+      "lng": -86.64673
+    },
+    "name": "Starbucks - AL - Trussville [WD]  00076",
+    "address": "US Hwy 11 & I-459_1420 Gadsden Hwy_Trussville, Alabama 35235",
+    "phone": "205-661-3201"
+  },
+  {
+    "position": {
+      "lat": 33.20120805,
+      "lng": -87.51826693
+    },
+    "name": "Starbucks - AL - Tuscaloosa  00077",
+    "address": "Super Target Tuscaloosa ST-1787_1901 13th Ave E_Tuscaloosa, Alabama 35404"
+  },
+  {
+    "position": {
+      "lat": 33.21231052,
+      "lng": -87.54677614
+    },
+    "name": "Starbucks - AL - Tuscaloosa  00078",
+    "address": "U of AL - Ferguson Cntr_1000 McCorvey Dr._Tuscaloosa, Alabama 35487",
+    "phone": "205-348-9143"
+  },
+  {
+    "position": {
+      "lat": 33.421892,
+      "lng": -86.797593
+    },
+    "name": "Starbucks - AL - Vestavia Hills [WD]  00079",
+    "address": "Montgomery Hwy & Canyon Dr_700 Montgomery Hwy_Vestavia Hills, Alabama 35216",
+    "phone": "205-978-2892"
+  },
+  {
+    "position": {
+      "lat": 33.455541,
+      "lng": -86.735925
+    },
+    "name": "Starbucks - AL - Vestavia Hills [WD]  00080",
+    "address": "Cahaba Heights & Dolly Ridge Rd_3130 Cahaba Heights Rd_Vestavia Hills, Alabama 35243",
+    "phone": "205-298-7946"
+  },
+  {
+    "position": {
+      "lat": 36.35696718,
+      "lng": -94.21321152
+    },
+    "name": "Starbucks - AR - Bentonville  00081",
+    "address": "Hwy 71B & 14th St_1401 S Walton Blvd_Bentonville, Arkansas 72712",
+    "phone": "479-254-0943"
+  },
+  {
+    "position": {
+      "lat": 34.60255,
+      "lng": -92.53446
+    },
+    "name": "Starbucks - AR - Bryant  00082",
+    "address": "Target Bryant T-2204_7377 Alcoa Rd_Bryant, Arkansas 72022"
+  },
+  {
+    "position": {
+      "lat": 35.0785,
+      "lng": -92.3874
+    },
+    "name": "Starbucks - AR - Conway  00083",
+    "address": "Target Conway T-1891_501 Elsinger Blvd_Conway, Arkansas 72032"
+  },
+  {
+    "position": {
+      "lat": 35.09135,
+      "lng": -92.41866
+    },
+    "name": "Starbucks - AR - Conway [WD]  00084",
+    "address": "Hwy 64 & Museum_905 East Oak Street_Conway, Arkansas 72032",
+    "phone": "501-505-8326"
+  },
+  {
+    "position": {
+      "lat": 35.11074111,
+      "lng": -92.43947287
+    },
+    "name": "Starbucks - AR - Conway [WD]  00085",
+    "address": "Hwy 65 & O'Bryant_1155 Hwy 65 North_Conway, Arkansas 72032",
+    "phone": "501-327-5278"
+  },
+  {
+    "position": {
+      "lat": 36.123007,
+      "lng": -94.145299
+    },
+    "name": "Starbucks - AR - Fayetteville [D]  00086",
+    "address": "College & Joyce_3901 Shiloh Drive_Fayetteville, Arkansas 72703",
+    "phone": "479-444-3380"
+  },
+  {
+    "position": {
+      "lat": 35.3587282,
+      "lng": -94.36294976
+    },
+    "name": "Starbucks - AR - Fort Smith [D]  00087",
+    "address": "I-540 & Rogers Ave_6203 Rogers Ave_Fort Smith, Arkansas 72903",
+    "phone": "479-478-9982"
+  },
+  {
+    "position": {
+      "lat": 34.45764525,
+      "lng": -93.06209925
+    },
+    "name": "Starbucks - AR - Hot Springs [D]  00088",
+    "address": "Central Ave & Buena Vista_3948 Central Ave_Hot Springs, Arkansas 71913",
+    "phone": "501-525-5023"
+  },
+  {
+    "position": {
+      "lat": 35.821236,
+      "lng": -90.66704
+    },
+    "name": "Starbucks - AR - Jonesboro  00089",
+    "address": "Target Jonesboro T-1919_3000 E Highland Dr_Jonesboro, Arkansas 72401",
+    "phone": "870-934-9661"
+  },
+  {
+    "position": {
+      "lat": 34.74577386,
+      "lng": -92.38191429
+    },
+    "name": "Starbucks - AR - Little Rock  00090",
+    "address": "Baptist Health - Little Rock_9601 Lile Drive_Little Rock, Arkansas 72205",
+    "phone": "501-202-2000"
+  },
+  {
+    "position": {
+      "lat": 34.75204348,
+      "lng": -92.4126917
+    },
+    "name": "Starbucks - AR - Little Rock  00091",
+    "address": "Kroger - Little Rock AR #608_16105 D Chenal Pkwy_Little Rock, Arkansas 72211"
+  },
+  {
+    "position": {
+      "lat": 34.72769385,
+      "lng": -92.21905583
+    },
+    "name": "Starbucks - AR - Little Rock [A]  00092",
+    "address": "LIT - Little Rock Simply Books_1 Airport Rd_Little Rock, Arkansas 71202"
+  },
+  {
+    "position": {
+      "lat": 34.798,
+      "lng": -92.4149
+    },
+    "name": "Starbucks - AR - Little Rock [D]  00093",
+    "address": "Hwy 10 & Sam Peck_12901 Cantrell_Little Rock, Arkansas 72227",
+    "phone": "501-954-7596"
+  },
+  {
+    "position": {
+      "lat": 34.75911,
+      "lng": -92.379005
+    },
+    "name": "Starbucks - AR - Little Rock [D]  00094",
+    "address": "Rodney Parham & Treasure Hill_9401 N. Rodney Parham Rd_Little Rock, Arkansas 72227",
+    "phone": "501-223-9177"
+  },
+  {
+    "position": {
+      "lat": 34.77140489,
+      "lng": -92.35743226
+    },
+    "name": "Starbucks - AR - Little Rock [WD]  00095",
+    "address": "Cantrell & Mississippi_7525 Cantrell Rd_Little Rock, Arkansas 72207",
+    "phone": "501-603-0094"
+  },
+  {
+    "position": {
+      "lat": 34.74810967,
+      "lng": -92.40416376
+    },
+    "name": "Starbucks - AR - Little Rock [W]  00096",
+    "address": "Chenal & Financial Center_11401 Financial Centre Parkway, Suite D_Little Rock, Arkansas 72211",
+    "phone": "501-219-2337"
+  },
+  {
+    "position": {
+      "lat": 34.770222,
+      "lng": -92.33723
+    },
+    "name": "Starbucks - AR - Little Rock [W]  00097",
+    "address": "Kavanaugh & Pierce_5719 Kavanaugh Street_Little Rock, Arkansas 72207",
+    "phone": "501-603-9230"
+  },
+  {
+    "position": {
+      "lat": 34.753007,
+      "lng": -92.341099
+    },
+    "name": "Starbucks - AR - Little Rock [W]  00098",
+    "address": "University & W. Markham_201 N University Ave_Little Rock, Arkansas 72205",
+    "phone": "501-664-4865"
+  },
+  {
+    "position": {
+      "lat": 34.7993,
+      "lng": -92.2551
+    },
+    "name": "Starbucks - AR - North LIttle Rock [D]  00099",
+    "address": "JFK & McCain_4824 JFK_North LIttle Rock, Arkansas 72116",
+    "phone": "501-812-0913"
+  },
+  {
+    "position": {
+      "lat": 34.789467,
+      "lng": -92.22356
+    },
+    "name": "Starbucks - AR - North Little Rock  00100",
+    "address": "Hwy 67 & McCain_4120 E. McCain_North Little Rock, Arkansas 72116",
+    "phone": "501-955-3450"
+  },
+  {
+    "position": {
+      "lat": 36.31955482,
+      "lng": -94.18313137
+    },
+    "name": "Starbucks - AR - Rogers  00101",
+    "address": "Pinnacle Hills Promanade_2203 So. 45th Street_Rogers, Arkansas 72758",
+    "phone": "479-936-7691"
+  },
+  {
+    "position": {
+      "lat": 36.3349,
+      "lng": -94.179842
+    },
+    "name": "Starbucks - AR - Rogers [D]  00102",
+    "address": "Walnut & 46th_4520 W Walnut_Rogers, Arkansas 72756",
+    "phone": "479-936-8250"
+  },
+  {
+    "position": {
+      "lat": 36.2834,
+      "lng": -94.1589
+    },
+    "name": "Starbucks - AR - Rogers [WD]  00103",
+    "address": "I-540 & Pleasant Grove_2605 W Pleasant Grove Road_Rogers, Arkansas 72758",
+    "phone": "479-986-8875"
+  },
+  {
+    "position": {
+      "lat": 36.304601,
+      "lng": -94.1879
+    },
+    "name": "Starbucks - AR - Rogers [WD]  00104",
+    "address": "Pinnacle Hills & Northgate_3351 Pinnacle Hills Parkway_Rogers, Arkansas 72758",
+    "phone": "479-464-0398"
+  },
+  {
+    "position": {
+      "lat": 35.466507,
+      "lng": -94.356399
+    },
+    "name": "Starbucks - AR - Van Buren [D]  00105",
+    "address": "Hwy 59 & Rena_2008 FAYETTEVILLE RD_Van Buren, Arkansas 72956",
+    "phone": "479-471-8187"
+  },
+  {
+    "position": {
+      "lat": 33.86405429,
+      "lng": -112.1347187
+    },
+    "name": "Starbucks - AZ - Anthem  00106",
+    "address": "Safeway-Anthem #1726_3655 W Anthem Way_Anthem, Arizona 85086"
+  },
+  {
+    "position": {
+      "lat": 33.86381987,
+      "lng": -112.1344948
+    },
+    "name": "Starbucks - AZ - Anthem [WD]  00107",
+    "address": "Anthem & I-17, Anthem_3640 W. Anthem Way_Anthem, Arizona 850860416",
+    "phone": "623-551-5407"
+  },
+  {
+    "position": {
+      "lat": 33.415339,
+      "lng": -111.57396
+    },
+    "name": "Starbucks - AZ - Apache Junction [WD]  00108",
+    "address": "Apache Trail & Delaware, Apache Jun_2580 W. Apache Trail_Apache Junction, Arizona 852205205",
+    "phone": "480-982-2346"
+  },
+  {
+    "position": {
+      "lat": 33.493493,
+      "lng": -112.287081
+    },
+    "name": "Starbucks - AZ - Avondale [WD]  00109",
+    "address": "Indian School & 107 Ave, Avondale_10585 W. Indian School Rd_Avondale, Arizona 85323",
+    "phone": "623-872-1602"
+  },
+  {
+    "position": {
+      "lat": 33.43536059,
+      "lng": -112.3050986
+    },
+    "name": "Starbucks - AZ - Avondale [W]  00110",
+    "address": "115th Ave. & Buckeye, Avondale_11435 W. Buckeye Road_Avondale, Arizona 853236812",
+    "phone": "623-936-0591"
+  },
+  {
+    "position": {
+      "lat": 33.46464844,
+      "lng": -112.2753599
+    },
+    "name": "Starbucks - AZ - Avondale [W]  00111",
+    "address": "Mc Dowell & 99th, Avondale_10030 W.  McDowell Road, Suite 160_Avondale, Arizona 853234858",
+    "phone": "623-907-0917"
+  },
+  {
+    "position": {
+      "lat": 35.12158199,
+      "lng": -114.5864543
+    },
+    "name": "Starbucks - AZ - Bullhead City  00112",
+    "address": "Safeway-Bullhead City #248_1751 Highway 95_Bullhead City, Arizona 86442"
+  },
+  {
+    "position": {
+      "lat": 34.5658,
+      "lng": -111.8655
+    },
+    "name": "Starbucks - AZ - Camp Verde [WD]  00113",
+    "address": "I-17 & Hwy 260, Camp Verde_1620 W. Highway 260_Camp Verde, Arizona 863225203",
+    "phone": "928-567-0274"
+  },
+  {
+    "position": {
+      "lat": 32.89571681,
+      "lng": -111.740086
+    },
+    "name": "Starbucks - AZ - Casa Grande  00114",
+    "address": "Safeway-Casa Grande #1706_1637 N Trekel Rd_Casa Grande, Arizona 85222"
+  },
+  {
+    "position": {
+      "lat": 33.21903128,
+      "lng": -111.806444
+    },
+    "name": "Starbucks - AZ - Chandler  00115",
+    "address": "Albertsons-Chandler #1021_2935 E Riggs Road_Chandler, Arizona 85249"
+  },
+  {
+    "position": {
+      "lat": 33.31998926,
+      "lng": -111.9124763
+    },
+    "name": "Starbucks - AZ - Chandler  00116",
+    "address": "Albertsons-Chandler #997_4060 West Ray Rd_Chandler, Arizona 85226"
+  },
+  {
+    "position": {
+      "lat": 33.234573,
+      "lng": -111.789399
+    },
+    "name": "Starbucks - AZ - Chandler  00117",
+    "address": "Bashas' - Chandler #161_4940 S Gilbert Rd_Chandler, Arizona 85249"
+  },
+  {
+    "position": {
+      "lat": 33.32087638,
+      "lng": -111.8228735
+    },
+    "name": "Starbucks - AZ - Chandler  00118",
+    "address": "Safeway-Chandler #1605_1060 E Ray Rd_Chandler, Arizona 85225",
+    "phone": "480-855-5005"
+  },
+  {
+    "position": {
+      "lat": 33.30567804,
+      "lng": -111.9015716
+    },
+    "name": "Starbucks - AZ - Chandler  00119",
+    "address": "The Great Indoors-Chandler_3460 W. Chandler Blvd_Chandler, Arizona 85244"
+  },
+  {
+    "position": {
+      "lat": 33.23378805,
+      "lng": -111.8585749
+    },
+    "name": "Starbucks - AZ - Chandler  00120",
+    "address": "Safeway-Chandler #1566_4970 S Alma School Rd_Chandler, Arizona 85248"
+  },
+  {
+    "position": {
+      "lat": 33.30353,
+      "lng": -111.84192
+    },
+    "name": "Starbucks - AZ - Chandler  00121",
+    "address": "San Marcos Resorts and Conference_One San Marcos Place_Chandler, Arizona 85225"
+  },
+  {
+    "position": {
+      "lat": 33.28584,
+      "lng": -111.84123
+    },
+    "name": "Starbucks - AZ - Chandler [WD]  00122",
+    "address": "Arizona Ave & Loop 202, Chandler_1395 S. Arizona Avenue_Chandler, Arizona 85248",
+    "phone": "480-857-2410"
+  },
+  {
+    "position": {
+      "lat": 33.31999187,
+      "lng": -111.9118504
+    },
+    "name": "Starbucks - AZ - Chandler [WD]  00123",
+    "address": "McClintock & Ray, Chandler_4030 W. Ray Road_Chandler, Arizona 85226",
+    "phone": "480-752-8522"
+  },
+  {
+    "position": {
+      "lat": 33.31760813,
+      "lng": -111.9684795
+    },
+    "name": "Starbucks - AZ - Chandler [W]  00124",
+    "address": "54th St. & Ray Rd., Chandler_885 N. 54th Street_Chandler, Arizona 852261528",
+    "phone": "480-496-0147"
+  },
+  {
+    "position": {
+      "lat": 33.30531037,
+      "lng": -111.9482622
+    },
+    "name": "Starbucks - AZ - Chandler [W]  00125",
+    "address": "Chandler & Kyrene, Chandler_6140 West Chandler Blvd_Chandler, Arizona 85226",
+    "phone": "480-893-1923"
+  },
+  {
+    "position": {
+      "lat": 33.30569847,
+      "lng": -111.8964975
+    },
+    "name": "Starbucks - AZ - Chandler [W]  00126",
+    "address": "Chandler & Price Road, Phoenix_3161 W Chandler Blvd_Chandler, Arizona 852265063",
+    "phone": "480-917-1963"
+  },
+  {
+    "position": {
+      "lat": 33.34972709,
+      "lng": -111.858732
+    },
+    "name": "Starbucks - AZ - Chandler [W]  00127",
+    "address": "Alma School & Elliot Rd, Chandler_985 West Elliot Road_Chandler, Arizona 852251883",
+    "phone": "480-963-1335"
+  },
+  {
+    "position": {
+      "lat": 33.3060856,
+      "lng": -111.8746327
+    },
+    "name": "Starbucks - AZ - Chandler [W]  00128",
+    "address": "Dobson & Chandler_1900 W. Chandler Blvd._Chandler, Arizona 85224",
+    "phone": "480-857-7233"
+  },
+  {
+    "position": {
+      "lat": 33.33595832,
+      "lng": -111.8764317
+    },
+    "name": "Starbucks - AZ - Chandler [W]  00129",
+    "address": "Dobson & Warner, Chandler_2050 N. Dobson Road, Suite 5_Chandler, Arizona 852242293",
+    "phone": "480-782-9307"
+  },
+  {
+    "position": {
+      "lat": 33.26181573,
+      "lng": -111.8600981
+    },
+    "name": "Starbucks - AZ - Chandler [W]  00130",
+    "address": "Queen Creek & Alma School, Chandler_1085 W Queen Creek Rd_Chandler, Arizona 85248",
+    "phone": "480-899-9295"
+  },
+  {
+    "position": {
+      "lat": 34.78282547,
+      "lng": -112.4521866
+    },
+    "name": "Starbucks - AZ - Chino Valley  00131",
+    "address": "Safeway-Chino Valley #1747_1031 N US Hwy 89_Chino Valley, Arizona 86323"
+  },
+  {
+    "position": {
+      "lat": 34.72846222,
+      "lng": -112.0089493
+    },
+    "name": "Starbucks - AZ - Cottonwood  00132",
+    "address": "Safeway-Cottonwood #2052_1635 Cottonwood St_Cottonwood, Arizona 86326"
+  },
+  {
+    "position": {
+      "lat": 35.18716021,
+      "lng": -111.6638424
+    },
+    "name": "Starbucks - AZ - Flagstaff  00133",
+    "address": "Safeway - Flagstaff #2028_1201 S Plaza Way_Flagstaff, Arizona 86001",
+    "phone": "520-779-3401"
+  },
+  {
+    "position": {
+      "lat": 35.18429883,
+      "lng": -111.6613874
+    },
+    "name": "Starbucks - AZ - Flagstaff  00134",
+    "address": "Target Flagstaff T-935_1650 S Milton Rd_Flagstaff, Arizona 86001"
+  },
+  {
+    "position": {
+      "lat": 35.216557,
+      "lng": -111.631
+    },
+    "name": "Starbucks - AZ - Flagstaff  00135",
+    "address": "Safeway - Flagstaff #1225_1500 East Cedar Ave_Flagstaff, Arizona 86004"
+  },
+  {
+    "position": {
+      "lat": 35.3625,
+      "lng": -111.7398
+    },
+    "name": "Starbucks - AZ - Flagstaff  00136",
+    "address": "Safeway-Flagstaff #270_4910 N US-89_Flagstaff, Arizona 86001"
+  },
+  {
+    "position": {
+      "lat": 35.188047,
+      "lng": -111.661499
+    },
+    "name": "Starbucks - AZ - Flagstaff [WD]  00137",
+    "address": "1307 S. Milton Rd., Flagstaff_1307 S. Milton Road_Flagstaff, Arizona 860016384",
+    "phone": "928-774-0602"
+  },
+  {
+    "position": {
+      "lat": 35.194549,
+      "lng": -111.63142
+    },
+    "name": "Starbucks - AZ - Flagstaff [W]  00138",
+    "address": "Highway 66 & Switzer Canyon, Flagst_1426 E. Route 66_Flagstaff, Arizona 86001",
+    "phone": "928-214-6461"
+  },
+  {
+    "position": {
+      "lat": 35.016058,
+      "lng": -114.597999
+    },
+    "name": "Starbucks - AZ - Fort Mohave  00139",
+    "address": "Safeway - Fort Mohave #1474_4823 S Hwy 95_Fort Mohave, Arizona 86426"
+  },
+  {
+    "position": {
+      "lat": 33.60857565,
+      "lng": -111.7299795
+    },
+    "name": "Starbucks - AZ - Fountain Hills  00140",
+    "address": "Safeway - Fountain Hills #1291_13733 Fountain Hills Blvd_Fountain Hills, Arizona 85268",
+    "phone": "480-837-0287"
+  },
+  {
+    "position": {
+      "lat": 33.61019636,
+      "lng": -111.7249286
+    },
+    "name": "Starbucks - AZ - Fountain Hills [W]  00141",
+    "address": "Fountain Hills_16425 E. Palisades Blvd._Fountain Hills, Arizona 852683708",
+    "phone": "480-816-6969"
+  },
+  {
+    "position": {
+      "lat": 33.575834,
+      "lng": -111.718697
+    },
+    "name": "Starbucks - AZ - Fountain Hills [W]  00142",
+    "address": "Shea & Technology, Fountain Hills_16815 E. Shea Blvd._Fountain Hills, Arizona 852686667",
+    "phone": "480-837-1486"
+  },
+  {
+    "position": {
+      "lat": 33.36489156,
+      "lng": -111.6877649
+    },
+    "name": "Starbucks - AZ - Gilbert  00143",
+    "address": "Albertsons-Gilbert #0929_8454 S Power Rd_Gilbert, Arizona 85297"
+  },
+  {
+    "position": {
+      "lat": 33.3354678,
+      "lng": -111.7714833
+    },
+    "name": "Starbucks - AZ - Gilbert  00144",
+    "address": "Albertsons-Gilbert #1023_861 E Warner_Gilbert, Arizona 85296"
+  },
+  {
+    "position": {
+      "lat": 33.30648175,
+      "lng": -111.7897403
+    },
+    "name": "Starbucks - AZ - Gilbert  00145",
+    "address": "Super Target Gilbert ST-1960_3931 S. Gilbert Road_Gilbert, Arizona 85296"
+  },
+  {
+    "position": {
+      "lat": 33.37926425,
+      "lng": -111.7249218
+    },
+    "name": "Starbucks - AZ - Gilbert  00146",
+    "address": "Safeway - Gilbert #1748_5137 E Baseline Rd_Gilbert, Arizona 85234",
+    "phone": "480-325-5870"
+  },
+  {
+    "position": {
+      "lat": 33.34905619,
+      "lng": -111.7557216
+    },
+    "name": "Starbucks - AZ - Gilbert  00147",
+    "address": "Safeway-Gilbert #1534_90 S Val Vista Dr_Gilbert, Arizona 85296",
+    "phone": "480-545-7555"
+  },
+  {
+    "position": {
+      "lat": 33.32092108,
+      "lng": -111.8056644
+    },
+    "name": "Starbucks - AZ - Gilbert  00148",
+    "address": "Albertsons_3717 W Ray Road_Gilbert, Arizona 85233844"
+  },
+  {
+    "position": {
+      "lat": 33.364,
+      "lng": -111.7507
+    },
+    "name": "Starbucks - AZ - Gilbert [W]  00149",
+    "address": "Gilbert & Loop 202, Phoenix_3765 S. Gilbert Rd_Gilbert, Arizona 85234",
+    "phone": "480-899-3867"
+  },
+  {
+    "position": {
+      "lat": 33.335633,
+      "lng": -111.7590113
+    },
+    "name": "Starbucks - AZ - Gilbert [W]  00150",
+    "address": "Val Vista & Warner, Gilbert_1505 E. Warner Road_Gilbert, Arizona 85296",
+    "phone": "480-539-1984"
+  },
+  {
+    "position": {
+      "lat": 33.33537004,
+      "lng": -111.8095615
+    },
+    "name": "Starbucks - AZ - Gilbert [W]  00151",
+    "address": "Warner & Cooper Road_884 W. Warner Road_Gilbert, Arizona 85234_(480) 497-1504"
+  },
+  {
+    "position": {
+      "lat": 33.59640608,
+      "lng": -112.166999
+    },
+    "name": "Starbucks - AZ - Glendale  00152",
+    "address": "Albertsons-Glendale #941_5040 W. Cactus_Glendale, Arizona 85304",
+    "phone": "602-843-1871"
+  },
+  {
+    "position": {
+      "lat": 33.610699,
+      "lng": -112.159799
+    },
+    "name": "Starbucks - AZ - Glendale  00153",
+    "address": "ASU West Campus - Fletcher Library_4701 W. Thunderbird Road_Glendale, Arizona 85069-710"
+  },
+  {
+    "position": {
+      "lat": 33.53860232,
+      "lng": -112.3556078
+    },
+    "name": "Starbucks - AZ - Glendale  00154",
+    "address": "Main Exchange Mall_7123 N. 138th Ave._Glendale, Arizona 85309",
+    "phone": "623-536-1219"
+  },
+  {
+    "position": {
+      "lat": 33.67000491,
+      "lng": -112.2029872
+    },
+    "name": "Starbucks - AZ - Glendale  00155",
+    "address": "Safeway-Glendale #1510_20205 N 67th Ave_Glendale, Arizona 85308"
+  },
+  {
+    "position": {
+      "lat": 33.65280991,
+      "lng": -112.2374114
+    },
+    "name": "Starbucks - AZ - Glendale [WD]  00156",
+    "address": "101 Freeway & Union Hills Drive_8251 W. Union Hills Drive_Glendale, Arizona 853080502",
+    "phone": "623-566-9202"
+  },
+  {
+    "position": {
+      "lat": 33.69838093,
+      "lng": -112.1436192
+    },
+    "name": "Starbucks - AZ - Glendale [W]  00157",
+    "address": "39th & Pinnacle Peak, Phoenix_23425 N. 39th Drive_Glendale, Arizona 85310",
+    "phone": "623-869-8906"
+  },
+  {
+    "position": {
+      "lat": 33.65394714,
+      "lng": -112.1863216
+    },
+    "name": "Starbucks - AZ - Glendale [W]  00158",
+    "address": "59th & Union Hills, Glendale_18555 N. 59th Avenue_Glendale, Arizona 85308",
+    "phone": "602-298-9098"
+  },
+  {
+    "position": {
+      "lat": 33.61081108,
+      "lng": -112.1855156
+    },
+    "name": "Starbucks - AZ - Glendale [W]  00159",
+    "address": "59th & Thunderbird_5890 W. Thunderbird Rd._Glendale, Arizona 85306_(602) 942-8923"
+  },
+  {
+    "position": {
+      "lat": 33.63835723,
+      "lng": -112.2176653
+    },
+    "name": "Starbucks - AZ - Glendale [W]  00160",
+    "address": "75th & Bell Ave._7410 West Bell Road_Glendale, Arizona 85345",
+    "phone": "623-878-1717"
+  },
+  {
+    "position": {
+      "lat": 33.63960715,
+      "lng": -112.224434
+    },
+    "name": "Starbucks - AZ - Glendale [W]  00161",
+    "address": "Arrowhead Towne Center_7700  Arrowhead Town Center_Glendale, Arizona 85308_(623) 334-8061"
+  },
+  {
+    "position": {
+      "lat": 33.49345981,
+      "lng": -112.3753049
+    },
+    "name": "Starbucks - AZ - Goodyear  00162",
+    "address": "Safeway-Goodyear #1511_14175 W Indian Sch R_Goodyear, Arizona 85338"
+  },
+  {
+    "position": {
+      "lat": 33.451464,
+      "lng": -112.392599
+    },
+    "name": "Starbucks - AZ - Goodyear  00163",
+    "address": "Safeway-Goodyear #2618_440 N Estrella Pkwy_Goodyear, Arizona 85338"
+  },
+  {
+    "position": {
+      "lat": 33.48026748,
+      "lng": -112.3583262
+    },
+    "name": "Starbucks - AZ - Goodyear  00164",
+    "address": "Safeway_390 N Litchfield Rd_Goodyear, Arizona 85338"
+  },
+  {
+    "position": {
+      "lat": 33.46160901,
+      "lng": -112.3580189
+    },
+    "name": "Starbucks - AZ - Goodyear [W]  00165",
+    "address": "Litchfield & McDowell, Goodyear_1375 North Litchfield Road_Goodyear, Arizona 853381228",
+    "phone": "623-536-3256"
+  },
+  {
+    "position": {
+      "lat": 31.85233448,
+      "lng": -110.9987224
+    },
+    "name": "Starbucks - AZ - Green Valley  00166",
+    "address": "Safeway-Green Valley #2044_260 West Continental_Green Valley, Arizona 85614"
+  },
+  {
+    "position": {
+      "lat": 33.28825881,
+      "lng": -111.6862971
+    },
+    "name": "Starbucks - AZ - Higley [W]  00167",
+    "address": "Power & Loop 202, Gilbert_4972 S. Power Road_Higley, Arizona 85236",
+    "phone": "480-988-4173"
+  },
+  {
+    "position": {
+      "lat": 35.23700997,
+      "lng": -114.0374472
+    },
+    "name": "Starbucks - AZ - Kingman  00168",
+    "address": "Safeway-Kingman #1887_3970 Stockton Hill Rd_Kingman, Arizona 86401"
+  },
+  {
+    "position": {
+      "lat": 34.478282,
+      "lng": -114.337554
+    },
+    "name": "Starbucks - AZ - Lake Havasu City  00169",
+    "address": "Safeway - Lake Havasu City #216_1650 McCulloch_Lake Havasu City, Arizona 86403",
+    "phone": "520-855-7760"
+  },
+  {
+    "position": {
+      "lat": 34.47318734,
+      "lng": -114.342988
+    },
+    "name": "Starbucks - AZ - Lake Havasu City [W]  00170",
+    "address": "Swanson & So. Lake Havasu_55 Lake Havasu Avenue South_Lake Havasu City, Arizona 864030938",
+    "phone": "928-854-5444"
+  },
+  {
+    "position": {
+      "lat": 34.14205054,
+      "lng": -109.955309
+    },
+    "name": "Starbucks - AZ - Lakeside  00171",
+    "address": "Safeway-Lakeside #2069 (Pinetop)_20 W White Mountain Blvd_Lakeside, Arizona 85929"
+  },
+  {
+    "position": {
+      "lat": 33.37746449,
+      "lng": -112.1692939
+    },
+    "name": "Starbucks - AZ - Laveen [W]  00172",
+    "address": "Baseline & 51st. Avenue, Laveen_5150 W. Baseline Road_Laveen, Arizona 853392989",
+    "phone": "602-237-7763"
+  },
+  {
+    "position": {
+      "lat": 32.4409,
+      "lng": -111.239105
+    },
+    "name": "Starbucks - AZ - Marana  00173",
+    "address": "Bashas Dove Mountain #167_12100 N Dove Mountain Blvd_Marana, Arizona 85653"
+  },
+  {
+    "position": {
+      "lat": 32.4354,
+      "lng": -111.2598
+    },
+    "name": "Starbucks - AZ - Marana  00174",
+    "address": "Safeway-Marana #1749_9100 North Silver Bell_Marana, Arizona 85653"
+  },
+  {
+    "position": {
+      "lat": 32.3374794,
+      "lng": -111.0500991
+    },
+    "name": "Starbucks - AZ - Marana [WD]  00175",
+    "address": "Ina & Thornydale, Tucson_3951 W. Ina Road_Marana, Arizona 857412206",
+    "phone": "520-572-7457"
+  },
+  {
+    "position": {
+      "lat": 33.46544574,
+      "lng": -111.6840687
+    },
+    "name": "Starbucks - AZ - Mesa  00176",
+    "address": "Albertsons-Mesa #989_2727 N Power Road_Mesa, Arizona 85207",
+    "phone": "480-396-9282"
+  },
+  {
+    "position": {
+      "lat": 33.378662,
+      "lng": -111.599266
+    },
+    "name": "Starbucks - AZ - Mesa  00177",
+    "address": "Bashas' Mesa #155_9925 E Baseline Rd_Mesa, Arizona 85208"
+  },
+  {
+    "position": {
+      "lat": 33.37899985,
+      "lng": -111.6261939
+    },
+    "name": "Starbucks - AZ - Mesa  00178",
+    "address": "Albertsons-Mesa #1002_9243 E Baseline_Mesa, Arizona 85212"
+  },
+  {
+    "position": {
+      "lat": 33.42328203,
+      "lng": -111.8051231
+    },
+    "name": "Starbucks - AZ - Mesa  00179",
+    "address": "Albertsons-Mesa #993_445 N. Stapley Dr_Mesa, Arizona 85203",
+    "phone": "480-733-0004"
+  },
+  {
+    "position": {
+      "lat": 33.45479248,
+      "lng": -111.6840841
+    },
+    "name": "Starbucks - AZ - Mesa  00180",
+    "address": "Safeway-Mesa #2644_2151 N Power Rd_Mesa, Arizona 85215"
+  },
+  {
+    "position": {
+      "lat": 33.4226701,
+      "lng": -111.7718998
+    },
+    "name": "Starbucks - AZ - Mesa  00181",
+    "address": "Safeway - Mesa #1567_2740 E University Dr_Mesa, Arizona 85213",
+    "phone": "480-833-8338"
+  },
+  {
+    "position": {
+      "lat": 33.39379889,
+      "lng": -111.7532534
+    },
+    "name": "Starbucks - AZ - Mesa  00182",
+    "address": "Safeway - Mesa #1637_3622 E Southern Ave_Mesa, Arizona 85206",
+    "phone": "480-807-0447"
+  },
+  {
+    "position": {
+      "lat": 33.33250477,
+      "lng": -111.6870689
+    },
+    "name": "Starbucks - AZ - Mesa  00183",
+    "address": "Super Target Gilbert ST-1959_5110 S. Power Road_Mesa, Arizona 85212"
+  },
+  {
+    "position": {
+      "lat": 33.37909008,
+      "lng": -111.6375432
+    },
+    "name": "Starbucks - AZ - Mesa  00184",
+    "address": "Safeway-Mesa #2676_9101 E Baseline Rd_Mesa, Arizona 85208"
+  },
+  {
+    "position": {
+      "lat": 33.3814,
+      "lng": -111.8747
+    },
+    "name": "Starbucks - AZ - Mesa West  00185",
+    "address": "Target Mesa T-1429_1230 S. Longmore Ave_Mesa West, Arizona 85202"
+  },
+  {
+    "position": {
+      "lat": 33.37831827,
+      "lng": -111.6361908
+    },
+    "name": "Starbucks - AZ - Mesa [WD]  00186",
+    "address": "Ellsworth & Baseline, Mesa_2043 S. Ellsworth Road_Mesa, Arizona 852121224",
+    "phone": "480-984-6497"
+  },
+  {
+    "position": {
+      "lat": 33.46678288,
+      "lng": -111.6840636
+    },
+    "name": "Starbucks - AZ - Mesa [WD]  00187",
+    "address": "Power & McDowell, Mesa_2832 North Power Road_Mesa, Arizona 85215",
+    "phone": "480-830-2876"
+  },
+  {
+    "position": {
+      "lat": 33.38021706,
+      "lng": -111.7538886
+    },
+    "name": "Starbucks - AZ - Mesa [WD]  00188",
+    "address": "Val Vista & Baseline, Mesa_1939 S Val Vista Dr_Mesa, Arizona 85204",
+    "phone": "480-892-3018"
+  },
+  {
+    "position": {
+      "lat": 33.3937,
+      "lng": -111.755104
+    },
+    "name": "Starbucks - AZ - Mesa [WD]  00189",
+    "address": "Val Vista & Southern, Mesa_3550 E. Southern Avenue_Mesa, Arizona 852045601",
+    "phone": "480-830-0152"
+  },
+  {
+    "position": {
+      "lat": 33.37902519,
+      "lng": -111.7874795
+    },
+    "name": "Starbucks - AZ - Mesa [W]  00190",
+    "address": "Baseline & Gilbert_2048 E. Baseline_Mesa, Arizona 85204_(480) 497-8544"
+  },
+  {
+    "position": {
+      "lat": 33.37826704,
+      "lng": -111.687991
+    },
+    "name": "Starbucks - AZ - Mesa [W]  00191",
+    "address": "Power & Baseline_2060 S. Power Rd._Mesa, Arizona 85208",
+    "phone": "480-218-0300"
+  },
+  {
+    "position": {
+      "lat": 33.38388487,
+      "lng": -111.874783
+    },
+    "name": "Starbucks - AZ - Mesa [W]  00192",
+    "address": "Dobson & Freeway_1653 Dobson Road_Mesa, Arizona 85202",
+    "phone": "480-775-0511"
+  },
+  {
+    "position": {
+      "lat": 33.39311451,
+      "lng": -111.861856
+    },
+    "name": "Starbucks - AZ - Mesa [W]  00193",
+    "address": "Southern & Longmore, Mesa_1457 W. Southern Avenue_Mesa, Arizona 85202",
+    "phone": "480-833-5593"
+  },
+  {
+    "position": {
+      "lat": 33.38418881,
+      "lng": -111.8054634
+    },
+    "name": "Starbucks - AZ - Mesa [W]  00194",
+    "address": "Stapley & the Freeway - Mesa, AZ._1641 S Stapley Rd_Mesa, Arizona 85204",
+    "phone": "480-633-6643"
+  },
+  {
+    "position": {
+      "lat": 32.4272998,
+      "lng": -110.9629869
+    },
+    "name": "Starbucks - AZ - Oro Valley  00195",
+    "address": "Safeway-Oro Valley #1521_12122 N Rancho Vistoso Blvd_Oro Valley, Arizona 85737"
+  },
+  {
+    "position": {
+      "lat": 32.41179186,
+      "lng": -110.939853
+    },
+    "name": "Starbucks - AZ - Oro Valley [W]  00196",
+    "address": "1st & Oracle, Oro Valley_10785 N. Oracle Road_Oro Valley, Arizona 85737",
+    "phone": "520-229-1979"
+  },
+  {
+    "position": {
+      "lat": 34.154358,
+      "lng": -114.279904
+    },
+    "name": "Starbucks - AZ - Parker  00197",
+    "address": "Safeway - Parker #2075_121 W Riverside Rd_Parker, Arizona 85344"
+  },
+  {
+    "position": {
+      "lat": 34.24052,
+      "lng": -111.31757
+    },
+    "name": "Starbucks - AZ - Payson  00198",
+    "address": "Safeway-Payson #1536_401 E Hwy 260_Payson, Arizona 85541"
+  },
+  {
+    "position": {
+      "lat": 33.56562937,
+      "lng": -112.2888222
+    },
+    "name": "Starbucks - AZ - Peoria  00199",
+    "address": "Safeway-Peoria #1662_10641 W Olive Ave_Peoria, Arizona 85345"
+  },
+  {
+    "position": {
+      "lat": 33.68161278,
+      "lng": -112.236554
+    },
+    "name": "Starbucks - AZ - Peoria  00200",
+    "address": "Albertsons-Peoria #991_8240 W Deer Valley Rd_Peoria, Arizona 853822125"
+  },
+  {
+    "position": {
+      "lat": 33.59583208,
+      "lng": -112.2220298
+    },
+    "name": "Starbucks - AZ - Peoria  00201",
+    "address": "Albertsons-Peoria #998_7575 W Cactus Rd_Peoria, Arizona 85381"
+  },
+  {
+    "position": {
+      "lat": 33.67387,
+      "lng": -112.238329
+    },
+    "name": "Starbucks - AZ - Peoria  00202",
+    "address": "Safeway-Peoria #1955_20713 N 83rd Ave_Peoria, Arizona 85382"
+  },
+  {
+    "position": {
+      "lat": 33.63803903,
+      "lng": -112.250954
+    },
+    "name": "Starbucks - AZ - Peoria [W]  00203",
+    "address": "91st & Bell, Peoria_8940 W. Bell Rd, Suite B-101_Peoria, Arizona 853824713",
+    "phone": "623-583-3543"
+  },
+  {
+    "position": {
+      "lat": 33.61039102,
+      "lng": -112.220411
+    },
+    "name": "Starbucks - AZ - Peoria [W]  00204",
+    "address": "75th Avenue & Thurderbird, Peoria_7518 W. Thunderbird Road_Peoria, Arizona 85381",
+    "phone": "623-979-5479"
+  },
+  {
+    "position": {
+      "lat": 33.67893289,
+      "lng": -111.9773444
+    },
+    "name": "Starbucks - AZ - Phoenix  00205",
+    "address": "Albertsons-Phoenix #1025_21001 North Tatum Blvd_Phoenix, Arizona 85050"
+  },
+  {
+    "position": {
+      "lat": 33.6540053,
+      "lng": -112.0309058
+    },
+    "name": "Starbucks - AZ - Phoenix  00206",
+    "address": "Albertsons-Phoenix #985_18411 N Cave Creek Rd_Phoenix, Arizona 85032",
+    "phone": "602-494-7388"
+  },
+  {
+    "position": {
+      "lat": 33.4468558,
+      "lng": -112.0710621
+    },
+    "name": "Starbucks - AZ - Phoenix  00207",
+    "address": "America West Arena_201 E Jefferson St_Phoenix, Arizona 85004",
+    "phone": "602-514-8565"
+  },
+  {
+    "position": {
+      "lat": 33.7983738,
+      "lng": -112.1272521
+    },
+    "name": "Starbucks - AZ - Phoenix  00208",
+    "address": "Albertsons-Phoenix #1004_3130 W Carefree Hwy_Phoenix, Arizona 85009"
+  },
+  {
+    "position": {
+      "lat": 33.6852244,
+      "lng": -111.965987
+    },
+    "name": "Starbucks - AZ - Phoenix  00209",
+    "address": "Marriott Desert Ridge - Lobby_5350 East Pathfinder Drive_Phoenix, Arizona 85054"
+  },
+  {
+    "position": {
+      "lat": 33.4624,
+      "lng": -112.0693
+    },
+    "name": "Starbucks - AZ - Phoenix  00210",
+    "address": "Phoenix Convention Center_111 NW 3rd Street_Phoenix, Arizona 85004"
+  },
+  {
+    "position": {
+      "lat": 33.44834,
+      "lng": -112.07656
+    },
+    "name": "Starbucks - AZ - Phoenix  00211",
+    "address": "Phoenix City Hall_200 W Washington St_Phoenix, Arizona 85003"
+  },
+  {
+    "position": {
+      "lat": 33.3061,
+      "lng": -112.0548
+    },
+    "name": "Starbucks - AZ - Phoenix  00212",
+    "address": "Safeway - Phoenix #1980_1334 East Chandler Blvd_Phoenix, Arizona 85048"
+  },
+  {
+    "position": {
+      "lat": 33.4658,
+      "lng": -112.0686
+    },
+    "name": "Starbucks - AZ - Phoenix  00213",
+    "address": "Safeway - Phoenix #2651_340 East McDowell Rd_Phoenix, Arizona 85004"
+  },
+  {
+    "position": {
+      "lat": 33.6114,
+      "lng": -112.0147
+    },
+    "name": "Starbucks - AZ - Phoenix  00214",
+    "address": "Safeway - Phoenix #1202_3131 East Thunderbird Rd_Phoenix, Arizona 85032"
+  },
+  {
+    "position": {
+      "lat": 33.50986629,
+      "lng": -112.014976
+    },
+    "name": "Starbucks - AZ - Phoenix  00215",
+    "address": "Safeway - Phoenix #2042_3132 E Camelback Road_Phoenix, Arizona 85016"
+  },
+  {
+    "position": {
+      "lat": 33.30504059,
+      "lng": -111.9970579
+    },
+    "name": "Starbucks - AZ - Phoenix  00216",
+    "address": "Safeway-Phoenix #1201_4005 East Chandler Boulevard_Phoenix, Arizona 85044"
+  },
+  {
+    "position": {
+      "lat": 33.75632629,
+      "lng": -111.9903477
+    },
+    "name": "Starbucks - AZ - Phoenix  00217",
+    "address": "Safeway-Phoenix #1543_29834 N Cave Creek Rd_Phoenix, Arizona 85331",
+    "phone": "480-563-9335"
+  },
+  {
+    "position": {
+      "lat": 33.49451344,
+      "lng": -111.9794966
+    },
+    "name": "Starbucks - AZ - Phoenix  00218",
+    "address": "Safeway - Phoenix #2716_4750 E Indian School Rd_Phoenix, Arizona 85018"
+  },
+  {
+    "position": {
+      "lat": 33.48751933,
+      "lng": -112.0815738
+    },
+    "name": "Starbucks - AZ - Phoenix  00219",
+    "address": "Safeway-Phoenix #174_520 W Osborn_Phoenix, Arizona 85013",
+    "phone": "602-274-7422"
+  },
+  {
+    "position": {
+      "lat": 33.53819933,
+      "lng": -112.0627498
+    },
+    "name": "Starbucks - AZ - Phoenix  00220",
+    "address": "Safeway-Phoenix #1515_810 E Glendale Ave_Phoenix, Arizona 85020",
+    "phone": "602-331-0134"
+  },
+  {
+    "position": {
+      "lat": 33.34882,
+      "lng": -111.98146
+    },
+    "name": "Starbucks - AZ - Phoenix  00221",
+    "address": "Safeway-Phoenix #752_4747 E Elliot Rd_Phoenix, Arizona 85044",
+    "phone": "480-496-0076"
+  },
+  {
+    "position": {
+      "lat": 33.3904,
+      "lng": -112.0475
+    },
+    "name": "Starbucks - AZ - Phoenix  00222",
+    "address": "Safeway-Phoenix #1591_6202 S 16th St_Phoenix, Arizona 85040"
+  },
+  {
+    "position": {
+      "lat": 33.48043,
+      "lng": -112.0792
+    },
+    "name": "Starbucks - AZ - Phoenix  00223",
+    "address": "St Joseph Hospital_350 W. Thomas Rd._Phoenix, Arizona 85013",
+    "phone": "604-406-4079"
+  },
+  {
+    "position": {
+      "lat": 33.64060689,
+      "lng": -111.977693
+    },
+    "name": "Starbucks - AZ - Phoenix  00224",
+    "address": "Safeway-Phoenix #413_550 E Bell Rd_Phoenix, Arizona 85032"
+  },
+  {
+    "position": {
+      "lat": 33.4522,
+      "lng": -112.0784
+    },
+    "name": "Starbucks - AZ - Phoenix  00225",
+    "address": "Target Phoenix SW T-2149_9830 W Lower Buckeye_Phoenix, Arizona 85003",
+    "phone": "623-687-2136"
+  },
+  {
+    "position": {
+      "lat": 33.599728,
+      "lng": -111.98813
+    },
+    "name": "Starbucks - AZ - Phoenix  00226",
+    "address": "Target Paradise Vall Phoenix  T-233_12602 N Paradise Village Pkwy_Phoenix, Arizona 85032"
+  },
+  {
+    "position": {
+      "lat": 33.47661835,
+      "lng": -112.2175287
+    },
+    "name": "Starbucks - AZ - Phoenix  00227",
+    "address": "Target Phoenix T-851_7409 W Virginia Ave_Phoenix, Arizona 85035"
+  },
+  {
+    "position": {
+      "lat": 33.3777377,
+      "lng": -112.0359959
+    },
+    "name": "Starbucks - AZ - Phoenix  00228",
+    "address": "Target S. Mountain Phoenix T-1905_2140 E. Baseline_Phoenix, Arizona 85040"
+  },
+  {
+    "position": {
+      "lat": 33.4800915,
+      "lng": -111.98479
+    },
+    "name": "Starbucks - AZ - Phoenix  00229",
+    "address": "Target Phoenix T-950_4515 E Thomas Rd_Phoenix, Arizona 85018",
+    "phone": "602-952-1797"
+  },
+  {
+    "position": {
+      "lat": 33.43494437,
+      "lng": -112.0081158
+    },
+    "name": "Starbucks - AZ - Phoenix [A]  00230",
+    "address": "PHX Airport_3400 Sky Harbor Blvd._Phoenix, Arizona 85034"
+  },
+  {
+    "position": {
+      "lat": 33.515962,
+      "lng": -112.082479
+    },
+    "name": "Starbucks - AZ - Phoenix [D]  00231",
+    "address": "7th Avenue & Missouri, Phoenix_5344 N. 7th Avenue_Phoenix, Arizona 850131903",
+    "phone": "602-265-4176"
+  },
+  {
+    "position": {
+      "lat": 33.52370909,
+      "lng": -112.0473477
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00232",
+    "address": "16th Street & Bethany Home, Phoenix_1601 E. Bethany Home Road_Phoenix, Arizona 850162514",
+    "phone": "602-274-1024"
+  },
+  {
+    "position": {
+      "lat": 33.64059753,
+      "lng": -112.0109838
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00233",
+    "address": "32nd Street & Bell Rd, Phoenix_3317 E. Bell Road_Phoenix, Arizona 850322708",
+    "phone": "602-867-7968"
+  },
+  {
+    "position": {
+      "lat": 33.3777377,
+      "lng": -112.0316793
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00234",
+    "address": "24th St & Baseline, Phoenix_2340 E. Baseline Road_Phoenix, Arizona 850426952",
+    "phone": "602-304-0263"
+  },
+  {
+    "position": {
+      "lat": 33.6402,
+      "lng": -112.070152
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00235",
+    "address": "3rd Street & Bell Rd, Phoenix_275 East Bell Road_Phoenix, Arizona 850226317",
+    "phone": "602-863-1564"
+  },
+  {
+    "position": {
+      "lat": 33.61082474,
+      "lng": -112.1469592
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00236",
+    "address": "43rd Avenue & Thunderbird, Phoenix_4123 W. Thunderbird Road_Phoenix, Arizona 850535341",
+    "phone": "602-298-1262"
+  },
+  {
+    "position": {
+      "lat": 33.52396181,
+      "lng": -112.1301364
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00237",
+    "address": "35th Ave & Bethany Home, Phoenix_3320 W. Bethany Home Road_Phoenix, Arizona 850171916",
+    "phone": "602-841-2163"
+  },
+  {
+    "position": {
+      "lat": 33.62643855,
+      "lng": -111.9956363
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00238",
+    "address": "40th Street & Greenway, Phoenix_4010 E. Greenway Road_Phoenix, Arizona 850324749",
+    "phone": "602-494-3121"
+  },
+  {
+    "position": {
+      "lat": 33.30520451,
+      "lng": -111.9845919
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00239",
+    "address": "46th & Chandler_4605 E. Chandler Blvd._Phoenix, Arizona 850480424",
+    "phone": "480-785-7795"
+  },
+  {
+    "position": {
+      "lat": 33.517704,
+      "lng": -112.064999
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00240",
+    "address": "5557 N. 7th Street, Phoenix_5557 N. 7th Street_Phoenix, Arizona 850142502",
+    "phone": "602-279-1544"
+  },
+  {
+    "position": {
+      "lat": 33.465897,
+      "lng": -112.220619
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00241",
+    "address": "75th Ave. & McDowell, Phoenix_1610 N. 75th Avenue_Phoenix, Arizona 850354539",
+    "phone": "623-247-0774"
+  },
+  {
+    "position": {
+      "lat": 33.478552,
+      "lng": -112.255199
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00242",
+    "address": "91st. Avenue & Thomas, Phoenix_2815 N. 91st Avenue_Phoenix, Arizona 850374053",
+    "phone": "623-474-7163"
+  },
+  {
+    "position": {
+      "lat": 33.50830018,
+      "lng": -112.2731264
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00243",
+    "address": "99th Avenue & Camelback, Phoenix_9925 W. Camelback Road_Phoenix, Arizona 850375006",
+    "phone": "623-872-6172"
+  },
+  {
+    "position": {
+      "lat": 33.67922567,
+      "lng": -111.9774476
+    },
+    "name": "Starbucks - AZ - Phoenix [WD]  00244",
+    "address": "Tatum & Rose Garden, Phoenix_21050 N. Tatum Blvd_Phoenix, Arizona 850504202",
+    "phone": "480-563-2085"
+  },
+  {
+    "position": {
+      "lat": 33.50921915,
+      "lng": -112.0464455
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00245",
+    "address": "16th & Camelback_1641 East Camelback Road_Phoenix, Arizona 85016_(602) 263-7434"
+  },
+  {
+    "position": {
+      "lat": 33.55299694,
+      "lng": -112.0984785
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00246",
+    "address": "19th & Northern - Phoenix_1820 W Northern_Phoenix, Arizona 85021_(602) 216-0299"
+  },
+  {
+    "position": {
+      "lat": 33.50927007,
+      "lng": -112.0305933
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00247",
+    "address": "24th St. & Camelback, Phoenix_2375 E Camelback Rd_Phoenix, Arizona 85016",
+    "phone": "602-381-3211"
+  },
+  {
+    "position": {
+      "lat": 33.45233361,
+      "lng": -112.0699078
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00248",
+    "address": "3rd & Van Buren St., Phoenix_455 N. 3rd Street_Phoenix, Arizona 850043925",
+    "phone": "602-258-8472"
+  },
+  {
+    "position": {
+      "lat": 33.58185449,
+      "lng": -112.121387
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00249",
+    "address": "31st & Peoria, Phoenix_2815 W. Peoria Avenue_Phoenix, Arizona 85029",
+    "phone": "602-943-4362"
+  },
+  {
+    "position": {
+      "lat": 33.49473543,
+      "lng": -111.987768
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00250",
+    "address": "44th & Indian School Road_4340 East Indian School Road_Phoenix, Arizona 850185333",
+    "phone": "602-778-0107"
+  },
+  {
+    "position": {
+      "lat": 33.79912281,
+      "lng": -111.9779393
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00251",
+    "address": "48th & Carefree Hwy, N. Phoenix_4815 E Carefree Hwy_Phoenix, Arizona 85331",
+    "phone": "480-575-7125"
+  },
+  {
+    "position": {
+      "lat": 33.466037,
+      "lng": -112.080765
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00252",
+    "address": "7th & McDowell_530 East McDowell Road_Phoenix, Arizona 85003_(602) 257-9602"
+  },
+  {
+    "position": {
+      "lat": 33.67081429,
+      "lng": -112.2029872
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00253",
+    "address": "67th & Beardsley_20249 N. 67th Ave._Phoenix, Arizona 85308_(623) 362-9288"
+  },
+  {
+    "position": {
+      "lat": 33.60684615,
+      "lng": -112.0651608
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00254",
+    "address": "7th & Thunderbird, Phoenix_13240 N 7th St_Phoenix, Arizona 850225309",
+    "phone": "602-938-1306"
+  },
+  {
+    "position": {
+      "lat": 33.50935886,
+      "lng": -112.0285988
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00255",
+    "address": "Esplanade_2425 East Camelback Road_Phoenix, Arizona 85016_(602) 381-8011"
+  },
+  {
+    "position": {
+      "lat": 33.52661192,
+      "lng": -111.9256816
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00256",
+    "address": "Hilton Village_6137 N. Scottsdale Rd._Phoenix, Arizona 85250_(480) 483-5698"
+  },
+  {
+    "position": {
+      "lat": 33.44932599,
+      "lng": -112.0724875
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00257",
+    "address": "Central & Adams (Crown Plaza)_100 North 1st Street_Phoenix, Arizona 85004_(602) 340-0455"
+  },
+  {
+    "position": {
+      "lat": 33.71280288,
+      "lng": -112.100029
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00258",
+    "address": "Happy Valley & I-17, Phoenix_2501 West Happy Valley Road_Phoenix, Arizona 85027",
+    "phone": "623-587-6499"
+  },
+  {
+    "position": {
+      "lat": 33.48396422,
+      "lng": -112.0736849
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00259",
+    "address": "Park Central Mall - Phoenix_3110 North Central_Phoenix, Arizona 85013_(602) 631-4409"
+  },
+  {
+    "position": {
+      "lat": 33.677,
+      "lng": -112.1057
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00260",
+    "address": "Loop 101 & Beardsley_3049 West Agua Fria Freeway_Phoenix, Arizona 85027",
+    "phone": "623-869-9744"
+  },
+  {
+    "position": {
+      "lat": 33.59980423,
+      "lng": -111.9839362
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00261",
+    "address": "Paradise Valley Mall_4550 E Cactus_Phoenix, Arizona 85032_(602) 765-3563"
+  },
+  {
+    "position": {
+      "lat": 33.62230287,
+      "lng": -111.9258318
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00262",
+    "address": "Scottsdale & Kierland, Phoenix_15054 N. Scottsdale Rd._Phoenix, Arizona 85254",
+    "phone": "480-443-3306"
+  },
+  {
+    "position": {
+      "lat": 33.65523804,
+      "lng": -111.9296431
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00263",
+    "address": "Scottsdale & Loop 101, Scottsdale_7000 E. Mayo Blvd., Bldg. #1_Phoenix, Arizona 85054",
+    "phone": "480-473-0743"
+  },
+  {
+    "position": {
+      "lat": 33.67736785,
+      "lng": -111.9773793
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00264",
+    "address": "Tatum & Loop 101, Phoenix_21001 N Tatum Blvd_Phoenix, Arizona 85050",
+    "phone": "480-502-4761"
+  },
+  {
+    "position": {
+      "lat": 33.64061119,
+      "lng": -111.9787931
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00265",
+    "address": "Tatum & Bell_4747 East Bell Rd._Phoenix, Arizona 85032_(602) 867-0662"
+  },
+  {
+    "position": {
+      "lat": 33.58299855,
+      "lng": -111.9778096
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00266",
+    "address": "Tatum & Shea_10625 North Tatum Boulevard_Phoenix, Arizona 85028_(480) 607-0102"
+  },
+  {
+    "position": {
+      "lat": 33.61096475,
+      "lng": -111.9778096
+    },
+    "name": "Starbucks - AZ - Phoenix [W]  00267",
+    "address": "Tatum & Thunderbird_13637 N. Tatum Blvd._Phoenix, Arizona 85032_(602) 404-2400"
+  },
+  {
+    "position": {
+      "lat": 34.55943317,
+      "lng": -112.4821283
+    },
+    "name": "Starbucks - AZ - Prescott  00268",
+    "address": "Safeway-Prescott #245_1044 Willow Creek Road_Prescott, Arizona 86301"
+  },
+  {
+    "position": {
+      "lat": 34.58534588,
+      "lng": -112.3307391
+    },
+    "name": "Starbucks - AZ - Prescott Valley  00269",
+    "address": "Safeway-Prescott Valley #1055_7720 E Hwy 69_Prescott Valley, Arizona 86314"
+  },
+  {
+    "position": {
+      "lat": 34.56263,
+      "lng": -112.48826
+    },
+    "name": "Starbucks - AZ - Prescott [D]  00270",
+    "address": "Iron Springs & Gail Gardner Way_1220 Gail Gardner Way_Prescott, Arizona 863051641",
+    "phone": "928-445-7023"
+  },
+  {
+    "position": {
+      "lat": 34.546028,
+      "lng": -112.46997
+    },
+    "name": "Starbucks - AZ - Prescott [W]  00271",
+    "address": "Montezuma & Sheldon, Prescott_351 N. Montezuma St._Prescott, Arizona 863013020",
+    "phone": "928-776-9797"
+  },
+  {
+    "position": {
+      "lat": 33.23293,
+      "lng": -111.68596
+    },
+    "name": "Starbucks - AZ - Queen Creek  00272",
+    "address": "Bashas' Queen Creek #46_23760 S Power Rd_Queen Creek, Arizona 85242"
+  },
+  {
+    "position": {
+      "lat": 33.2631914,
+      "lng": -111.6346988
+    },
+    "name": "Starbucks - AZ - Queen Creek  00273",
+    "address": "Safeway-Queen Creek #1819_18495 E Queen Creek Rd_Queen Creek, Arizona 85242"
+  },
+  {
+    "position": {
+      "lat": 31.9555,
+      "lng": -110.9937
+    },
+    "name": "Starbucks - AZ - Sahuarita  00274",
+    "address": "Safeway-Sahuarita #1771_1301 W Duval Mine Rd_Sahuarita, Arizona 85629"
+  },
+  {
+    "position": {
+      "lat": 33.62960993,
+      "lng": -111.8873665
+    },
+    "name": "Starbucks - AZ - Scottsdale  00275",
+    "address": "Albertsons-Scottsdale #969_15660 N Frank Lloyd Wright Blvd_Scottsdale, Arizona 85260",
+    "phone": "602-451-9825"
+  },
+  {
+    "position": {
+      "lat": 33.5095706,
+      "lng": -111.9260026
+    },
+    "name": "Starbucks - AZ - Scottsdale  00276",
+    "address": "Albertsons-Scottsdale #979_24442 N Scottsdale_Scottsdale, Arizona 85250"
+  },
+  {
+    "position": {
+      "lat": 33.5895922,
+      "lng": -111.83456
+    },
+    "name": "Starbucks - AZ - Scottsdale  00277",
+    "address": "Albertsons-Scottsdale #983_11475 E Via Linda_Scottsdale, Arizona 85259",
+    "phone": "602-767-0819"
+  },
+  {
+    "position": {
+      "lat": 33.62586,
+      "lng": -111.97624
+    },
+    "name": "Starbucks - AZ - Scottsdale  00278",
+    "address": "Safeway - Scottsdale #2088_4857 E Greenway Rd_Scottsdale, Arizona 85254",
+    "phone": "602-274-7422"
+  },
+  {
+    "position": {
+      "lat": 33.58770455,
+      "lng": -111.8386581
+    },
+    "name": "Starbucks - AZ - Scottsdale  00279",
+    "address": "Safeway-Scottsdale #1126_11275 E Via Linda_Scottsdale, Arizona 85259"
+  },
+  {
+    "position": {
+      "lat": 33.62030812,
+      "lng": -111.8742036
+    },
+    "name": "Starbucks - AZ - Scottsdale  00280",
+    "address": "Safeway-Scottsdale #1549_14696 N Frank Lloyd Wright Blvd_Scottsdale, Arizona 85260"
+  },
+  {
+    "position": {
+      "lat": 33.62532392,
+      "lng": -111.9402159
+    },
+    "name": "Starbucks - AZ - Scottsdale  00281",
+    "address": "Safeway-Scottsdale #1750_6501 E Greenway Pkwy #4_Scottsdale, Arizona 85254"
+  },
+  {
+    "position": {
+      "lat": 33.4949,
+      "lng": -111.908011
+    },
+    "name": "Starbucks - AZ - Scottsdale  00282",
+    "address": "Bashas' - Scottsdale #7_8035 E. Indian School Rd_Scottsdale, Arizona 85251"
+  },
+  {
+    "position": {
+      "lat": 33.50925641,
+      "lng": -111.9104844
+    },
+    "name": "Starbucks - AZ - Scottsdale  00283",
+    "address": "Safeway-Phoenix #1491_7920 E Chaparral Rd_Scottsdale, Arizona 85250"
+  },
+  {
+    "position": {
+      "lat": 33.67550663,
+      "lng": -111.8906495
+    },
+    "name": "Starbucks - AZ - Scottsdale  00284",
+    "address": "Safeway-Scottsdale #1663_20901 N Pima Rd_Scottsdale, Arizona 85255"
+  },
+  {
+    "position": {
+      "lat": 33.58459,
+      "lng": -111.925735
+    },
+    "name": "Starbucks - AZ - Scottsdale  00285",
+    "address": "Safeway-Scottsdale #2032_10773 N Scottsdale Rd_Scottsdale, Arizona 85254"
+  },
+  {
+    "position": {
+      "lat": 33.62535938,
+      "lng": -111.8786489
+    },
+    "name": "Starbucks - AZ - Scottsdale  00286",
+    "address": "Target North Scottsdale T-936_15444 N Frank Lloyd Wright Blvd_Scottsdale, Arizona 852602845"
+  },
+  {
+    "position": {
+      "lat": 33.6386133,
+      "lng": -111.9254028
+    },
+    "name": "Starbucks - AZ - Scottsdale  00287",
+    "address": "The Great Indoors-Phoenix_16275 N. Scottsdale Rd._Scottsdale, Arizona 85255",
+    "phone": "480-948-3776"
+  },
+  {
+    "position": {
+      "lat": 33.58247141,
+      "lng": -111.880491
+    },
+    "name": "Starbucks - AZ - Scottsdale [WD]  00288",
+    "address": "92nd & Shea, Scottsdale_9301 E. Shea Blvd._Scottsdale, Arizona 85258",
+    "phone": "480-661-8184"
+  },
+  {
+    "position": {
+      "lat": 33.623804,
+      "lng": -111.895495
+    },
+    "name": "Starbucks - AZ - Scottsdale [WD]  00289",
+    "address": "101 Freeway & Raintree_15227 N Northsight Blvd._Scottsdale, Arizona 852602602",
+    "phone": "480-607-3477"
+  },
+  {
+    "position": {
+      "lat": 33.48593131,
+      "lng": -111.9089886
+    },
+    "name": "Starbucks - AZ - Scottsdale [WD]  00290",
+    "address": "Hayden & Osborn, Scottsdale_3300 N. Hayden Road_Scottsdale, Arizona 852516627",
+    "phone": "480-946-2488"
+  },
+  {
+    "position": {
+      "lat": 33.62252143,
+      "lng": -111.8743663
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00291",
+    "address": "Frank Lloyd Wright & Thompson Peak_15029 N. Thompson Peak Parkway_Scottsdale, Arizona 85260",
+    "phone": "480-767-0902"
+  },
+  {
+    "position": {
+      "lat": 33.5745052,
+      "lng": -111.8627072
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00292",
+    "address": "Mountain View & Via Linda, Scottsda_10135 E. Via Linda_Scottsdale, Arizona 85258",
+    "phone": "480-391-0517"
+  },
+  {
+    "position": {
+      "lat": 33.78484088,
+      "lng": -111.9259138
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00293",
+    "address": "Scottsdale & Ashler Hills, Scottsda_32421 N Scottsdale Road_Scottsdale, Arizona 85262",
+    "phone": "480-575-0360"
+  },
+  {
+    "position": {
+      "lat": 33.53869452,
+      "lng": -111.9255723
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00294",
+    "address": "Scottsdale & Indian Bend_7001 North Scottsdale Road_Scottsdale, Arizona 85253_(480) 348-0056"
+  },
+  {
+    "position": {
+      "lat": 33.69834678,
+      "lng": -111.8885458
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00295",
+    "address": "Pima & Pinnacle Peak, Scottsdale_8912 E. Pinnacle Peak Road_Scottsdale, Arizona 852553658",
+    "phone": "480-502-0265"
+  },
+  {
+    "position": {
+      "lat": 33.69990065,
+      "lng": -111.9253127
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00296",
+    "address": "Scottsdale & Pinnacle Peak & Safeway_23535 N. Scottsdale Road_Scottsdale, Arizona 85255_(480) 515-9033"
+  },
+  {
+    "position": {
+      "lat": 33.50213935,
+      "lng": -111.9303876
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00297",
+    "address": "Scottsdale Fashion Square_7014 E Camelback Road_Scottsdale, Arizona 85251",
+    "phone": "480-429-8995"
+  },
+  {
+    "position": {
+      "lat": 33.6294632,
+      "lng": -111.8873901
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00298",
+    "address": "Scottsdale Town Center_15768 North Frank Lloyd Wright Blvd._Scottsdale, Arizona 85260_(480) 451-3391"
+  },
+  {
+    "position": {
+      "lat": 33.4942174,
+      "lng": -111.9260888
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00299",
+    "address": "Scottsdale & Indian School_4032 N. Scottsdale Road_Scottsdale, Arizona 85251",
+    "phone": "480-947-4578"
+  },
+  {
+    "position": {
+      "lat": 33.47988318,
+      "lng": -111.9260845
+    },
+    "name": "Starbucks - AZ - Scottsdale [W]  00300",
+    "address": "Scottsdale & Thomas, Scottsdale_2865 N. Scottsdale Rd_Scottsdale, Arizona 852571326",
+    "phone": "480-947-5227"
+  },
+  {
+    "position": {
+      "lat": 34.86332434,
+      "lng": -111.8000812
+    },
+    "name": "Starbucks - AZ - Sedona  00301",
+    "address": "Safeway-Sedona #1207_2300 SR-89A_Sedona, Arizona 86336"
+  },
+  {
+    "position": {
+      "lat": 34.8662,
+      "lng": -111.76359
+    },
+    "name": "Starbucks - AZ - Sedona [W]  00302",
+    "address": "Hwy 89A & Hwy 179, Sedona_101 SR-89A_Sedona, Arizona 86336",
+    "phone": "928-204-5580"
+  },
+  {
+    "position": {
+      "lat": 34.23864889,
+      "lng": -110.0616819
+    },
+    "name": "Starbucks - AZ - Show Low  00303",
+    "address": "Safeway-Show Low #1733_900 W Deuce of Clubs_Show Low, Arizona 85901"
+  },
+  {
+    "position": {
+      "lat": 31.55462735,
+      "lng": -110.2759156
+    },
+    "name": "Starbucks - AZ - Sierra Vista  00304",
+    "address": "Safeway-Sierra Vista #2083_2190 E Fry Blvd_Sierra Vista, Arizona 85635"
+  },
+  {
+    "position": {
+      "lat": 31.551,
+      "lng": -110.1411
+    },
+    "name": "Starbucks - AZ - Sierra Vista  00305",
+    "address": "Target Sierra Vista T-735_4151 E Hwy 90_Sierra Vista, Arizona 85635",
+    "phone": "520-452-0035"
+  },
+  {
+    "position": {
+      "lat": 33.656757,
+      "lng": -112.351061
+    },
+    "name": "Starbucks - AZ - Sun City West  00306",
+    "address": "Safeway - Sun City West #2054_13503 Camino Del Sol_Sun City West, Arizona 85375"
+  },
+  {
+    "position": {
+      "lat": 33.63787912,
+      "lng": -112.2760361
+    },
+    "name": "Starbucks - AZ - Sun City [W]  00307",
+    "address": "99th Ave. & Bell, Sun City_10001 W. Bell Road_Sun City, Arizona 853511283",
+    "phone": "623-583-1459"
+  },
+  {
+    "position": {
+      "lat": 33.63889681,
+      "lng": -112.425426
+    },
+    "name": "Starbucks - AZ - Surprise  00308",
+    "address": "Albertsons-Surprise #1026_16750 W Bell Rd_Surprise, Arizona 85374"
+  },
+  {
+    "position": {
+      "lat": 33.63349072,
+      "lng": -112.3436755
+    },
+    "name": "Starbucks - AZ - Surprise  00309",
+    "address": "Safeway-Sun City West #1520_14505 W Grand Ave_Surprise, Arizona 85374"
+  },
+  {
+    "position": {
+      "lat": 33.60932,
+      "lng": -112.35792
+    },
+    "name": "Starbucks - AZ - Surprise  00310",
+    "address": "Safeway-Surprise #2699_13828 W Waddell Rd_Surprise, Arizona 85374",
+    "phone": "623-476-1810"
+  },
+  {
+    "position": {
+      "lat": 33.63881144,
+      "lng": -112.4319625
+    },
+    "name": "Starbucks - AZ - Surprise  00311",
+    "address": "Safeway-Surprise #1997_17049 W Bell Rd_Surprise, Arizona 85374"
+  },
+  {
+    "position": {
+      "lat": 33.6388,
+      "lng": -112.390409
+    },
+    "name": "Starbucks - AZ - Surprise [W]  00312",
+    "address": "Bell & Brookside, Surprise_15332 W. Bell Road_Surprise, Arizona 853742464",
+    "phone": "623-584-6593"
+  },
+  {
+    "position": {
+      "lat": 33.63864751,
+      "lng": -112.3551297
+    },
+    "name": "Starbucks - AZ - Surprise [W]  00313",
+    "address": "Bell & Grand, Surprise_13706 W. Bell Road_Surprise, Arizona 85374",
+    "phone": "623-584-6354"
+  },
+  {
+    "position": {
+      "lat": 33.36383659,
+      "lng": -111.9301883
+    },
+    "name": "Starbucks - AZ - Tempe  00314",
+    "address": "Albertsons-Tempe #940_750 E Guadalupe Rd_Tempe, Arizona 85283",
+    "phone": "480-820-8166"
+  },
+  {
+    "position": {
+      "lat": 33.41351082,
+      "lng": -111.9327098
+    },
+    "name": "Starbucks - AZ - Tempe  00315",
+    "address": "ASU/Tempe -  Memorial Union_2090 S Normal_Tempe, Arizona 85287",
+    "phone": "480-727-7480"
+  },
+  {
+    "position": {
+      "lat": 33.4172,
+      "lng": -111.9318
+    },
+    "name": "Starbucks - AZ - Tempe  00316",
+    "address": "ASU/Tempe -  Business College_College of Business 1st Floor_Tempe, Arizona 85287",
+    "phone": "480-727-0019"
+  },
+  {
+    "position": {
+      "lat": 33.41828512,
+      "lng": -111.9311116
+    },
+    "name": "Starbucks - AZ - Tempe  00317",
+    "address": "ASU/Tempe - Bookstore_525 E. Orange St._Tempe, Arizona 85287",
+    "phone": "480-727-0830"
+  },
+  {
+    "position": {
+      "lat": 33.42189146,
+      "lng": -111.9343286
+    },
+    "name": "Starbucks - AZ - Tempe  00318",
+    "address": "ASU/Tempe - Palo Verde East_340 E University Dr_Tempe, Arizona 85287",
+    "phone": "480-727-0462"
+  },
+  {
+    "position": {
+      "lat": 33.407737,
+      "lng": -111.925518
+    },
+    "name": "Starbucks - AZ - Tempe  00319",
+    "address": "Safeway-Tempe #1487_926 E Broadway_Tempe, Arizona 85282"
+  },
+  {
+    "position": {
+      "lat": 33.34918409,
+      "lng": -111.9140702
+    },
+    "name": "Starbucks - AZ - Tempe  00320",
+    "address": "Safeway-Tempe #1535_1515 E Elliott Rd_Tempe, Arizona 85284"
+  },
+  {
+    "position": {
+      "lat": 33.42184023,
+      "lng": -111.9512811
+    },
+    "name": "Starbucks - AZ - Tempe  00321",
+    "address": "University & Hardy, Tempe_871 W. University Drive_Tempe, Arizona 852813463",
+    "phone": "480-967-1692"
+  },
+  {
+    "position": {
+      "lat": 33.4412004,
+      "lng": -111.9552563
+    },
+    "name": "Starbucks - AZ - Tempe [WD]  00322",
+    "address": "Priest & Washington, Tempe_1158 W. Washington Street_Tempe, Arizona 852811200",
+    "phone": "602-225-0212"
+  },
+  {
+    "position": {
+      "lat": 33.36380411,
+      "lng": -111.9105527
+    },
+    "name": "Starbucks - AZ - Tempe [WD]  00323",
+    "address": "Guadalupe & McClintock_1817 E Guadalupe_Tempe, Arizona 85283_(480) 838-3989"
+  },
+  {
+    "position": {
+      "lat": 33.450393,
+      "lng": -111.926499
+    },
+    "name": "Starbucks - AZ - Tempe [WD]  00324",
+    "address": "Scottsdale & McKellips, Tempe_1926 N. Scottsdale Rd._Tempe, Arizona 852811517",
+    "phone": "480-941-6046"
+  },
+  {
+    "position": {
+      "lat": 33.38474206,
+      "lng": -111.9670042
+    },
+    "name": "Starbucks - AZ - Tempe [W]  00325",
+    "address": "Arizona Mills_5000 Arizona Mills Circle_Tempe, Arizona 85282_(480) 897-4804"
+  },
+  {
+    "position": {
+      "lat": 33.34907823,
+      "lng": -111.9648527
+    },
+    "name": "Starbucks - AZ - Tempe [W]  00326",
+    "address": "Elliot & Priest, Tempe_1620 W. Elliot Road_Tempe, Arizona 852841024",
+    "phone": "480-756-8750"
+  },
+  {
+    "position": {
+      "lat": 33.39388768,
+      "lng": -111.9090705
+    },
+    "name": "Starbucks - AZ - Tempe [W]  00327",
+    "address": "McClintock & Southern, Tempe_3223 S. McClintock Drive_Tempe, Arizona 852825603",
+    "phone": "480-831-6042"
+  },
+  {
+    "position": {
+      "lat": 33.42616374,
+      "lng": -111.9400045
+    },
+    "name": "Starbucks - AZ - Tempe [W]  00328",
+    "address": "Mill & 5th Avenue_420 S. Mill Avenue_Tempe, Arizona 85281_(480) 966-7228"
+  },
+  {
+    "position": {
+      "lat": 33.37850268,
+      "lng": -111.9286663
+    },
+    "name": "Starbucks - AZ - Tempe [W]  00329",
+    "address": "Rural & Baseline - Tempe_5158 South Rural Road_Tempe, Arizona 85282_(480) 897-8335"
+  },
+  {
+    "position": {
+      "lat": 33.41015719,
+      "lng": -112.2723273
+    },
+    "name": "Starbucks - AZ - Tolleson [WD]  00330",
+    "address": "99th Ave & Lower Buckeye, Tucson_2735 S. 99th Avenue_Tolleson, Arizona 853531403",
+    "phone": "623-936-3136"
+  },
+  {
+    "position": {
+      "lat": 32.23940075,
+      "lng": -111.0061229
+    },
+    "name": "Starbucks - AZ - Tucson  00331",
+    "address": "Albertsons-Tucson #972_1350 N. Silverbell Rd._Tucson, Arizona 85745"
+  },
+  {
+    "position": {
+      "lat": 32.29932614,
+      "lng": -110.9952047
+    },
+    "name": "Starbucks - AZ - Tucson  00332",
+    "address": "Albertsons-Tucson #988_5085 N La Canada Drive_Tucson, Arizona 85704",
+    "phone": "520-696-0325"
+  },
+  {
+    "position": {
+      "lat": 32.30506674,
+      "lng": -111.0119935
+    },
+    "name": "Starbucks - AZ - Tucson  00333",
+    "address": "Bashas' W River Rd Tucson  #160_2000 W River Rd_Tucson, Arizona 85704"
+  },
+  {
+    "position": {
+      "lat": 32.182236,
+      "lng": -110.8767
+    },
+    "name": "Starbucks - AZ - Tucson  00334",
+    "address": "Davis Monthan AFB_5405 E Granite St, Bldg 2527_Tucson, Arizona 85708"
+  },
+  {
+    "position": {
+      "lat": 32.221264,
+      "lng": -110.9432
+    },
+    "name": "Starbucks - AZ - Tucson  00335",
+    "address": "Safeway - Tucson #1684_1940 EAST BROADWAY ROAD_Tucson, Arizona 85719"
+  },
+  {
+    "position": {
+      "lat": 32.2578,
+      "lng": -110.7974
+    },
+    "name": "Starbucks - AZ - Tucson  00336",
+    "address": "Safeway - Tucson #1984_9125 East Tanque Verde_Tucson, Arizona 85749"
+  },
+  {
+    "position": {
+      "lat": 32.220764,
+      "lng": -110.805565
+    },
+    "name": "Starbucks - AZ - Tucson  00337",
+    "address": "Safeway - Tucson #234_8740 E Broadway_Tucson, Arizona 85710"
+  },
+  {
+    "position": {
+      "lat": 32.1339,
+      "lng": -111.00871
+    },
+    "name": "Starbucks - AZ - Tucson  00338",
+    "address": "Safeway - Tucson #267_2040 West Valencia_Tucson, Arizona 85746",
+    "phone": "520-578-0144"
+  },
+  {
+    "position": {
+      "lat": 32.33538253,
+      "lng": -110.9774191
+    },
+    "name": "Starbucks - AZ - Tucson  00339",
+    "address": "Safeway-Tucson #1255_7110 N Oracle Rd_Tucson, Arizona 85704",
+    "phone": "520-575-0949"
+  },
+  {
+    "position": {
+      "lat": 32.119,
+      "lng": -110.799695
+    },
+    "name": "Starbucks - AZ - Tucson  00340",
+    "address": "Safeway-Tucson #1986_9050 E Valencia Rd_Tucson, Arizona 85747"
+  },
+  {
+    "position": {
+      "lat": 32.30839304,
+      "lng": -110.8913519
+    },
+    "name": "Starbucks - AZ - Tucson  00341",
+    "address": "Safeway-Tucson #250_4752 E Sunrise Dr_Tucson, Arizona 857184535",
+    "phone": "520-299-3534"
+  },
+  {
+    "position": {
+      "lat": 32.20708767,
+      "lng": -111.0399153
+    },
+    "name": "Starbucks - AZ - Tucson  00342",
+    "address": "Starr Pass Marriott Resort & Spa_3800 W Starr Pass Blvd_Tucson, Arizona 85745"
+  },
+  {
+    "position": {
+      "lat": 32.2066198,
+      "lng": -110.7870344
+    },
+    "name": "Starbucks - AZ - Tucson  00343",
+    "address": "Target Tucson T-1863_9615 E. Old Spanish Trail_Tucson, Arizona 85748"
+  },
+  {
+    "position": {
+      "lat": 32.22158475,
+      "lng": -110.9137549
+    },
+    "name": "Starbucks - AZ - Tucson  00344",
+    "address": "Target Tucson El Con Mall T-1439_3699 E. Broadway Blvd_Tucson, Arizona 85716"
+  },
+  {
+    "position": {
+      "lat": 32.3374794,
+      "lng": -111.0490882
+    },
+    "name": "Starbucks - AZ - Tucson  00345",
+    "address": "Target Tucson T-854_3901 W Ina Rd_Tucson, Arizona 65741"
+  },
+  {
+    "position": {
+      "lat": 32.221421,
+      "lng": -110.944887
+    },
+    "name": "Starbucks - AZ - Tucson [D]  00346",
+    "address": "Broadway & Campbell, Tucson_1821 E. Broadway Blvd._Tucson, Arizona 857195932",
+    "phone": "520-622-8116"
+  },
+  {
+    "position": {
+      "lat": 32.2217,
+      "lng": -110.919687
+    },
+    "name": "Starbucks - AZ - Tucson [D]  00347",
+    "address": "Broadway & Randolph, Tucson_3421 E. Broadway Blvd_Tucson, Arizona 857165410",
+    "phone": "520-323-4512"
+  },
+  {
+    "position": {
+      "lat": 32.22095979,
+      "lng": -110.8371748
+    },
+    "name": "Starbucks - AZ - Tucson [WD]  00348",
+    "address": "Broadway Bl & Kolb Rd, Tucson_7288 E. Broadway Blvd._Tucson, Arizona 857101407",
+    "phone": "520-721-7136"
+  },
+  {
+    "position": {
+      "lat": 32.3301,
+      "lng": -111.1571
+    },
+    "name": "Starbucks - AZ - Tucson [WD]  00349",
+    "address": "Cortaro & I-10, Tucson_5970 W. Arizona Pavilions Drive_Tucson, Arizona 857437314",
+    "phone": "520-744-3418"
+  },
+  {
+    "position": {
+      "lat": 32.33618072,
+      "lng": -110.9776652
+    },
+    "name": "Starbucks - AZ - Tucson [WD]  00350",
+    "address": "Ina & Oracle_7151 N Oracle_Tucson, Arizona 85704",
+    "phone": "520-219-4880"
+  },
+  {
+    "position": {
+      "lat": 32.16325493,
+      "lng": -110.9912844
+    },
+    "name": "Starbucks - AZ - Tucson [WD]  00351",
+    "address": "Irvington & I-19, Tucson_1209 W. Irvington Road_Tucson, Arizona 857141167",
+    "phone": "520-295-3920"
+  },
+  {
+    "position": {
+      "lat": 32.23603401,
+      "lng": -110.8584782
+    },
+    "name": "Starbucks - AZ - Tucson [WD]  00352",
+    "address": "Speedway & Wilmot, Tucson_6291 E. Speedway Blvd_Tucson, Arizona 857125128",
+    "phone": "520-546-7771"
+  },
+  {
+    "position": {
+      "lat": 32.2075692,
+      "lng": -110.7891449
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00353",
+    "address": "22nd & Harrison, Tucson_9525 E. Old Spanish Trail_Tucson, Arizona 857486630",
+    "phone": "520-721-7221"
+  },
+  {
+    "position": {
+      "lat": 32.20636026,
+      "lng": -110.8434517
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00354",
+    "address": "22nd Street & Kolb, Tucson_6970 E. 22nd Street_Tucson, Arizona 857105121",
+    "phone": "520-584-1384"
+  },
+  {
+    "position": {
+      "lat": 32.22008894,
+      "lng": -110.7726841
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00355",
+    "address": "Broadway & Houghton, Tucson_50 South Houghton Road_Tucson, Arizona 85748",
+    "phone": "520-298-0408"
+  },
+  {
+    "position": {
+      "lat": 32.25070669,
+      "lng": -110.8903829
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00356",
+    "address": "Grant & Swan_4811 E Grant_Tucson, Arizona 85712_(520) 325-8669"
+  },
+  {
+    "position": {
+      "lat": 32.2866,
+      "lng": -110.9654
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00357",
+    "address": "First & Wetmore, Tucson_405 E. Wetmore Road_Tucson, Arizona 857051700",
+    "phone": "520-293-7086"
+  },
+  {
+    "position": {
+      "lat": 32.33518446,
+      "lng": -111.0130385
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00358",
+    "address": "La Cholla & Ina, Tucson_7555 N. La Cholla Blvd._Tucson, Arizona 857412303",
+    "phone": "520-219-9338"
+  },
+  {
+    "position": {
+      "lat": 32.22149254,
+      "lng": -110.8663807
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00359",
+    "address": "Park Place - Tucson_5870 East Broadway Blvd._Tucson, Arizona 857113916",
+    "phone": "520-514-1945"
+  },
+  {
+    "position": {
+      "lat": 32.28723994,
+      "lng": -110.9448869
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00360",
+    "address": "River & Campbell, Tucson_1825 E. River Road, Suite 119_Tucson, Arizona 85718",
+    "phone": "520-232-0105"
+  },
+  {
+    "position": {
+      "lat": 32.29661113,
+      "lng": -110.9726828
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00361",
+    "address": "River Road & Stoneloop_98 West River Road_Tucson, Arizona 85704_(520) 408-2292"
+  },
+  {
+    "position": {
+      "lat": 32.32203293,
+      "lng": -110.9293345
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00362",
+    "address": "Skyline & Campbell, Tucson_6370 N. Campbell Avenue_Tucson, Arizona 857183175",
+    "phone": "520-529-9211"
+  },
+  {
+    "position": {
+      "lat": 32.2362,
+      "lng": -110.9276
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00363",
+    "address": "Speedway & Country Club, Tucson_3025 E. Speedway Blvd._Tucson, Arizona 857163826",
+    "phone": "520-320-1760"
+  },
+  {
+    "position": {
+      "lat": 32.30835655,
+      "lng": -110.8924853
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00364",
+    "address": "Sunrise & Swan - Tucson_4700 East Sunrise Drive_Tucson, Arizona 85718",
+    "phone": "520-615-0881"
+  },
+  {
+    "position": {
+      "lat": 32.23218991,
+      "lng": -110.9440335
+    },
+    "name": "Starbucks - AZ - Tucson [W]  00365",
+    "address": "University of Arizona_802-804 E. University Blvd._Tucson, Arizona 85719_(520) 620-9344"
+  },
+  {
+    "position": {
+      "lat": 32.261646,
+      "lng": -109.84124
+    },
+    "name": "Starbucks - AZ - WILLCOX  00366",
+    "address": "Safeway - Willcox #272_650 N BISBEE AVE_WILLCOX, Arizona 85643"
+  },
+  {
+    "position": {
+      "lat": 33.962063,
+      "lng": -112.76857
+    },
+    "name": "Starbucks - AZ - Wickenburg  00367",
+    "address": "Safeway - Wickenburg #1584_1999 W Wickenburg Way_Wickenburg, Arizona 85390"
+  },
+  {
+    "position": {
+      "lat": 35.2485,
+      "lng": -112.1942
+    },
+    "name": "Starbucks - AZ - Williams  00368",
+    "address": "Safeway - Williams #1639_637 W Route 66_Williams, Arizona 86046"
+  },
+  {
+    "position": {
+      "lat": 32.68396897,
+      "lng": -114.6484345
+    },
+    "name": "Starbucks - AZ - Yuma  00369",
+    "address": "Albertsons-Yuma #0931 (951)_2378 W 24th St_Yuma, Arizona 85364"
+  },
+  {
+    "position": {
+      "lat": 32.70183,
+      "lng": -114.60354
+    },
+    "name": "Starbucks - AZ - Yuma  00370",
+    "address": "16th Street & I-8, Yuma_1418 S. Yuma Palms Parkway_Yuma, Arizona 85365",
+    "phone": "928-782-7854"
+  },
+  {
+    "position": {
+      "lat": 32.701324,
+      "lng": -114.6034
+    },
+    "name": "Starbucks - AZ - Yuma  00371",
+    "address": "Target Yuma T-2083_1450 S Yuma Palms Pkwy_Yuma, Arizona 85365",
+    "phone": "928-343-7470"
+  },
+  {
+    "position": {
+      "lat": 32.6839,
+      "lng": -114.648861
+    },
+    "name": "Starbucks - AZ - Yuma [D]  00372",
+    "address": "24th & Avenue B, Yuma_2383 W. 24th Street_Yuma, Arizona 85364",
+    "phone": "928-344-0563"
+  },
+  {
+    "position": {
+      "lat": 34.079,
+      "lng": -118.114954
+    },
+    "name": "Starbucks - CA - ALHAMBRA [W]  00373",
+    "address": "Valley & Almansor, Alhambra_810 E VALLEY BLVD_ALHAMBRA, California 918015225_(626) 284-2472"
+  },
+  {
+    "position": {
+      "lat": 34.6267,
+      "lng": -117.4283
+    },
+    "name": "Starbucks - CA - Adelanto [WD]  00374",
+    "address": "Palmdale & Hwy 395, Adelanto_14136 US Hwy 395_Adelanto, California 923016700",
+    "phone": "760-530-9252"
+  },
+  {
+    "position": {
+      "lat": 34.15343545,
+      "lng": -118.7573187
+    },
+    "name": "Starbucks - CA - Agoura Hills  00375",
+    "address": "Vons-Agoura Hills #2001_5671 Kanan Rd._Agoura Hills, California 91301",
+    "phone": "818-991-2857"
+  },
+  {
+    "position": {
+      "lat": 34.1606,
+      "lng": -118.757134
+    },
+    "name": "Starbucks - CA - Agoura [W]  00376",
+    "address": "Agoura_5827 Canan Road_Agoura, California 91301_(818) 735-0268"
+  },
+  {
+    "position": {
+      "lat": 37.788222,
+      "lng": -122.277604
+    },
+    "name": "Starbucks - CA - Alameda  00377",
+    "address": "Albertsons-Alameda #7031_815 Marina Village_Alameda, California 94501",
+    "phone": "510-521-9113"
+  },
+  {
+    "position": {
+      "lat": 37.757099,
+      "lng": -122.253388
+    },
+    "name": "Starbucks - CA - Alameda  00378",
+    "address": "Safeway - Alameda #2708_2227 South Shore Center_Alameda, California 94501",
+    "phone": "510-863-9000"
+  },
+  {
+    "position": {
+      "lat": 37.76807,
+      "lng": -122.233245
+    },
+    "name": "Starbucks - CA - Alameda  00379",
+    "address": "Tilden & Blanding - Alameda_2671 Blanding Avene_Alameda, California 94501",
+    "phone": "510-337-1091"
+  },
+  {
+    "position": {
+      "lat": 37.76369586,
+      "lng": -122.2432424
+    },
+    "name": "Starbucks - CA - Alameda [W]  00380",
+    "address": "Park Street & Central - Alameda_1364 Park Street_Alameda, California 94501",
+    "phone": "510-521-5815"
+  },
+  {
+    "position": {
+      "lat": 37.75665,
+      "lng": -122.252229
+    },
+    "name": "Starbucks - CA - Alameda [W]  00381",
+    "address": "South Shore Shopping Center_2210-J South Shore Drive_Alameda, California 94501_(510) 749-9595"
+  },
+  {
+    "position": {
+      "lat": 37.77965876,
+      "lng": -122.2761122
+    },
+    "name": "Starbucks - CA - Alameda [W]  00382",
+    "address": "Webster & Atlantic - Alameda_720 Atlantic Avenue_Alameda, California 94501",
+    "phone": "510-337-1580"
+  },
+  {
+    "position": {
+      "lat": 37.8501398,
+      "lng": -122.0337703
+    },
+    "name": "Starbucks - CA - Alamo  00383",
+    "address": "Safeway-Alamo #962_200 Alamo Plaza_Alamo, California 94507",
+    "phone": "925-820-8022"
+  },
+  {
+    "position": {
+      "lat": 37.8492748,
+      "lng": -122.0319981
+    },
+    "name": "Starbucks - CA - Alamo [W]  00384",
+    "address": "Las Trampas & Danville- Alamo_3225 Danville Boulevard_Alamo, California 94507_(925) 362-9568"
+  },
+  {
+    "position": {
+      "lat": 37.88531,
+      "lng": -122.30793
+    },
+    "name": "Starbucks - CA - Albany  00385",
+    "address": "Target Albany T-1926_1057 Eastshore Hwy_Albany, California 94706"
+  },
+  {
+    "position": {
+      "lat": 34.079716,
+      "lng": -118.151899
+    },
+    "name": "Starbucks - CA - Alhambra [W]  00386",
+    "address": "Fremont Ave & Mission Rd_1131 S Fremont Ave_Alhambra, California 91803",
+    "phone": "626-457-5234"
+  },
+  {
+    "position": {
+      "lat": 34.07855268,
+      "lng": -118.1228761
+    },
+    "name": "Starbucks - CA - Alhambra [W]  00387",
+    "address": "Garfield & Valley, Alhambra_1 East Valley Blvd._Alhambra, California 918015115",
+    "phone": "626-576-1248"
+  },
+  {
+    "position": {
+      "lat": 34.09456236,
+      "lng": -118.1279698
+    },
+    "name": "Starbucks - CA - Alhambra [W]  00388",
+    "address": "Main & 1st - Alhambra_101 W. Main Street_Alhambra, California 91801_(626) 282-1171"
+  },
+  {
+    "position": {
+      "lat": 33.575604,
+      "lng": -117.703145
+    },
+    "name": "Starbucks - CA - Aliso Viejo [W]  00389",
+    "address": "Aliso Viejo_27072 La Paz Road_Aliso Viejo, California 92653",
+    "phone": "949-362-1415"
+  },
+  {
+    "position": {
+      "lat": 38.165844,
+      "lng": -122.263695
+    },
+    "name": "Starbucks - CA - American Canyon  00390",
+    "address": "Safeway-American Canyon #1883_103 American Canyon Rd_American Canyon, California 94503"
+  },
+  {
+    "position": {
+      "lat": 38.171,
+      "lng": -122.24529
+    },
+    "name": "Starbucks - CA - American Canyon [WD]  00391",
+    "address": "Napa Junction & Hwy 29 - American C_6050 Main St_American Canyon, California 94503_7075572705"
+  },
+  {
+    "position": {
+      "lat": 38.165852,
+      "lng": -122.26392
+    },
+    "name": "Starbucks - CA - American Canyon [W]  00392",
+    "address": "American Canyon & Highway 29_101 W American Canyon Rd_American Canyon, California 94503",
+    "phone": "707-649-2067"
+  },
+  {
+    "position": {
+      "lat": 33.79963958,
+      "lng": -117.9178582
+    },
+    "name": "Starbucks - CA - Anaheim  00393",
+    "address": "Anaheim Marriott Hotel_700 W. Convention Way_Anaheim, California 92802"
+  },
+  {
+    "position": {
+      "lat": 33.79959067,
+      "lng": -117.9190496
+    },
+    "name": "Starbucks - CA - Anaheim  00394",
+    "address": "Hilton - Anaheim Hotel Lobby_777 Convention Way_Anaheim, California 92802",
+    "phone": "714-740-4791"
+  },
+  {
+    "position": {
+      "lat": 33.836449,
+      "lng": -117.914482
+    },
+    "name": "Starbucks - CA - Anaheim  00395",
+    "address": "Lincoln & Anaheim, Anaheim_110  West Lincoln Avenue_Anaheim, California 928052901",
+    "phone": "714-999-6876"
+  },
+  {
+    "position": {
+      "lat": 33.86854485,
+      "lng": -117.7519695
+    },
+    "name": "Starbucks - CA - Anaheim  00396",
+    "address": "Vons-Anaheim Hills #2216_8010 E Santa Ana Canyon Rd_Anaheim, California 928081102",
+    "phone": "714-282-7064"
+  },
+  {
+    "position": {
+      "lat": 33.85133277,
+      "lng": -117.7922813
+    },
+    "name": "Starbucks - CA - Anaheim Hills  00397",
+    "address": "Vons-Anaheim #2103_5600 E Santa Ana Canyon Rd_Anaheim Hills, California 92807"
+  },
+  {
+    "position": {
+      "lat": 33.851543,
+      "lng": -117.788732
+    },
+    "name": "Starbucks - CA - Anaheim Hills [W]  00398",
+    "address": "Santa Ana Canyon & Imperial Hwy, An_5741 E. Santa Ana Canyon Road_Anaheim Hills, California 928073229",
+    "phone": "714-685-0871"
+  },
+  {
+    "position": {
+      "lat": 33.85987581,
+      "lng": -117.791645
+    },
+    "name": "Starbucks - CA - Anaheim Hills [W]  00399",
+    "address": "Anaheim Hills_5655 E. La Palma_Anaheim Hills, California 92807_(714) 970-5790"
+  },
+  {
+    "position": {
+      "lat": 33.86345977,
+      "lng": -117.7395659
+    },
+    "name": "Starbucks - CA - Anaheim Hills [W]  00400",
+    "address": "Sycamore Canyon Plaza - Anaheim Hil_721 South Weir Canyon Road_Anaheim Hills, California 92808_(714) 998-2622"
+  },
+  {
+    "position": {
+      "lat": 33.863973,
+      "lng": -117.744356
+    },
+    "name": "Starbucks - CA - Anaheim Hills [W]  00401",
+    "address": "Weir Canyon & Monte Vista_8295 E. Monte Vista Road_Anaheim Hills, California 928081249",
+    "phone": "714-282-0231"
+  },
+  {
+    "position": {
+      "lat": 33.85501077,
+      "lng": -117.8373923
+    },
+    "name": "Starbucks - CA - Anaheim [WD]  00402",
+    "address": "Tustin & 91 Fwy, Anaheim_1070 N. Tustin Avenue_Anaheim, California 92807",
+    "phone": "714-630-1995"
+  },
+  {
+    "position": {
+      "lat": 33.84116153,
+      "lng": -117.941573
+    },
+    "name": "Starbucks - CA - Anaheim [W]  00403",
+    "address": "Euclid & Crescent, Anaheim_681 N. Euclid Street_Anaheim, California 92801",
+    "phone": "714-284-0365"
+  },
+  {
+    "position": {
+      "lat": 33.81776518,
+      "lng": -117.958873
+    },
+    "name": "Starbucks - CA - Anaheim [W]  00404",
+    "address": "Brookhurst & Ball, Anaheim_2219 W. Ball Road_Anaheim, California 928045314",
+    "phone": "714-520-0337"
+  },
+  {
+    "position": {
+      "lat": 33.805641,
+      "lng": -117.883338
+    },
+    "name": "Starbucks - CA - Anaheim [W]  00405",
+    "address": "Katella & 57 Fwy, Anaheim_2420 E. Katella Avenue_Anaheim, California 928065901",
+    "phone": "714-634-3703"
+  },
+  {
+    "position": {
+      "lat": 33.80158348,
+      "lng": -117.8938678
+    },
+    "name": "Starbucks - CA - Anaheim [W]  00406",
+    "address": "Stadium Crossings - Anaheim_2035 E. Katella Ave._Anaheim, California 92805",
+    "phone": "714-634-4164"
+  },
+  {
+    "position": {
+      "lat": 40.4562,
+      "lng": -122.3248
+    },
+    "name": "Starbucks - CA - Anderson  00407",
+    "address": "Safeway - Anderson #273_17539 Vierra Canyon_Anderson, California 96007"
+  },
+  {
+    "position": {
+      "lat": 38.07990289,
+      "lng": -120.5551201
+    },
+    "name": "Starbucks - CA - Angels Camp [WD]  00408",
+    "address": "Hwy 4 & Hwy 49 - Angels Camp_27 N. Main Street_Angels Camp, California 95221",
+    "phone": "209-736-1297"
+  },
+  {
+    "position": {
+      "lat": 38.71795184,
+      "lng": -121.3769968
+    },
+    "name": "Starbucks - CA - Antelope [WD]  00409",
+    "address": "Elverta & Walerga - Antelope_4241 Elverta Road_Antelope, California 95843",
+    "phone": "916-721-5082"
+  },
+  {
+    "position": {
+      "lat": 37.99698,
+      "lng": -121.80573
+    },
+    "name": "Starbucks - CA - Antioch  00410",
+    "address": "Safeway-Antioch #1259_3365 Deer Valley Rd_Antioch, California 94509",
+    "phone": "925-706-4105"
+  },
+  {
+    "position": {
+      "lat": 37.96744918,
+      "lng": -121.784687
+    },
+    "name": "Starbucks - CA - Antioch [WD]  00411",
+    "address": "Antioch_4448 Lone Tree Way_Antioch, California 94509_(925) 778-3001"
+  },
+  {
+    "position": {
+      "lat": 37.96796292,
+      "lng": -121.7860158
+    },
+    "name": "Starbucks - CA - Antioch [WD]  00412",
+    "address": "Lone Tree & Slatten Ranch - Antioch_5779 Lone Tree Way_Antioch, California 94531",
+    "phone": "925-754-9377"
+  },
+  {
+    "position": {
+      "lat": 38.003835,
+      "lng": -121.805999
+    },
+    "name": "Starbucks - CA - Antioch [W]  00413",
+    "address": "18th & A - Antioch_1896 A Street_Antioch, California 94531",
+    "phone": "925-522-8207"
+  },
+  {
+    "position": {
+      "lat": 34.47103242,
+      "lng": -117.2442133
+    },
+    "name": "Starbucks - CA - Apple Valley  00414",
+    "address": "Target Apple Valley T-939_19201 Bear Valley Rd_Apple Valley, California 92308"
+  },
+  {
+    "position": {
+      "lat": 34.525615,
+      "lng": -117.21929
+    },
+    "name": "Starbucks - CA - Apple Valley [W]  00415",
+    "address": "Rancheras & Hwy 18, Apple Valley_20226 US Highway 18_Apple Valley, California 923072938",
+    "phone": "760-242-5633"
+  },
+  {
+    "position": {
+      "lat": 36.97870222,
+      "lng": -121.9075112
+    },
+    "name": "Starbucks - CA - Aptos  00416",
+    "address": "Safeway-Aptos #640_16 Rancho Del Mar_Aptos, California 95003"
+  },
+  {
+    "position": {
+      "lat": 36.9765,
+      "lng": -121.9004
+    },
+    "name": "Starbucks - CA - Aptos [W]  00417",
+    "address": "Soquel & Trout Gulch - Aptos_105 B Post Office Drive_Aptos, California 95033_8316870921"
+  },
+  {
+    "position": {
+      "lat": 34.10843817,
+      "lng": -118.0231553
+    },
+    "name": "Starbucks - CA - Arcadia  00418",
+    "address": "Albertsons-Arcadia #6561_298 E Live Oak Ave_Arcadia, California 91006",
+    "phone": "626-446-1416"
+  },
+  {
+    "position": {
+      "lat": 34.12226744,
+      "lng": -118.0679847
+    },
+    "name": "Starbucks - CA - Arcadia  00419",
+    "address": "Vons - Arcadia #3208_745 E Naomi Ave_Arcadia, California 91007"
+  },
+  {
+    "position": {
+      "lat": 34.14013025,
+      "lng": -118.0233603
+    },
+    "name": "Starbucks - CA - Arcadia [W]  00420",
+    "address": "300 E. Huntington Dr. - Arcadia_300 E Huntington Drive_Arcadia, California 91006",
+    "phone": "626-574-1971"
+  },
+  {
+    "position": {
+      "lat": 34.12393407,
+      "lng": -118.055758
+    },
+    "name": "Starbucks - CA - Arcadia [W]  00421",
+    "address": "Arcadia_733 West Naomi_Arcadia, California 91006",
+    "phone": "626-447-5094"
+  },
+  {
+    "position": {
+      "lat": 35.12077807,
+      "lng": -120.6056362
+    },
+    "name": "Starbucks - CA - Arroyo Grande [W]  00422",
+    "address": "Grand & Courtland, Arroyo Grande_1421 Grand Ave_Arroyo Grande, California 93420",
+    "phone": "805-489-8334"
+  },
+  {
+    "position": {
+      "lat": 35.12425004,
+      "lng": -120.5916373
+    },
+    "name": "Starbucks - CA - Arroyo Grande [W]  00423",
+    "address": "West Branch & Rancho Parkway_924 West Branch_Arroyo Grande, California 93420",
+    "phone": "805-473-9492"
+  },
+  {
+    "position": {
+      "lat": 33.87311766,
+      "lng": -118.0820999
+    },
+    "name": "Starbucks - CA - Artesia [W]  00424",
+    "address": "Pioneer & Artesia, Artesia_11809 Artesia Blvd._Artesia, California 907014002",
+    "phone": "562-860-5444"
+  },
+  {
+    "position": {
+      "lat": 35.47423353,
+      "lng": -120.6652638
+    },
+    "name": "Starbucks - CA - Atascadero  00425",
+    "address": "Albertsons-Atascadero #1690/6390_8200 Curbaril Ave._Atascadero, California 93422",
+    "phone": "805-462-0379"
+  },
+  {
+    "position": {
+      "lat": 35.526337,
+      "lng": -120.70302
+    },
+    "name": "Starbucks - CA - Atascadero [D]  00426",
+    "address": "El Camino & Santa Cruz, Atascadero_955 El Camino Real_Atascadero, California 934221424_8054609354"
+  },
+  {
+    "position": {
+      "lat": 35.48474519,
+      "lng": -120.6628732
+    },
+    "name": "Starbucks - CA - Atascadero [W]  00427",
+    "address": "El Camino Real & Morro, Atascadero_7135 El Camino Real_Atascadero, California 93422",
+    "phone": "805-462-1849"
+  },
+  {
+    "position": {
+      "lat": 37.3604,
+      "lng": -120.613518
+    },
+    "name": "Starbucks - CA - Atwater [D]  00428",
+    "address": "Bellevue & Winton - Atwater_1861 Bellevue Road_Atwater, California 95301",
+    "phone": "209-357-2491"
+  },
+  {
+    "position": {
+      "lat": 38.877266,
+      "lng": -121.080564
+    },
+    "name": "Starbucks - CA - Auburn  00429",
+    "address": "Auburn Folsom & Sacramento - Auburn_660 Auburn Folsom Rd_Auburn, California 95603",
+    "phone": "530-889-8023"
+  },
+  {
+    "position": {
+      "lat": 38.94250878,
+      "lng": -121.0921941
+    },
+    "name": "Starbucks - CA - Auburn [WD]  00430",
+    "address": "Bell & Highway 49 - Auburn_2815 Bell Road_Auburn, California 95603",
+    "phone": "530-887-1874"
+  },
+  {
+    "position": {
+      "lat": 39.0425,
+      "lng": -121.094254
+    },
+    "name": "Starbucks - CA - Auburn [WD]  00431",
+    "address": "Hwy 49 & Combie - Auburn_10005 Combie Rd_Auburn, California 95602",
+    "phone": "530-268-0634"
+  },
+  {
+    "position": {
+      "lat": 38.90395451,
+      "lng": -121.0761474
+    },
+    "name": "Starbucks - CA - Auburn [W]  00432",
+    "address": "Auburn Town Center_392 Elm Avenue_Auburn, California 95603_(530) 823-1528"
+  },
+  {
+    "position": {
+      "lat": 38.92081529,
+      "lng": -121.0581499
+    },
+    "name": "Starbucks - CA - Auburn [W]  00433",
+    "address": "Lincoln & Foresthill - Auburn_13345 Lincoln Way_Auburn, California 95603",
+    "phone": "530-745-0661"
+  },
+  {
+    "position": {
+      "lat": 34.12870314,
+      "lng": -117.8836472
+    },
+    "name": "Starbucks - CA - Azusa [W]  00434",
+    "address": "Alosta & Barranca, Azusa_1119 E. Alosta Avenue_Azusa, California 917022740",
+    "phone": "626-335-6763"
+  },
+  {
+    "position": {
+      "lat": 34.1334,
+      "lng": -117.9078
+    },
+    "name": "Starbucks - CA - Azusa [W]  00435",
+    "address": "Foothill & Azusa, Azusa_118 W. Foothill Blvd._Azusa, California 917022524",
+    "phone": "626-334-7267"
+  },
+  {
+    "position": {
+      "lat": 35.4106,
+      "lng": -116.061104
+    },
+    "name": "Starbucks - CA - Baker [WD]  00436",
+    "address": "Baker & Mojave Pointe, Baker_56383 Mojave Pointe_Baker, California 92309",
+    "phone": "760-733-4128"
+  },
+  {
+    "position": {
+      "lat": 35.2959,
+      "lng": -119.04093
+    },
+    "name": "Starbucks - CA - Bakersfield  00437",
+    "address": "Albertsons - Bakersfield #6323_3500 Panama Ln_Bakersfield, California 93313"
+  },
+  {
+    "position": {
+      "lat": 35.3182581,
+      "lng": -119.0932902
+    },
+    "name": "Starbucks - CA - Bakersfield  00438",
+    "address": "Albertsons-Bakersfield #6325_7900 White Lane_Bakersfield, California 93311",
+    "phone": "661-836-9691"
+  },
+  {
+    "position": {
+      "lat": 35.38337,
+      "lng": -119.14679
+    },
+    "name": "Starbucks - CA - Bakersfield  00439",
+    "address": "Albertsons-Bakersfield #6377_13045 Rosedale Hwy_Bakersfield, California 93312",
+    "phone": "661-587-0153"
+  },
+  {
+    "position": {
+      "lat": 35.36857392,
+      "lng": -119.0187784
+    },
+    "name": "Starbucks - CA - Bakersfield  00440",
+    "address": "Chester & California, Bakersfield_1200 Chester Avenue_Bakersfield, California 93301",
+    "phone": "661-336-0645"
+  },
+  {
+    "position": {
+      "lat": 35.339935,
+      "lng": -119.102264
+    },
+    "name": "Starbucks - CA - Bakersfield  00441",
+    "address": "Vons - Bakersfield #2420_9000 Ming Ave_Bakersfield, California 93311",
+    "phone": "970-879-3290"
+  },
+  {
+    "position": {
+      "lat": 35.3544,
+      "lng": -119.0664
+    },
+    "name": "Starbucks - CA - Bakersfield  00442",
+    "address": "Vons-Bakersfield #1969_5700 Stockdale Hwy_Bakersfield, California 93309"
+  },
+  {
+    "position": {
+      "lat": 35.41244764,
+      "lng": -119.0582569
+    },
+    "name": "Starbucks - CA - Bakersfield [D]  00443",
+    "address": "Olive & Knudsen, Bakersfield_5210 Olive Drive_Bakersfield, California 93308",
+    "phone": "661-399-4090"
+  },
+  {
+    "position": {
+      "lat": 35.38118245,
+      "lng": -119.0152813
+    },
+    "name": "Starbucks - CA - Bakersfield [WD]  00444",
+    "address": "24th & L Street, Bakersfield_1201 24th Street_Bakersfield, California 933012310",
+    "phone": "661-324-1267"
+  },
+  {
+    "position": {
+      "lat": 35.310587,
+      "lng": -119.092299
+    },
+    "name": "Starbucks - CA - Bakersfield [WD]  00445",
+    "address": "Gosford & Pacheco, Bakersfield_5041 Gosford Road_Bakersfield, California 933134993",
+    "phone": "661-664-9589"
+  },
+  {
+    "position": {
+      "lat": 35.3936373,
+      "lng": -118.967388
+    },
+    "name": "Starbucks - CA - Bakersfield [WD]  00446",
+    "address": "Mt Vernon & Hwy 178, Bakersfield_2659 Mt Vernon Avenue_Bakersfield, California 933062900",
+    "phone": "661-871-6497"
+  },
+  {
+    "position": {
+      "lat": 35.38347739,
+      "lng": -119.1044016
+    },
+    "name": "Starbucks - CA - Bakersfield [WD]  00447",
+    "address": "Rosedale & Calloway, Bakersfield_9200 Rosedale Hwy_Bakersfield, California 93312",
+    "phone": "661-587-3661"
+  },
+  {
+    "position": {
+      "lat": 35.3977,
+      "lng": -118.949699
+    },
+    "name": "Starbucks - CA - Bakersfield [WD]  00448",
+    "address": "Oswell & Auburn, Bakersfield_2701 Oswell Street_Bakersfield, California 933062701",
+    "phone": "661-871-6041"
+  },
+  {
+    "position": {
+      "lat": 35.317927,
+      "lng": -119.054597
+    },
+    "name": "Starbucks - CA - Bakersfield [WD]  00449",
+    "address": "White & Stine, Bakersfield_4701 White Lane_Bakersfield, California 933096392_(661) 833-6927"
+  },
+  {
+    "position": {
+      "lat": 35.33993,
+      "lng": -119.10229
+    },
+    "name": "Starbucks - CA - Bakersfield [W]  00450",
+    "address": "Bakersfield Marketplace_9000 Ming Avenue_Bakersfield, California 93311_(661) 665-8065"
+  },
+  {
+    "position": {
+      "lat": 35.399772,
+      "lng": -119.092099
+    },
+    "name": "Starbucks - CA - Bakersfield [W]  00451",
+    "address": "Coffee & Hageman - Bakersfield_4420 Coffee Road_Bakersfield, California 93308_(661) 587-8786"
+  },
+  {
+    "position": {
+      "lat": 35.35443543,
+      "lng": -119.093446
+    },
+    "name": "Starbucks - CA - Bakersfield [W]  00452",
+    "address": "Coffee & Stockdale Hwy, Bakersfield_8200 Stockdale Highway_Bakersfield, California 93311",
+    "phone": "661-837-4053"
+  },
+  {
+    "position": {
+      "lat": 35.33932363,
+      "lng": -119.0318787
+    },
+    "name": "Starbucks - CA - Bakersfield [W]  00453",
+    "address": "Ming & Hwy 99, Bakersfield_2701 Ming Avenue_Bakersfield, California 93304",
+    "phone": "661-834-8949"
+  },
+  {
+    "position": {
+      "lat": 35.2959,
+      "lng": -119.02633
+    },
+    "name": "Starbucks - CA - Bakersfield [W]  00454",
+    "address": "Panama & Colony, Bakersfield_2200 Panama Lane_Bakersfield, California 93301",
+    "phone": "661-396-0579"
+  },
+  {
+    "position": {
+      "lat": 35.35581513,
+      "lng": -119.0611119
+    },
+    "name": "Starbucks - CA - Bakersfield [W]  00455",
+    "address": "Stockdale Village - Bakersfield_5620-A California Avenue_Bakersfield, California 93309_(661) 631-0107"
+  },
+  {
+    "position": {
+      "lat": 34.070196,
+      "lng": -117.97919
+    },
+    "name": "Starbucks - CA - Baldwin Park  00456",
+    "address": "Baldwin Park & Francisquito_3133 Baldwin Park Blvd_Baldwin Park, California 917064783",
+    "phone": "626-338-1321"
+  },
+  {
+    "position": {
+      "lat": 34.06453371,
+      "lng": -117.9678991
+    },
+    "name": "Starbucks - CA - Baldwin Park [WD]  00457",
+    "address": "Puente & Francisquito, Baldwin Park_1620 Puente Avenue_Baldwin Park, California 917065952",
+    "phone": "626-338-5018"
+  },
+  {
+    "position": {
+      "lat": 34.072124,
+      "lng": -117.959361
+    },
+    "name": "Starbucks - CA - Baldwin Park [WD]  00458",
+    "address": "Puente & The 10 Fwy, Baldwin Park_14540 Baldwin Park Towne Center Dr._Baldwin Park, California 917065500",
+    "phone": "626-337-9935"
+  },
+  {
+    "position": {
+      "lat": 33.922893,
+      "lng": -116.9467
+    },
+    "name": "Starbucks - CA - Banning  00459",
+    "address": "Albertsons-Banning #6512_300 S Highland Springs Ave #7_Banning, California 92220",
+    "phone": "951-769-1779"
+  },
+  {
+    "position": {
+      "lat": 33.925572,
+      "lng": -116.901641
+    },
+    "name": "Starbucks - CA - Banning [WD]  00460",
+    "address": "Ramsey & 22nd Street, Banning_2270 West Ramsey Street_Banning, California 922203708",
+    "phone": "951-922-3830"
+  },
+  {
+    "position": {
+      "lat": 34.84932,
+      "lng": -117.082899
+    },
+    "name": "Starbucks - CA - Barstow [WD]  00461",
+    "address": "Lenwood & I-15, Barstow_2834 Lenwood Road_Barstow, California 923119589",
+    "phone": "760-253-2483"
+  },
+  {
+    "position": {
+      "lat": 34.89386,
+      "lng": -117.00329
+    },
+    "name": "Starbucks - CA - Barstow [WD]  00462",
+    "address": "Main & I-15, Barstow_1620 E. Main Street_Barstow, California 923113232",
+    "phone": "760-255-1604"
+  },
+  {
+    "position": {
+      "lat": 34.8679,
+      "lng": -117.1152
+    },
+    "name": "Starbucks - CA - Barstow [W]  00463",
+    "address": "2843 Lenwood Blvd. - Barstow_2849 Lenwood Blvd._Barstow, California 923119587_(760) 253-4474"
+  },
+  {
+    "position": {
+      "lat": 33.9472901,
+      "lng": -116.9771802
+    },
+    "name": "Starbucks - CA - Beaumont [W]  00464",
+    "address": "14th St. & Beaumont Ave, Beaumont_1420 Beaumont Avenue_Beaumont, California 922234704",
+    "phone": "951-845-2120"
+  },
+  {
+    "position": {
+      "lat": 33.96915012,
+      "lng": -118.1644993
+    },
+    "name": "Starbucks - CA - Bell Gardens [WD]  00465",
+    "address": "Eastern & Florence (UCO)_7000-F Eastern Avenue_Bell Gardens, California 90201",
+    "phone": "323-560-6355"
+  },
+  {
+    "position": {
+      "lat": 33.97110355,
+      "lng": -118.1879268
+    },
+    "name": "Starbucks - CA - Bell [WD]  00466",
+    "address": "Altantic & Florence, Bell (UCO)_7121 Atlantic Blvd._Bell, California 90201",
+    "phone": "323-560-4458"
+  },
+  {
+    "position": {
+      "lat": 33.87566874,
+      "lng": -118.1425471
+    },
+    "name": "Starbucks - CA - Bellflower  00467",
+    "address": "Lakewood & Artesia, Bellflower_17254 Lakewood Blvd._Bellflower, California 907066222",
+    "phone": "562-804-5338"
+  },
+  {
+    "position": {
+      "lat": 37.51969635,
+      "lng": -122.2753141
+    },
+    "name": "Starbucks - CA - Belmont  00468",
+    "address": "Safeway-Belmont #1138_1100 El Camino Real_Belmont, California 94002",
+    "phone": "650-596-1730"
+  },
+  {
+    "position": {
+      "lat": 37.51063756,
+      "lng": -122.2937616
+    },
+    "name": "Starbucks - CA - Belmont [W]  00469",
+    "address": "Belmont, N. California_1071 Alameda De Las Pulgas_Belmont, California 94002",
+    "phone": "650-594-9663"
+  },
+  {
+    "position": {
+      "lat": 37.52001067,
+      "lng": -122.2756712
+    },
+    "name": "Starbucks - CA - Belmont [W]  00470",
+    "address": "Ralston & ElCamino - Belmont_1050-A El Camino Real_Belmont, California 94002",
+    "phone": "650-654-5533"
+  },
+  {
+    "position": {
+      "lat": 38.054404,
+      "lng": -122.155398
+    },
+    "name": "Starbucks - CA - Benicia  00471",
+    "address": "Safeway - Benicia #774_50 Solano Square_Benicia, California 94510"
+  },
+  {
+    "position": {
+      "lat": 38.047013,
+      "lng": -122.160614
+    },
+    "name": "Starbucks - CA - Benicia [W]  00472",
+    "address": "Harbor Walk - Benicia_328 First Street_Benicia, California 94510",
+    "phone": "707-751-3864"
+  },
+  {
+    "position": {
+      "lat": 38.06639141,
+      "lng": -122.1643115
+    },
+    "name": "Starbucks - CA - Benicia [W]  00473",
+    "address": "Benicia_800 Southampton Drive_Benicia, California 94510_(707) 745-6233"
+  },
+  {
+    "position": {
+      "lat": 37.86893429,
+      "lng": -122.2678041
+    },
+    "name": "Starbucks - CA - Berkeley [W]  00474",
+    "address": "2224 Shattuck - Berkeley_2224 Shattuck Avenue_Berkeley, California 94704_(510) 843-6806"
+  },
+  {
+    "position": {
+      "lat": 37.89132957,
+      "lng": -122.2798893
+    },
+    "name": "Starbucks - CA - Berkeley [W]  00475",
+    "address": "Solano Avenue_1799 Solano Avenue_Berkeley, California 94707_(510) 525-5885"
+  },
+  {
+    "position": {
+      "lat": 37.87041074,
+      "lng": -122.2658093
+    },
+    "name": "Starbucks - CA - Berkeley [W]  00476",
+    "address": "2128 Oxford St._2128 Oxford Street_Berkeley, California 94704_(510) 486-1840"
+  },
+  {
+    "position": {
+      "lat": 37.87830521,
+      "lng": -122.2691698
+    },
+    "name": "Starbucks - CA - Berkeley [W]  00477",
+    "address": "Shattuck & Cedar - Berkeley_1600 Shattuck Avenue_Berkeley, California 94709",
+    "phone": "510-848-7155"
+  },
+  {
+    "position": {
+      "lat": 34.07037888,
+      "lng": -118.4024714
+    },
+    "name": "Starbucks - CA - Beverly Hills [W]  00478",
+    "address": "Beverly Drive_428 North Beverly Drive_Beverly Hills, California 90210_(310) 271-1692"
+  },
+  {
+    "position": {
+      "lat": 34.06375507,
+      "lng": -118.3762488
+    },
+    "name": "Starbucks - CA - Beverly Hills [W]  00479",
+    "address": "La Cienega & Gregory Way, Beverly H_257 S. La Cienega Blvd._Beverly Hills, California 90211",
+    "phone": "310-659-9562"
+  },
+  {
+    "position": {
+      "lat": 34.066963,
+      "lng": -118.409348
+    },
+    "name": "Starbucks - CA - Beverly Hills [W]  00480",
+    "address": "Beverly Hills Triangle_9844 Wilshire Blvd._Beverly Hills, California 90210_(310) 552-3133"
+  },
+  {
+    "position": {
+      "lat": 34.05926463,
+      "lng": -118.3890518
+    },
+    "name": "Starbucks - CA - Beverly Hills [W]  00481",
+    "address": "Olympic/Doheny_9049 Olympic Blvd._Beverly Hills, California 90211_(310) 275-0253"
+  },
+  {
+    "position": {
+      "lat": 34.06488753,
+      "lng": -118.3990671
+    },
+    "name": "Starbucks - CA - Beverly Hills [W]  00482",
+    "address": "South Beverly Drive_202 South Beverly Drive_Beverly Hills, California 90212_(310) 271-2133"
+  },
+  {
+    "position": {
+      "lat": 34.2500314,
+      "lng": -116.8834427
+    },
+    "name": "Starbucks - CA - Big Bear Lake  00483",
+    "address": "Vons-Big Bear Lake #2374_42170 Big Bear Blvd_Big Bear Lake, California 92532"
+  },
+  {
+    "position": {
+      "lat": 34.247523,
+      "lng": -116.8827
+    },
+    "name": "Starbucks - CA - Big Bear Lake [WD]  00484",
+    "address": "Big Bear & Christmas Tree Lane, Big_42140 Big Bear Blvd._Big Bear Lake, California 92315",
+    "phone": "909-866-3203"
+  },
+  {
+    "position": {
+      "lat": 34.2411431,
+      "lng": -116.9166325
+    },
+    "name": "Starbucks - CA - Big Bear Lake [W]  00485",
+    "address": "Village & Paine, Big Bear Lake_40568 Village Drive_Big Bear Lake, California 92315",
+    "phone": "909-878-5094"
+  },
+  {
+    "position": {
+      "lat": 37.37398916,
+      "lng": -118.3957168
+    },
+    "name": "Starbucks - CA - Bishop  00486",
+    "address": "Safeway-Bishop #1753_1190 N Main St_Bishop, California 93514"
+  },
+  {
+    "position": {
+      "lat": 37.370454,
+      "lng": -118.395399
+    },
+    "name": "Starbucks - CA - Bishop [D]  00487",
+    "address": "Main & Sierra, Bishop_905 North Main Street_Bishop, California 935142405",
+    "phone": "760-872-6582"
+  },
+  {
+    "position": {
+      "lat": 34.24696465,
+      "lng": -117.2086963
+    },
+    "name": "Starbucks - CA - Blue Jay  00488",
+    "address": "Jensen's Finest Foods-Blue Jay_27264 Highway 189_Blue Jay, California 92317",
+    "phone": "909-337-8484"
+  },
+  {
+    "position": {
+      "lat": 33.6106,
+      "lng": -114.58
+    },
+    "name": "Starbucks - CA - Blythe  00489",
+    "address": "Albertsons-Blythe #6587_840 E Hobson Way_Blythe, California 92225"
+  },
+  {
+    "position": {
+      "lat": 33.61027149,
+      "lng": -114.6049189
+    },
+    "name": "Starbucks - CA - Blythe [D]  00490",
+    "address": "Hobsonway & Lovekin, Blythe_745 W. Hobsonway_Blythe, California 922251514",
+    "phone": "760-921-8076"
+  },
+  {
+    "position": {
+      "lat": 32.66077,
+      "lng": -117.032743
+    },
+    "name": "Starbucks - CA - Bonita  00491",
+    "address": "Vons - Bonita #2130_4404 Bonita Rd_Bonita, California 91902"
+  },
+  {
+    "position": {
+      "lat": 32.66938728,
+      "lng": -117.0228185
+    },
+    "name": "Starbucks - CA - Bonita [W]  00492",
+    "address": "Bonita & Central, Bonita_5030 Bonita Road_Bonita, California 919021701",
+    "phone": "619-479-0671"
+  },
+  {
+    "position": {
+      "lat": 33.91097754,
+      "lng": -117.8655885
+    },
+    "name": "Starbucks - CA - Brea  00493",
+    "address": "Albertsons-Brea #6141_2500 E Imperial Hwy #158_Brea, California 92821",
+    "phone": "714-671-1180"
+  },
+  {
+    "position": {
+      "lat": 33.90938938,
+      "lng": -117.8524553
+    },
+    "name": "Starbucks - CA - Brea [WD]  00494",
+    "address": "Valencia & Imperial, Brea_525 Valencia Avenue_Brea, California 928236347",
+    "phone": "714-528-1254"
+  },
+  {
+    "position": {
+      "lat": 33.91886285,
+      "lng": -117.9007584
+    },
+    "name": "Starbucks - CA - Brea [W]  00495",
+    "address": "Birch Street Promenade_260 West Birch Street_Brea, California 92821",
+    "phone": "714-529-2939"
+  },
+  {
+    "position": {
+      "lat": 33.91651656,
+      "lng": -117.9003852
+    },
+    "name": "Starbucks - CA - Brea [W]  00496",
+    "address": "Brea Gateway_101 West Imperial Highway_Brea, California 92821",
+    "phone": "714-529-2606"
+  },
+  {
+    "position": {
+      "lat": 33.91284579,
+      "lng": -117.8794047
+    },
+    "name": "Starbucks - CA - Brea [W]  00497",
+    "address": "Brea II_435 South Associated Road_Brea, California 92821_(714) 529-5288"
+  },
+  {
+    "position": {
+      "lat": 37.943817,
+      "lng": -121.696199
+    },
+    "name": "Starbucks - CA - Brentwood  00498",
+    "address": "Brentwood & Nancy - Brentwood_7760 Brentwood Blvd_Brentwood, California 94513",
+    "phone": "925-634-7941"
+  },
+  {
+    "position": {
+      "lat": 37.92551329,
+      "lng": -121.6905298
+    },
+    "name": "Starbucks - CA - Brentwood [WD]  00499",
+    "address": "Highway 4 & Balfour - Brentwood_8610 Brentwood Blvd._Brentwood, California 94513",
+    "phone": "925-516-4581"
+  },
+  {
+    "position": {
+      "lat": 37.92537327,
+      "lng": -121.7285603
+    },
+    "name": "Starbucks - CA - Brentwood [W]  00500",
+    "address": "Balfour & Fairview & Safeway_3150 Balfour Road_Brentwood, California 94513",
+    "phone": "925-513-2281"
+  },
+  {
+    "position": {
+      "lat": 34.04849301,
+      "lng": -118.4907091
+    },
+    "name": "Starbucks - CA - Brentwood [W]  00501",
+    "address": "San Vicente & 26th_13050 San Vicente Blvd._Brentwood, California 90049_(310) 395-8212"
+  },
+  {
+    "position": {
+      "lat": 37.94716841,
+      "lng": -121.7397755
+    },
+    "name": "Starbucks - CA - Brentwood [W]  00502",
+    "address": "Hwy 4 & Sand Creek - Brentwood_2530 Sand Creek Road_Brentwood, California 94513",
+    "phone": "925-634-2319"
+  },
+  {
+    "position": {
+      "lat": 33.858864,
+      "lng": -118.002174
+    },
+    "name": "Starbucks - CA - Buena Park  00503",
+    "address": "Target Buena Park T-2082_7530 Orangethorpe Ave_Buena Park, California 90621",
+    "phone": "714-690-0917"
+  },
+  {
+    "position": {
+      "lat": 33.8318,
+      "lng": -118.030457
+    },
+    "name": "Starbucks - CA - Buena Park [D]  00504",
+    "address": "Lincoln & Valley View, Buena Park_5897 Lincoln Ave._Buena Park, California 906203461",
+    "phone": "714-484-0634"
+  },
+  {
+    "position": {
+      "lat": 33.84682485,
+      "lng": -117.9902885
+    },
+    "name": "Starbucks - CA - Buena Park [WD]  00505",
+    "address": "La Palma & Dale, Buena Park_8231 La Palma Avenue_Buena Park, California 906203205",
+    "phone": "714-523-7915"
+  },
+  {
+    "position": {
+      "lat": 33.85122007,
+      "lng": -117.9979246
+    },
+    "name": "Starbucks - CA - Buena Park [W]  00506",
+    "address": "Movieland Wax Museum - Buena Park_7711 Beach Blvd._Buena Park, California 90620_(714) 522-2599"
+  },
+  {
+    "position": {
+      "lat": 34.16055473,
+      "lng": -118.3450331
+    },
+    "name": "Starbucks - CA - Burbank  00507",
+    "address": "Albertsons-Burbank #6315_3830 W. Verdugo Ave._Burbank, California 91505",
+    "phone": "818-954-0817"
+  },
+  {
+    "position": {
+      "lat": 34.1564,
+      "lng": -118.327065
+    },
+    "name": "Starbucks - CA - Burbank  00508",
+    "address": "Sodexho @ Disney Burbank Video / Co_500 South Buena Vista Street_Burbank, California 91521"
+  },
+  {
+    "position": {
+      "lat": 34.15246215,
+      "lng": -118.3363468
+    },
+    "name": "Starbucks - CA - Burbank  00509",
+    "address": "Warner Bros Studio Plaza Lobby_3400 Riverside Drive_Burbank, California 91505",
+    "phone": "818-954-3460"
+  },
+  {
+    "position": {
+      "lat": 34.18777364,
+      "lng": -118.3234391
+    },
+    "name": "Starbucks - CA - Burbank  00510",
+    "address": "The Great Indoors-Burbank_1301 N Victory Place_Burbank, California 91502"
+  },
+  {
+    "position": {
+      "lat": 34.16288161,
+      "lng": -118.3139848
+    },
+    "name": "Starbucks - CA - Burbank  00511",
+    "address": "Vons-Burbank #2214_1110 Alameda Ave._Burbank, California 91506"
+  },
+  {
+    "position": {
+      "lat": 34.15495176,
+      "lng": -118.345472
+    },
+    "name": "Starbucks - CA - Burbank  00512",
+    "address": "Vons-Burbank #3083_301 N Pass Ave_Burbank, California 915053859",
+    "phone": "818-848-9542"
+  },
+  {
+    "position": {
+      "lat": 34.15003743,
+      "lng": -118.3408001
+    },
+    "name": "Starbucks - CA - Burbank  00513",
+    "address": "Warner Brothers Studio_4000 Warner Blvd_Burbank, California 91505",
+    "phone": "818-977-3460"
+  },
+  {
+    "position": {
+      "lat": 34.18747712,
+      "lng": -118.3177824
+    },
+    "name": "Starbucks - CA - Burbank [WD]  00514",
+    "address": "San Fernando & Walnut, Burbank_1001 North San Fernando Blvd._Burbank, California 915044329",
+    "phone": "818-953-9817"
+  },
+  {
+    "position": {
+      "lat": 34.15403651,
+      "lng": -118.3405133
+    },
+    "name": "Starbucks - CA - Burbank [W]  00515",
+    "address": "Burbank Center (aka Disney Bldg)_3800 West Alameda Avenue_Burbank, California 915054340_(818) 559-6578"
+  },
+  {
+    "position": {
+      "lat": 34.15553624,
+      "lng": -118.345749
+    },
+    "name": "Starbucks - CA - Burbank [W]  00516",
+    "address": "Oak Street & Pass Avenue_347 N Pass Ave_Burbank, California 91505",
+    "phone": "818-841-8534"
+  },
+  {
+    "position": {
+      "lat": 34.17420024,
+      "lng": -118.3000628
+    },
+    "name": "Starbucks - CA - Burbank [W]  00517",
+    "address": "Alameda & San Fernando_113 East Alameda Ave_Burbank, California 91502",
+    "phone": "818-567-4355"
+  },
+  {
+    "position": {
+      "lat": 34.18233246,
+      "lng": -118.3106991
+    },
+    "name": "Starbucks - CA - Burbank [W]  00518",
+    "address": "Downtown Burbank_300 N. San Fernando Road_Burbank, California 91502",
+    "phone": "818-567-0630"
+  },
+  {
+    "position": {
+      "lat": 34.16257766,
+      "lng": -118.3148591
+    },
+    "name": "Starbucks - CA - Burbank [W]  00519",
+    "address": "Rancho Market Place_1190 Alameda Avenue_Burbank, California 91506_(818) 557-6604"
+  },
+  {
+    "position": {
+      "lat": 34.15239159,
+      "lng": -118.3453539
+    },
+    "name": "Starbucks - CA - Burbank [W]  00520",
+    "address": "Toluca Lake_4207 Riverside Drive_Burbank, California 91505_(818) 563-9830"
+  },
+  {
+    "position": {
+      "lat": 34.18423972,
+      "lng": -118.3217456
+    },
+    "name": "Starbucks - CA - Burbank [W]  00521",
+    "address": "Victory & Empire, Burbank_1711 North Victory Place_Burbank, California 91502",
+    "phone": "818-843-3979"
+  },
+  {
+    "position": {
+      "lat": 37.58595044,
+      "lng": -122.3648607
+    },
+    "name": "Starbucks - CA - Burlingame [W]  00522",
+    "address": "Broadway & Laguna - Burlingame_1230 Broadway_Burlingame, California 94010",
+    "phone": "650-344-0747"
+  },
+  {
+    "position": {
+      "lat": 37.59601814,
+      "lng": -122.3852557
+    },
+    "name": "Starbucks - CA - Burlingame [W]  00523",
+    "address": "Murchison & El Camino - Burlingame_1865 El Camino Real_Burlingame, California 94010",
+    "phone": "650-652-3929"
+  },
+  {
+    "position": {
+      "lat": 37.5792671,
+      "lng": -122.3459957
+    },
+    "name": "Starbucks - CA - Burlingame [W]  00524",
+    "address": "Burlingame Ave_1160 Burlingame Avenue_Burlingame, California 94010",
+    "phone": "650-348-5138"
+  },
+  {
+    "position": {
+      "lat": 35.40986154,
+      "lng": -119.4117631
+    },
+    "name": "Starbucks - CA - Buttonwillow [WD]  00525",
+    "address": "I-5 & Hwy 58, Buttonwillow_20673 Tracy Avenue_Buttonwillow, California 93206",
+    "phone": "661-764-6774"
+  },
+  {
+    "position": {
+      "lat": 37.88994481,
+      "lng": -121.640581
+    },
+    "name": "Starbucks - CA - Byron [W]  00526",
+    "address": "Hwy 4 & Bixler - Discovery Bay_14804 Hwy 4_Byron, California 94514",
+    "phone": "925-513-4991"
+  },
+  {
+    "position": {
+      "lat": 33.926375,
+      "lng": -116.813329
+    },
+    "name": "Starbucks - CA - Cabazon [W]  00527",
+    "address": "Hwy 10 & Fields Rd., Cabazon_48750 Seminole Dr_Cabazon, California 92230",
+    "phone": "951-849-2149"
+  },
+  {
+    "position": {
+      "lat": 34.14383311,
+      "lng": -118.6993963
+    },
+    "name": "Starbucks - CA - Calabasas  00528",
+    "address": "Albertsons-Calabasas #6335_26521 Agoura Road_Calabasas, California 91302"
+  },
+  {
+    "position": {
+      "lat": 34.144036,
+      "lng": -118.699539
+    },
+    "name": "Starbucks - CA - Calabasas [W]  00529",
+    "address": "Agoura & Las Virgenes, Calabasas_26531 Agoura Road_Calabasas, California 91301",
+    "phone": "818-878-0503"
+  },
+  {
+    "position": {
+      "lat": 34.156932,
+      "lng": -118.640252
+    },
+    "name": "Starbucks - CA - Calabasas [W]  00530",
+    "address": "Calabasas Rd & Park Granada_4776 Commons Way_Calabasas, California 91302",
+    "phone": "818-591-8067"
+  },
+  {
+    "position": {
+      "lat": 32.679,
+      "lng": -115.49891
+    },
+    "name": "Starbucks - CA - Calexico [D]  00531",
+    "address": "Hwy 111 & Hwy 98, Calexico_1113 Imperial West_Calexico, California 922314808",
+    "phone": "760-357-8071"
+  },
+  {
+    "position": {
+      "lat": 34.22839678,
+      "lng": -118.9977141
+    },
+    "name": "Starbucks - CA - Camarillo  00532",
+    "address": "Vons-Camarillo #2094_5275 Mission Oaks Blvd_Camarillo, California 93010"
+  },
+  {
+    "position": {
+      "lat": 34.21598291,
+      "lng": -119.0733379
+    },
+    "name": "Starbucks - CA - Camarillo  00533",
+    "address": "Target Camarillo T-1027_209 W Ventura Blvd_Camarillo, California 93010"
+  },
+  {
+    "position": {
+      "lat": 34.22582,
+      "lng": -119.03883
+    },
+    "name": "Starbucks - CA - Camarillo  00534",
+    "address": "Vons-Camarillo #1672_820 Arnell Rd_Camarillo, California 93010",
+    "phone": "805-482-8802"
+  },
+  {
+    "position": {
+      "lat": 34.236991,
+      "lng": -119.036421
+    },
+    "name": "Starbucks - CA - Camarillo [W]  00535",
+    "address": "Las Posas & Arneill, Camarillo_2508 Las Posas Road_Camarillo, California 93011",
+    "phone": "805-384-0353"
+  },
+  {
+    "position": {
+      "lat": 34.2158,
+      "lng": -119.0043
+    },
+    "name": "Starbucks - CA - Camarillo [W]  00536",
+    "address": "Verdugo & Camino Ruiz, Camarillo_5011 Verdugo Way_Camarillo, California 930128658",
+    "phone": "805-484-6887"
+  },
+  {
+    "position": {
+      "lat": 34.22202648,
+      "lng": -119.0698058
+    },
+    "name": "Starbucks - CA - Camarillo [W]  00537",
+    "address": "Camarillo_540 Las Posas Road_Camarillo, California 93010_(805) 383-7130"
+  },
+  {
+    "position": {
+      "lat": 38.6581,
+      "lng": -120.9699
+    },
+    "name": "Starbucks - CA - Cameron Park  00538",
+    "address": "Safeway - Cameron Park #1618_3380 Coach Lane_Cameron Park, California 95682"
+  },
+  {
+    "position": {
+      "lat": 38.65812621,
+      "lng": -120.9744664
+    },
+    "name": "Starbucks - CA - Cameron Park [W]  00539",
+    "address": "Coach & Strolling Hills -Cameron Pk_3317 Coach Lane_Cameron Park, California 95682",
+    "phone": "530-677-0851"
+  },
+  {
+    "position": {
+      "lat": 37.280915,
+      "lng": -121.948803
+    },
+    "name": "Starbucks - CA - Campbell  00540",
+    "address": "Safeway - Campbell #1293_2341 Winchester Blvd_Campbell, California 95008",
+    "phone": "408-364-6880"
+  },
+  {
+    "position": {
+      "lat": 37.28701309,
+      "lng": -121.9451018
+    },
+    "name": "Starbucks - CA - Campbell [W]  00541",
+    "address": "267 E. Campbell Ave._267 E. Campbell Avenue_Campbell, California 95008",
+    "phone": "408-364-0846"
+  },
+  {
+    "position": {
+      "lat": 37.28590706,
+      "lng": -121.9822882
+    },
+    "name": "Starbucks - CA - Campbell [W]  00542",
+    "address": "Campbell & Fulton - Campbell_1820 W Campbell Ave_Campbell, California 95008",
+    "phone": "408-379-2930"
+  },
+  {
+    "position": {
+      "lat": 37.29273081,
+      "lng": -121.9316187
+    },
+    "name": "Starbucks - CA - Campbell [W]  00543",
+    "address": "Hamilton Plaza_1696 S Bascom Avenue_Campbell, California 95008_(408) 371-6703"
+  },
+  {
+    "position": {
+      "lat": 37.2698527,
+      "lng": -121.945774
+    },
+    "name": "Starbucks - CA - Campbell [W]  00544",
+    "address": "Camden & Curtner - Campbell_1228 Camden Avenue_Campbell, California 95008",
+    "phone": "408-371-1332"
+  },
+  {
+    "position": {
+      "lat": 37.294299,
+      "lng": -121.944177
+    },
+    "name": "Starbucks - CA - Campbell [W]  00545",
+    "address": "Hamilton & Central - Campbell_330 East Hamilton Ave_Campbell, California 95008",
+    "phone": "408-370-2493"
+  },
+  {
+    "position": {
+      "lat": 34.191936,
+      "lng": -118.6057
+    },
+    "name": "Starbucks - CA - Canoga Park  00546",
+    "address": "Target Woodland Hills/TopangaT-2143_6700 Topanga Canyon Blvd_Canoga Park, California 91303"
+  },
+  {
+    "position": {
+      "lat": 34.20104529,
+      "lng": -118.5971781
+    },
+    "name": "Starbucks - CA - Canoga Park [D]  00547",
+    "address": "Canoga & Sherman, Canoga Park_21355 Sherman Way_Canoga Park, California 913031547",
+    "phone": "818-887-5152"
+  },
+  {
+    "position": {
+      "lat": 34.19045508,
+      "lng": -118.6058524
+    },
+    "name": "Starbucks - CA - Canoga Park [W]  00548",
+    "address": "Topanga Plaza_6600 Topanga Canyon Blvd._Canoga Park, California 91303_(818) 999-2653"
+  },
+  {
+    "position": {
+      "lat": 34.41609379,
+      "lng": -118.4581428
+    },
+    "name": "Starbucks - CA - Canyon Country  00549",
+    "address": "Albertsons-Canyon Country #6308_18571 Soledad Canyon Rd_Canyon Country, California 91351"
+  },
+  {
+    "position": {
+      "lat": 36.97657803,
+      "lng": -121.9648575
+    },
+    "name": "Starbucks - CA - Capitola [W]  00550",
+    "address": "Capitola_1955 41st Avenue_Capitola, California 95010_(831) 464-8091"
+  },
+  {
+    "position": {
+      "lat": 36.9767,
+      "lng": -121.96517
+    },
+    "name": "Starbucks - CA - Capitola [W]  00551",
+    "address": "Capitola Mall_1855 41st Avenue- Space F01_Capitola, California 95010",
+    "phone": "831-479-9651"
+  },
+  {
+    "position": {
+      "lat": 33.02135209,
+      "lng": -117.2826536
+    },
+    "name": "Starbucks - CA - Cardiff [W]  00552",
+    "address": "San Elijo & Birmingham-Cardiff_2081 San Elijo Avenue_Cardiff, California 920071741",
+    "phone": "760-753-8867"
+  },
+  {
+    "position": {
+      "lat": 33.17850444,
+      "lng": -117.3266193
+    },
+    "name": "Starbucks - CA - Carlsbad  00553",
+    "address": "Vons - Carlsbad #2142_2560 El Camino Real_Carlsbad, California 92008"
+  },
+  {
+    "position": {
+      "lat": 33.10370349,
+      "lng": -117.266784
+    },
+    "name": "Starbucks - CA - Carlsbad  00554",
+    "address": "Vons-Carlsbad #2065_6951 El Camino Real_Carlsbad, California 92009"
+  },
+  {
+    "position": {
+      "lat": 33.09832,
+      "lng": -117.307785
+    },
+    "name": "Starbucks - CA - Carlsbad [W]  00555",
+    "address": "Avenida Encinas & Poinsettia_7130 Avenida Encinas_Carlsbad, California 920114657",
+    "phone": "760-804-1539"
+  },
+  {
+    "position": {
+      "lat": 33.12690242,
+      "lng": -117.3231156
+    },
+    "name": "Starbucks - CA - Carlsbad [W]  00556",
+    "address": "Carlsbad Company Stores_5620 Paseo Del Norte_Carlsbad, California 92008_(760) 804-9355"
+  },
+  {
+    "position": {
+      "lat": 33.08604764,
+      "lng": -117.26872
+    },
+    "name": "Starbucks - CA - Carlsbad [W]  00557",
+    "address": "El Camino Real & La Costa, Carlsbad_7680 El Camino Real_Carlsbad, California 920097934",
+    "phone": "760-943-8004"
+  },
+  {
+    "position": {
+      "lat": 33.131412,
+      "lng": -117.259506
+    },
+    "name": "Starbucks - CA - Carlsbad [W]  00558",
+    "address": "Palomar Airport  & Loker, Carlsbad_2708 Loker Avenue West_Carlsbad, California 920106602",
+    "phone": "760-438-4789"
+  },
+  {
+    "position": {
+      "lat": 33.15895378,
+      "lng": -117.3517009
+    },
+    "name": "Starbucks - CA - Carlsbad [W]  00559",
+    "address": "Village Faire - Carlsbad_2924 Carlsbad Blvd._Carlsbad, California 92008_(760) 434-0866"
+  },
+  {
+    "position": {
+      "lat": 36.5427,
+      "lng": -121.9073
+    },
+    "name": "Starbucks - CA - Carmel  00560",
+    "address": "Albertsons-Carmel #7105_555 Carmel Rancho Shop Ctr_Carmel, California 93923",
+    "phone": "831-624-6459"
+  },
+  {
+    "position": {
+      "lat": 36.5382,
+      "lng": -121.9078
+    },
+    "name": "Starbucks - CA - Carmel  00561",
+    "address": "Safeway - Carmel #2669_Crmel Center & Rio Road_Carmel, California 93923"
+  },
+  {
+    "position": {
+      "lat": 38.64943821,
+      "lng": -121.3277238
+    },
+    "name": "Starbucks - CA - Carmichael  00562",
+    "address": "Albertsons-Carmichael #7216_4708 Manzanita Ave_Carmichael, California 95698"
+  },
+  {
+    "position": {
+      "lat": 38.66071485,
+      "lng": -121.3249234
+    },
+    "name": "Starbucks - CA - Carmichael [D]  00563",
+    "address": "Madison & Manzanita - Carmichael_5846 Madison Ave_Carmichael, California 95608",
+    "phone": "916-332-6927"
+  },
+  {
+    "position": {
+      "lat": 38.63698678,
+      "lng": -121.3279834
+    },
+    "name": "Starbucks - CA - Carmichael [W]  00564",
+    "address": "Manzanita & Fair Oaks - Carmichael_4005 Manzanita Avenue_Carmichael, California 95608_(916) 488-5932"
+  },
+  {
+    "position": {
+      "lat": 34.39791525,
+      "lng": -119.5195815
+    },
+    "name": "Starbucks - CA - Carpinteria  00565",
+    "address": "Vons-Carpinteria #2425_850 Linden Ave_Carpinteria, California 93013"
+  },
+  {
+    "position": {
+      "lat": 34.3948536,
+      "lng": -119.5136784
+    },
+    "name": "Starbucks - CA - Carpinteria [W]  00566",
+    "address": "Carpinteria & Casitas Pass Rd._5436 Carpinteria Rd._Carpinteria, California 93013",
+    "phone": "805-566-0728"
+  },
+  {
+    "position": {
+      "lat": 33.83162297,
+      "lng": -118.277655
+    },
+    "name": "Starbucks - CA - Carson  00567",
+    "address": "Albertsons-Carson #6135_110 E. Carson St._Carson, California 90745",
+    "phone": "310-835-6402"
+  },
+  {
+    "position": {
+      "lat": 33.80797852,
+      "lng": -118.2736158
+    },
+    "name": "Starbucks - CA - Carson  00568",
+    "address": "Albertsons-Carson #6159_200 E Sepulveda_Carson, California 90745",
+    "phone": "310-513-1900"
+  },
+  {
+    "position": {
+      "lat": 33.843967,
+      "lng": -118.263245
+    },
+    "name": "Starbucks - CA - Carson  00569",
+    "address": "Target Carson T-2026_20700 S Avalon Blvd_Carson, California 90746",
+    "phone": "310-819-3011"
+  },
+  {
+    "position": {
+      "lat": 33.871438,
+      "lng": -118.271512
+    },
+    "name": "Starbucks - CA - Carson [WD]  00570",
+    "address": "Avalon & 91 Fwy, Carson ( UCO )_335 East Albertoni Street_Carson, California 907461422_(310) 516-6449"
+  },
+  {
+    "position": {
+      "lat": 33.84166464,
+      "lng": -118.2627994
+    },
+    "name": "Starbucks - CA - Carson [WD]  00571",
+    "address": "Avalon & Dominguez, Carson (UCO)_20810 Avalon Boulevard_Carson, California 90746",
+    "phone": "310-769-5849"
+  },
+  {
+    "position": {
+      "lat": 33.84194126,
+      "lng": -118.2855029
+    },
+    "name": "Starbucks - CA - Carson [WD]  00572",
+    "address": "Torrance & I-110, Carson_20806 Figeroa Street_Carson, California 90745",
+    "phone": "310-618-1899"
+  },
+  {
+    "position": {
+      "lat": 33.807763,
+      "lng": -118.273264
+    },
+    "name": "Starbucks - CA - Carson [W]  00573",
+    "address": "Sepulveda & Main, Carson_208 Sepulveda Blvd._Carson, California 90749",
+    "phone": "310-816-2972"
+  },
+  {
+    "position": {
+      "lat": 34.49696349,
+      "lng": -118.6228384
+    },
+    "name": "Starbucks - CA - Castaic [W]  00574",
+    "address": "Castaic & Lake Hughes, Castaic_31818 Castaic Road_Castaic, California 913843929",
+    "phone": "661-775-9171"
+  },
+  {
+    "position": {
+      "lat": 37.69628278,
+      "lng": -122.073917
+    },
+    "name": "Starbucks - CA - Castro Valley  00575",
+    "address": "Safeway-Castro Valley #768_20629 Redwood Rd._Castro Valley, California 94546"
+  },
+  {
+    "position": {
+      "lat": 37.69598137,
+      "lng": -122.0778835
+    },
+    "name": "Starbucks - CA - Castro Valley [W]  00576",
+    "address": "Castro Valley - 20663 Rustic Dr._20663 Rustic Drive_Castro Valley, California 945465607_(510) 733-0387"
+  },
+  {
+    "position": {
+      "lat": 37.69436944,
+      "lng": -122.0862027
+    },
+    "name": "Starbucks - CA - Castro Valley [W]  00577",
+    "address": "Castro Valley & Lake Chabot - CV_2720 Castro Valley Blvd_Castro Valley, California 94546",
+    "phone": "510-888-0420"
+  },
+  {
+    "position": {
+      "lat": 37.69292069,
+      "lng": -122.057534
+    },
+    "name": "Starbucks - CA - Castro Valley [W]  00578",
+    "address": "Grove & Center - Castro Valley_22095 Grove Way_Castro Valley, California 94552",
+    "phone": "510-886-9010"
+  },
+  {
+    "position": {
+      "lat": 33.816137,
+      "lng": -116.457213
+    },
+    "name": "Starbucks - CA - Cathedral City [WD]  00579",
+    "address": "Date Palm Centre - Cathedral City_69040 Ramon Road_Cathedral City, California 922343341",
+    "phone": "760-324-5928"
+  },
+  {
+    "position": {
+      "lat": 33.801132,
+      "lng": -116.458112
+    },
+    "name": "Starbucks - CA - Cathedral City [WD]  00580",
+    "address": "Date Palm & Dinah Shore, Cathedral_34041 Date Palm Drive_Cathedral City, California 922346860",
+    "phone": "760-202-7228"
+  },
+  {
+    "position": {
+      "lat": 33.78825256,
+      "lng": -116.4822647
+    },
+    "name": "Starbucks - CA - Cathedral City [WD]  00581",
+    "address": "Hwy 111 & Canyon Plaza, Cathedral C_67760 E. Palm Canyon Dr._Cathedral City, California 92234",
+    "phone": "760-770-3390"
+  },
+  {
+    "position": {
+      "lat": 33.77876201,
+      "lng": -116.461378
+    },
+    "name": "Starbucks - CA - Cathedral City [W]  00582",
+    "address": "E. Palm Canyon & Monty Hall_68-718 E. Palm Canyon Drive_Cathedral City, California 922341308",
+    "phone": "760-321-2920"
+  },
+  {
+    "position": {
+      "lat": 34.06187677,
+      "lng": -118.415017
+    },
+    "name": "Starbucks - CA - Century City  00583",
+    "address": "1875 Century Park E._1875 Century Park East_Century City, California 90067_(310) 553-8226"
+  },
+  {
+    "position": {
+      "lat": 34.05939741,
+      "lng": -118.412804
+    },
+    "name": "Starbucks - CA - Century City [W]  00584",
+    "address": "2049 Century Park East_Century City, California 90067_(310) 286-3023"
+  },
+  {
+    "position": {
+      "lat": 34.05863243,
+      "lng": -118.4160278
+    },
+    "name": "Starbucks - CA - Century City [W]  00585",
+    "address": "1999 Ave. of the Stars_1999 Avenue of the Stars_Century City, California 90067_(310) 557-0785"
+  },
+  {
+    "position": {
+      "lat": 37.61045033,
+      "lng": -120.9743162
+    },
+    "name": "Starbucks - CA - Ceres [WD]  00586",
+    "address": "Herndon & Hatch - Modesto_1427 Herndon Avenue_Ceres, California 95351",
+    "phone": "209-525-9305"
+  },
+  {
+    "position": {
+      "lat": 37.6091321,
+      "lng": -120.9387719
+    },
+    "name": "Starbucks - CA - Ceres [WD]  00587",
+    "address": "Hatch & Mitchell - Ceres_1507 Mitchell Road_Ceres, California 95307_2095376135"
+  },
+  {
+    "position": {
+      "lat": 33.8643134,
+      "lng": -118.0930396
+    },
+    "name": "Starbucks - CA - Cerritos  00588",
+    "address": "Los Cerritos Mall_306 Los Cerritos Mall_Cerritos, California 90703_(562) 809-8310"
+  },
+  {
+    "position": {
+      "lat": 33.8465209,
+      "lng": -118.0819769
+    },
+    "name": "Starbucks - CA - Cerritos [W]  00589",
+    "address": "Del Amo & Pioneer, Cerritos_20226 Pioneer Blvd_Cerritos, California 907037439",
+    "phone": "562-924-4260"
+  },
+  {
+    "position": {
+      "lat": 33.86987332,
+      "lng": -118.060899
+    },
+    "name": "Starbucks - CA - Cerritos [W]  00590",
+    "address": "Cerritos_12751 Towne Center Drive_Cerritos, California 90703",
+    "phone": "562-865-4247"
+  },
+  {
+    "position": {
+      "lat": 33.85851045,
+      "lng": -118.0907501
+    },
+    "name": "Starbucks - CA - Cerritos [W]  00591",
+    "address": "Gridley & South, Cerritos_11401 East South Street_Cerritos, California 907036600",
+    "phone": "562-653-0338"
+  },
+  {
+    "position": {
+      "lat": 34.25722359,
+      "lng": -118.5783951
+    },
+    "name": "Starbucks - CA - Chatsworth  00592",
+    "address": "Vons-Chatsworth #1671_20440 Devonshire St_Chatsworth, California 913113412"
+  },
+  {
+    "position": {
+      "lat": 34.25049646,
+      "lng": -118.6060364
+    },
+    "name": "Starbucks - CA - Chatsworth [W]  00593",
+    "address": "Topanga Cyn./Lassen_9935 Topanga Canyon Boulevard_Chatsworth, California 913113602_(818) 701-5823"
+  },
+  {
+    "position": {
+      "lat": 34.25722359,
+      "lng": -118.5801846
+    },
+    "name": "Starbucks - CA - Chatsworth [W]  00594",
+    "address": "Chatsworth Plaza_20516 Devonshire Street_Chatsworth, California 91311_(818) 700-9937"
+  },
+  {
+    "position": {
+      "lat": 39.7458,
+      "lng": -121.8445
+    },
+    "name": "Starbucks - CA - Chico  00595",
+    "address": "Albertsons-Chico #7275_146 W. E. Avenue_Chico, California 95926",
+    "phone": "530-343-3434"
+  },
+  {
+    "position": {
+      "lat": 39.7610754,
+      "lng": -121.8214372
+    },
+    "name": "Starbucks - CA - Chico  00596",
+    "address": "Safeway - Chico #1125_1366 East Ave_Chico, California 95926",
+    "phone": "530-899-2320"
+  },
+  {
+    "position": {
+      "lat": 39.7611,
+      "lng": -121.820802
+    },
+    "name": "Starbucks - CA - Chico  00597",
+    "address": "East Ave & Mariposa - Chico_1380 East Ave_Chico, California 95926",
+    "phone": "530-345-7431"
+  },
+  {
+    "position": {
+      "lat": 39.73510245,
+      "lng": -121.8356523
+    },
+    "name": "Starbucks - CA - Chico  00598",
+    "address": "Safeway-Chico #1651_690 Mangrove Ave_Chico, California 95926"
+  },
+  {
+    "position": {
+      "lat": 39.746505,
+      "lng": -121.851681
+    },
+    "name": "Starbucks - CA - Chico [D]  00599",
+    "address": "Esplanade & 9th - Chico_1910 Esplanade_Chico, California 95926",
+    "phone": "530-892-8569"
+  },
+  {
+    "position": {
+      "lat": 39.75996891,
+      "lng": -121.8434031
+    },
+    "name": "Starbucks - CA - Chico [W]  00600",
+    "address": "East & Cohasset - Chico_2471 Cohasset Road_Chico, California 95926",
+    "phone": "530-894-1323"
+  },
+  {
+    "position": {
+      "lat": 39.72230384,
+      "lng": -121.801534
+    },
+    "name": "Starbucks - CA - Chico [W]  00601",
+    "address": "20th & Forest - Chico_2009 Forest_Chico, California 95926",
+    "phone": "530-894-7533"
+  },
+  {
+    "position": {
+      "lat": 39.72941388,
+      "lng": -121.840876
+    },
+    "name": "Starbucks - CA - Chico [W]  00602",
+    "address": "Chico - 246 Broadway Street_246 Broadway_Chico, California 95928_(530) 343-8182"
+  },
+  {
+    "position": {
+      "lat": 39.73091329,
+      "lng": -121.8592901
+    },
+    "name": "Starbucks - CA - Chico [W]  00603",
+    "address": "Nord & Hwy 32 - Chico_995 Nord Ave_Chico, California 95926",
+    "phone": "530-343-8586"
+  },
+  {
+    "position": {
+      "lat": 33.99887169,
+      "lng": -117.7194578
+    },
+    "name": "Starbucks - CA - Chino  00604",
+    "address": "Target Chino Hills T-912_3944 Grand Ave_Chino, California 917105499"
+  },
+  {
+    "position": {
+      "lat": 34.00208389,
+      "lng": -117.7342006
+    },
+    "name": "Starbucks - CA - Chino Hills  00605",
+    "address": "Albertsons-Chino Hills #6515_3255 Grand Ave_Chino Hills, California 91709",
+    "phone": "909-590-3660"
+  },
+  {
+    "position": {
+      "lat": 33.9755,
+      "lng": -117.7259
+    },
+    "name": "Starbucks - CA - Chino Hills  00606",
+    "address": "Albertsons-Chino Hills #6592 (692)_15970 Los Serranos Ctry Club Drive_Chino Hills, California 91709",
+    "phone": "909-606-8184"
+  },
+  {
+    "position": {
+      "lat": 34.01586869,
+      "lng": -117.7456159
+    },
+    "name": "Starbucks - CA - Chino Hills  00607",
+    "address": "The Great Indoors-Chino Hills_13000 Peyton Dr_Chino Hills, California 91709"
+  },
+  {
+    "position": {
+      "lat": 33.98264657,
+      "lng": -117.7119446
+    },
+    "name": "Starbucks - CA - Chino Hills  00608",
+    "address": "Vons-Chino Hills #2597_4200 Chino Hills Pkwy_Chino Hills, California 91709"
+  },
+  {
+    "position": {
+      "lat": 33.9469,
+      "lng": -117.6822
+    },
+    "name": "Starbucks - CA - Chino Hills [WD]  00609",
+    "address": "Butterfield & Pine, Chino Hills_5751 Pine Ave._Chino Hills, California 917096503",
+    "phone": "909-606-4898"
+  },
+  {
+    "position": {
+      "lat": 34.00239607,
+      "lng": -117.7325035
+    },
+    "name": "Starbucks - CA - Chino Hills [W]  00610",
+    "address": "Grand & Peyton - Chino Hills_3330 Grand Ave._Chino Hills, California 91709",
+    "phone": "909-591-5804"
+  },
+  {
+    "position": {
+      "lat": 33.9827,
+      "lng": -117.713199
+    },
+    "name": "Starbucks - CA - Chino Hills [W]  00611",
+    "address": "Chino Hills Pkwy & Pipeline, Chino_4200 Chino Hills Parkway_Chino Hills, California 91709",
+    "phone": "909-606-0523"
+  },
+  {
+    "position": {
+      "lat": 34.03294418,
+      "lng": -117.6894111
+    },
+    "name": "Starbucks - CA - Chino [WD]  00612",
+    "address": "Central & Philadelphia, Chino_12150 Central Ave_Chino, California 91710",
+    "phone": "909-364-1871"
+  },
+  {
+    "position": {
+      "lat": 34.026486,
+      "lng": -117.689499
+    },
+    "name": "Starbucks - CA - Chino [W]  00613",
+    "address": "Central & Walnut, Chino_12488 Central Avenue_Chino, California 917102603",
+    "phone": "909-628-9475"
+  },
+  {
+    "position": {
+      "lat": 34.01996673,
+      "lng": -117.6675347
+    },
+    "name": "Starbucks - CA - Chino [W]  00614",
+    "address": "Mountain & Riverside, Chino_12867 Mountain Avenue_Chino, California 917104556",
+    "phone": "909-464-2235"
+  },
+  {
+    "position": {
+      "lat": 33.99767208,
+      "lng": -117.7180267
+    },
+    "name": "Starbucks - CA - Chino [W]  00615",
+    "address": "Grand & Pipeline, Chino_4013-A Grand Avenue_Chino, California 91710",
+    "phone": "909-464-0516"
+  },
+  {
+    "position": {
+      "lat": 37.1262,
+      "lng": -120.2554
+    },
+    "name": "Starbucks - CA - Chowchilla [D]  00616",
+    "address": "Robertson & Hwy 99 - Chowchilla_245 E Robertson_Chowchilla, California 93610",
+    "phone": "559-665-7057"
+  },
+  {
+    "position": {
+      "lat": 32.62667644,
+      "lng": -117.0742235
+    },
+    "name": "Starbucks - CA - Chula Vista  00617",
+    "address": "Albertsons-Chula Vista #6757_720 3rd Ave_Chula Vista, California 91910"
+  },
+  {
+    "position": {
+      "lat": 32.64636329,
+      "lng": -116.9697279
+    },
+    "name": "Starbucks - CA - Chula Vista  00618",
+    "address": "Vons-Chula Vista #2071_2250 Otay Lake Rd_Chula Vista, California 91915"
+  },
+  {
+    "position": {
+      "lat": 32.65056844,
+      "lng": -117.0866681
+    },
+    "name": "Starbucks - CA - Chula Vista [WD]  00619",
+    "address": "4th & C, Chula Vista_20 3rd Avenue_Chula Vista, California 919101712",
+    "phone": "619-422-5632"
+  },
+  {
+    "position": {
+      "lat": 32.63102044,
+      "lng": -117.0892089
+    },
+    "name": "Starbucks - CA - Chula Vista [WD]  00620",
+    "address": "Broadway & H St., Chula Vista_595 H Street_Chula Vista, California 919104330",
+    "phone": "619-585-8872"
+  },
+  {
+    "position": {
+      "lat": 32.6343604,
+      "lng": -117.0772425
+    },
+    "name": "Starbucks - CA - Chula Vista [W]  00621",
+    "address": "3rd & H, Chula Vista_303-7  H Street_Chula Vista, California 91910",
+    "phone": "619-476-0741"
+  },
+  {
+    "position": {
+      "lat": 32.6065547,
+      "lng": -117.0800565
+    },
+    "name": "Starbucks - CA - Chula Vista [W]  00622",
+    "address": "Broadway & Oxford, Chula Vista_1208 Broadway_Chula Vista, California 919112911",
+    "phone": "619-425-0467"
+  },
+  {
+    "position": {
+      "lat": 32.64471155,
+      "lng": -116.9988592
+    },
+    "name": "Starbucks - CA - Chula Vista [W]  00623",
+    "address": "Bonita Point Plaza_1467 East 'H' Street_Chula Vista, California 91913_(619) 656-9866"
+  },
+  {
+    "position": {
+      "lat": 32.62903627,
+      "lng": -117.0887855
+    },
+    "name": "Starbucks - CA - Chula Vista [W]  00624",
+    "address": "Chula Vista Center, Chula Vista_555 Broadway_Chula Vista, California 91910",
+    "phone": "619-409-1848"
+  },
+  {
+    "position": {
+      "lat": 32.61750349,
+      "lng": -116.984024
+    },
+    "name": "Starbucks - CA - Chula Vista [W]  00625",
+    "address": "Otay RanchTown Center_2015 Birch Road_Chula Vista, California 919152001",
+    "phone": "619-656-8316"
+  },
+  {
+    "position": {
+      "lat": 32.64786027,
+      "lng": -116.965924
+    },
+    "name": "Starbucks - CA - Chula Vista [W]  00626",
+    "address": "Eastlake Pkwy & Otay Lakes, Chula V_2295 Otay Lakes Rd._Chula Vista, California 919151001",
+    "phone": "619-216-3007"
+  },
+  {
+    "position": {
+      "lat": 32.61465531,
+      "lng": -117.0336522
+    },
+    "name": "Starbucks - CA - Chula Vista [W]  00627",
+    "address": "Medical Center & E. Palomar, Chula_605 E. Palomar Street_Chula Vista, California 919112623",
+    "phone": "619-482-5121"
+  },
+  {
+    "position": {
+      "lat": 32.62832251,
+      "lng": -117.0400589
+    },
+    "name": "Starbucks - CA - Chula Vista [W]  00628",
+    "address": "Telegraph Cany & I-805, Chula Vista_519 Telegraph Canyon Road_Chula Vista, California 919106436",
+    "phone": "619-482-9415"
+  },
+  {
+    "position": {
+      "lat": 38.67841529,
+      "lng": -121.2762242
+    },
+    "name": "Starbucks - CA - Citrus Heights [W]  00629",
+    "address": "Greenback & Birdcage,Citrus Heights_7801 Greenback Lane_Citrus Heights, California 95610",
+    "phone": "916-721-4202"
+  },
+  {
+    "position": {
+      "lat": 38.67815574,
+      "lng": -121.2949389
+    },
+    "name": "Starbucks - CA - Citrus Heights [W]  00630",
+    "address": "San Juan & Greenback - Sacramento_7301 Greenback Lane_Citrus Heights, California 95621_(916) 727-1495"
+  },
+  {
+    "position": {
+      "lat": 38.67586611,
+      "lng": -121.2716564
+    },
+    "name": "Starbucks - CA - Citrus Heights [W]  00631",
+    "address": "Birdcage Walk - Citrus Heights_6109 Sunrise Boulevard_Citrus Heights, California 95610_(916) 728-1587"
+  },
+  {
+    "position": {
+      "lat": 34.00300054,
+      "lng": -118.1677231
+    },
+    "name": "Starbucks - CA - City of Commerce [WD]  00632",
+    "address": "Atlantic & Washington, (UCO)_5201 E. Washington Blvd_City of Commerce, California 900403918",
+    "phone": "323-981-0029"
+  },
+  {
+    "position": {
+      "lat": 34.00484469,
+      "lng": -118.1530519
+    },
+    "name": "Starbucks - CA - City of Commerce [W]  00633",
+    "address": "Citadel Outlets, City of Commerce_100 Citadel Drive, Suite 200_City of Commerce, California 90040",
+    "phone": "323-888-2153"
+  },
+  {
+    "position": {
+      "lat": 34.0207522,
+      "lng": -117.9577358
+    },
+    "name": "Starbucks - CA - City of Industry [WD]  00634",
+    "address": "Hacienda & Valley, City of Industry_209 S. Hacienda Blvd_City of Industry, California 917451104",
+    "phone": "626-369-0946"
+  },
+  {
+    "position": {
+      "lat": 33.995946,
+      "lng": -117.906153
+    },
+    "name": "Starbucks - CA - City of Industry [W]  00635",
+    "address": "Gale & Fullerton, City of Industry_18248 Gale Avenue_City of Industry, California 917481242",
+    "phone": "626-810-9462"
+  },
+  {
+    "position": {
+      "lat": 34.12157262,
+      "lng": -117.7063029
+    },
+    "name": "Starbucks - CA - Claremont  00636",
+    "address": "Vons-Claremont #2155_550 E Baseline Rd_Claremont, California 917112236"
+  },
+  {
+    "position": {
+      "lat": 34.08055051,
+      "lng": -117.7192119
+    },
+    "name": "Starbucks - CA - Claremont [WD]  00637",
+    "address": "Indian Hill & I-10, Claremont_810 S. Indian Hill Blvd._Claremont, California 917115454",
+    "phone": "909-445-0896"
+  },
+  {
+    "position": {
+      "lat": 34.09558511,
+      "lng": -117.7178537
+    },
+    "name": "Starbucks - CA - Claremont [W]  00638",
+    "address": "Claremont - Wells Fargo_203 Yale Avenue_Claremont, California 91711_(909) 625-2332"
+  },
+  {
+    "position": {
+      "lat": 34.10696285,
+      "lng": -117.7045817
+    },
+    "name": "Starbucks - CA - Claremont [W]  00639",
+    "address": "Foothill & Claremont, CLaremont_665 E Foothill Blvd_Claremont, California 91711",
+    "phone": "909-625-5359"
+  },
+  {
+    "position": {
+      "lat": 37.95157729,
+      "lng": -121.9561422
+    },
+    "name": "Starbucks - CA - Clayton  00640",
+    "address": "Safeway-Clayton #1195_5431 Clayton Rd_Clayton, California 94517"
+  },
+  {
+    "position": {
+      "lat": 37.952788,
+      "lng": -121.956235
+    },
+    "name": "Starbucks - CA - Clayton [W]  00641",
+    "address": "Clayton Station_1536 Kirker Pass Road_Clayton, California 94517_(925) 672-8919"
+  },
+  {
+    "position": {
+      "lat": 38.783551,
+      "lng": -123.011919
+    },
+    "name": "Starbucks - CA - Cloverdale [WD]  00642",
+    "address": "Hwy 101 & Cloverdale Blvd - Cloverd_1198 A S. Cloverdale Blvd._Cloverdale, California 95425",
+    "phone": "707-894-4637"
+  },
+  {
+    "position": {
+      "lat": 36.837734,
+      "lng": -119.725945
+    },
+    "name": "Starbucks - CA - Clovis  00643",
+    "address": "Target Clovis T-2018_695 W Herndon Ave_Clovis, California 93612",
+    "phone": "559-321-0009"
+  },
+  {
+    "position": {
+      "lat": 36.837635,
+      "lng": -119.68498
+    },
+    "name": "Starbucks - CA - Clovis  00644",
+    "address": "Vons-Clovis #1756_1650 Herndon Ave_Clovis, California 93612"
+  },
+  {
+    "position": {
+      "lat": 36.79198193,
+      "lng": -119.6824269
+    },
+    "name": "Starbucks - CA - Clovis [WD]  00645",
+    "address": "Ashlan & Fowler, Clovis_3170 N. Fowler Avenue_Clovis, California 93611",
+    "phone": "559-347-9195"
+  },
+  {
+    "position": {
+      "lat": 36.83699,
+      "lng": -119.70147
+    },
+    "name": "Starbucks - CA - Clovis [WD]  00646",
+    "address": "Herndon & Clovis, Clovis_779 Herndon_Clovis, California 936120335",
+    "phone": "559-298-0750"
+  },
+  {
+    "position": {
+      "lat": 36.8377,
+      "lng": -119.726091
+    },
+    "name": "Starbucks - CA - Clovis [WD]  00647",
+    "address": "Herndon & Willow, Clovis_775 West Herndon Avenue_Clovis, California 936120150_(559) 298-0649"
+  },
+  {
+    "position": {
+      "lat": 36.80845235,
+      "lng": -119.7131195
+    },
+    "name": "Starbucks - CA - Clovis [WD]  00648",
+    "address": "175 West Shaw - Clovis_175 W Shaw_Clovis, California 93612_(559) 297-8885"
+  },
+  {
+    "position": {
+      "lat": 36.837263,
+      "lng": -119.680257
+    },
+    "name": "Starbucks - CA - Clovis [WD]  00649",
+    "address": "Herndon & Fowler - Clovis_1845 Herndon Avenue_Clovis, California 93612",
+    "phone": "559-299-5944"
+  },
+  {
+    "position": {
+      "lat": 36.844472,
+      "lng": -119.666
+    },
+    "name": "Starbucks - CA - Clovis [WD]  00650",
+    "address": "Temperance & Hwy 168, Clovis_765 N Temperance Avenue_Clovis, California 93611",
+    "phone": "559-325-6114"
+  },
+  {
+    "position": {
+      "lat": 36.83754612,
+      "lng": -119.7294459
+    },
+    "name": "Starbucks - CA - Clovis [WD]  00651",
+    "address": "Willow & Nees, Clovis_1057 N. Willow Avenue_Clovis, California 93611",
+    "phone": "559-322-4516"
+  },
+  {
+    "position": {
+      "lat": 36.80291364,
+      "lng": -119.6259139
+    },
+    "name": "Starbucks - CA - Clovis [W]  00652",
+    "address": "Shaw & Armstrong, Clovis_2195 E. Shaw Ave_Clovis, California 936118952",
+    "phone": "559-322-6780"
+  },
+  {
+    "position": {
+      "lat": 36.80839487,
+      "lng": -119.6958823
+    },
+    "name": "Starbucks - CA - Clovis [W]  00653",
+    "address": "Sierra Vista Mall Pad - Clovis_1020 Shaw Avenue_Clovis, California 93612",
+    "phone": "559-325-1336"
+  },
+  {
+    "position": {
+      "lat": 33.70033436,
+      "lng": -116.1382007
+    },
+    "name": "Starbucks - CA - Coachella [D]  00654",
+    "address": "Avenue 48 & Jackson, Coachella_83073 Avenue 48_Coachella, California 92236",
+    "phone": "760-775-1581"
+  },
+  {
+    "position": {
+      "lat": 33.69338,
+      "lng": -116.18576
+    },
+    "name": "Starbucks - CA - Coachella [WD]  00655",
+    "address": "Grapefruit Blvd. & Park Ln._49255 Grapefruit Blvd._Coachella, California 92236",
+    "phone": "760-398-1086"
+  },
+  {
+    "position": {
+      "lat": 36.13636231,
+      "lng": -120.3641344
+    },
+    "name": "Starbucks - CA - Coalinga [D]  00656",
+    "address": "Polk & Elm, Coalinga_113 W. Polk Street_Coalinga, California 93210",
+    "phone": "559-934-1089"
+  },
+  {
+    "position": {
+      "lat": 39.09735519,
+      "lng": -120.9513394
+    },
+    "name": "Starbucks - CA - Colfax [WD]  00657",
+    "address": "Auburn & Oak - Colfax_424 South Auburn Road_Colfax, California 95713",
+    "phone": "530-346-6536"
+  },
+  {
+    "position": {
+      "lat": 34.0473,
+      "lng": -117.306056
+    },
+    "name": "Starbucks - CA - Colton [WD]  00658",
+    "address": "Washington & I-215, Colton_1241 East Washington Street_Colton, California 923244609",
+    "phone": "909-783-6825"
+  },
+  {
+    "position": {
+      "lat": 34.05138,
+      "lng": -117.30894
+    },
+    "name": "Starbucks - CA - Colton [WD]  00659",
+    "address": "Mt. Vernon & Washington, Colton_1181 S. Mount Vernon Ave._Colton, California 923244208_9093702234"
+  },
+  {
+    "position": {
+      "lat": 33.87395094,
+      "lng": -118.2485379
+    },
+    "name": "Starbucks - CA - Compton [WD]  00660",
+    "address": "Central & The 91 Fwy, Compton (UCO)_1929 W. Artesia Blvd._Compton, California 902205309",
+    "phone": "310-608-5364"
+  },
+  {
+    "position": {
+      "lat": 33.89595098,
+      "lng": -118.2228018
+    },
+    "name": "Starbucks - CA - Compton [W]  00661",
+    "address": "Compton & Alameda, Compton (UCO)_162 E. Compton_Compton, California 90220",
+    "phone": "310-669-9544"
+  },
+  {
+    "position": {
+      "lat": 37.97762422,
+      "lng": -122.0316568
+    },
+    "name": "Starbucks - CA - Concord  00662",
+    "address": "Safeway-Concord #955_2600 Willow Pass Rd_Concord, California 94520"
+  },
+  {
+    "position": {
+      "lat": 37.97775741,
+      "lng": -121.9931618
+    },
+    "name": "Starbucks - CA - Concord [WD]  00663",
+    "address": "Concord & Landana - Concord_4125 Concord Boulevard_Concord, California 94519",
+    "phone": "925-969-9514"
+  },
+  {
+    "position": {
+      "lat": 37.99476458,
+      "lng": -122.0311923
+    },
+    "name": "Starbucks - CA - Concord [WD]  00664",
+    "address": "Port Chicago & Olivera - Concord_3373 Port Chicago Highway_Concord, California 94520",
+    "phone": "925-687-9759"
+  },
+  {
+    "position": {
+      "lat": 37.97990209,
+      "lng": -122.0567099
+    },
+    "name": "Starbucks - CA - Concord [W]  00665",
+    "address": "Concord & John Glenn - Concord_1170 Concord Ave._Concord, California 94520",
+    "phone": "925-798-7063"
+  },
+  {
+    "position": {
+      "lat": 37.9638409,
+      "lng": -121.9901429
+    },
+    "name": "Starbucks - CA - Concord [W]  00666",
+    "address": "Clayton & Treat - Concord_4375 Clayton Road_Concord, California 94521",
+    "phone": "925-521-9960"
+  },
+  {
+    "position": {
+      "lat": 37.95820599,
+      "lng": -122.036274
+    },
+    "name": "Starbucks - CA - Concord [W]  00667",
+    "address": "Monument & Erickson - Concord_2250  Monument Blvd_Concord, California 94520",
+    "phone": "925-798-5178"
+  },
+  {
+    "position": {
+      "lat": 37.93842576,
+      "lng": -122.02469
+    },
+    "name": "Starbucks - CA - Concord [W]  00668",
+    "address": "Oak Grove & Treat - Concord_790 Oak Grove Road_Concord, California 94518",
+    "phone": "925-682-0579"
+  },
+  {
+    "position": {
+      "lat": 37.96713305,
+      "lng": -122.0624882
+    },
+    "name": "Starbucks - CA - Concord [W]  00669",
+    "address": "Sunvalley Mall - Concord_1 Sunvalley Mall_Concord, California 94520",
+    "phone": "925-680-2571"
+  },
+  {
+    "position": {
+      "lat": 37.973488,
+      "lng": -122.04112
+    },
+    "name": "Starbucks - CA - Concord [W]  00670",
+    "address": "Willow Pass & Market - Concord_1701 Willow Pass Road_Concord, California 95420",
+    "phone": "925-685-2694"
+  },
+  {
+    "position": {
+      "lat": 37.97666458,
+      "lng": -122.0337195
+    },
+    "name": "Starbucks - CA - Concord [W]  00671",
+    "address": "Willow Pass Road - Concord_2118 Willow Pass Road_Concord, California 94520_(925) 689-5357"
+  },
+  {
+    "position": {
+      "lat": 39.81450456,
+      "lng": -122.1972615
+    },
+    "name": "Starbucks - CA - Corning [WD]  00672",
+    "address": "I-5 & Corning - Corning_908 SR-99W_Corning, California 96021",
+    "phone": "530-824-3297"
+  },
+  {
+    "position": {
+      "lat": 33.84369436,
+      "lng": -117.5883549
+    },
+    "name": "Starbucks - CA - Corona  00673",
+    "address": "Albertsons-Corona #6727_260 W Foothill Pkwy_Corona, California 92882"
+  },
+  {
+    "position": {
+      "lat": 33.847378,
+      "lng": -117.541147
+    },
+    "name": "Starbucks - CA - Corona  00674",
+    "address": "Albertsons-Corona #696 / (6796)_1260 E Ontario Ave_Corona, California 91719",
+    "phone": "951-734-8451"
+  },
+  {
+    "position": {
+      "lat": 33.89018677,
+      "lng": -117.5210098
+    },
+    "name": "Starbucks - CA - Corona  00675",
+    "address": "Vons-Corona #2381_535 N McKinley St_Corona, California 91719"
+  },
+  {
+    "position": {
+      "lat": 33.6007946,
+      "lng": -117.8724814
+    },
+    "name": "Starbucks - CA - Corona Del Mar [W]  00676",
+    "address": "Corona Del Mar_2801 East Coast Hwy_Corona Del Mar, California 92625",
+    "phone": "949-675-4416"
+  },
+  {
+    "position": {
+      "lat": 33.9464,
+      "lng": -117.6012
+    },
+    "name": "Starbucks - CA - Corona [WD]  00677",
+    "address": "Limonite and Hamner, Corona_12700 Limonite Avenue_Corona, California 928809630",
+    "phone": "951-738-8256"
+  },
+  {
+    "position": {
+      "lat": 33.881,
+      "lng": -117.5152
+    },
+    "name": "Starbucks - CA - Corona [W]  00678",
+    "address": "Magnolia & Ontario, Corona_469 Magnolia Ave_Corona, California 928793304",
+    "phone": "951-280-0944"
+  },
+  {
+    "position": {
+      "lat": 33.88261162,
+      "lng": -117.5148527
+    },
+    "name": "Starbucks - CA - Corona [W]  00679",
+    "address": "McKinley & Magnolia, Corona_115 N. McKinley Street_Corona, California 928796562",
+    "phone": "951-735-9355"
+  },
+  {
+    "position": {
+      "lat": 33.8291,
+      "lng": -117.5253
+    },
+    "name": "Starbucks - CA - Corona [W]  00680",
+    "address": "Cajalco & Highway 15, Corona_2690 Tuscany Street_Corona, California 928814628",
+    "phone": "951-340-0424"
+  },
+  {
+    "position": {
+      "lat": 32.6864076,
+      "lng": -117.1796146
+    },
+    "name": "Starbucks - CA - Coronado [W]  00681",
+    "address": "Coronado_960 Orange Avenue_Coronado, California 92118_(619) 437-8306"
+  },
+  {
+    "position": {
+      "lat": 37.92659778,
+      "lng": -122.5306923
+    },
+    "name": "Starbucks - CA - Corte Madera  00682",
+    "address": "Safeway-Corte Madera #2318_137 Corte Madera_Corte Madera, California 94925",
+    "phone": "415-927-1960"
+  },
+  {
+    "position": {
+      "lat": 37.931367,
+      "lng": -122.515108
+    },
+    "name": "Starbucks - CA - Corte Madera [W]  00683",
+    "address": "Corte Madera_1732A Redwood Hwy_Corte Madera, California 94925_(415) 927-3343"
+  },
+  {
+    "position": {
+      "lat": 33.67084,
+      "lng": -117.90787
+    },
+    "name": "Starbucks - CA - Costa Mesa  00684",
+    "address": "Orange Coast College_2701 Fairview Road_Costa Mesa, California 92677"
+  },
+  {
+    "position": {
+      "lat": 33.63715512,
+      "lng": -117.9211533
+    },
+    "name": "Starbucks - CA - Costa Mesa [W]  00685",
+    "address": "17th & Newport Blvd. - Costa Mesa_1696 Newport Blvd._Costa Mesa, California 92627_(949) 631-2187"
+  },
+  {
+    "position": {
+      "lat": 33.6899798,
+      "lng": -117.8854587
+    },
+    "name": "Starbucks - CA - Costa Mesa [W]  00686",
+    "address": "Bristol & I-405, Costa Mesa_3333 Bristol Street_Costa Mesa, California 92626",
+    "phone": "714-545-8306"
+  },
+  {
+    "position": {
+      "lat": 33.68191676,
+      "lng": -117.9193092
+    },
+    "name": "Starbucks - CA - Costa Mesa [W]  00687",
+    "address": "Harbor & Baker, Costa Mesa_3030 Harbor Blvd._Costa Mesa, California 92626",
+    "phone": "714-557-9964"
+  },
+  {
+    "position": {
+      "lat": 33.65754664,
+      "lng": -117.9190769
+    },
+    "name": "Starbucks - CA - Costa Mesa [W]  00688",
+    "address": "Harbor & Wilson, Costa Mesa_2300 Harbor Blvd._Costa Mesa, California 926266204",
+    "phone": "949-574-1827"
+  },
+  {
+    "position": {
+      "lat": 33.69003102,
+      "lng": -117.8764702
+    },
+    "name": "Starbucks - CA - Costa Mesa [W]  00689",
+    "address": "Anton & Sakioka, Costa Mesa_545 Anton Blvd_Costa Mesa, California 92626",
+    "phone": "714-557-4377"
+  },
+  {
+    "position": {
+      "lat": 33.662671,
+      "lng": -117.897256
+    },
+    "name": "Starbucks - CA - Costa Mesa [W]  00690",
+    "address": "Newport & Del Mar, Costa Mesa_2590 Newport Blvd, Suite 'A'_Costa Mesa, California 926275179",
+    "phone": "949-642-3667"
+  },
+  {
+    "position": {
+      "lat": 33.67040789,
+      "lng": -117.9191452
+    },
+    "name": "Starbucks - CA - Costa Mesa [W]  00691",
+    "address": "Harbor & Adams - Costa Mesa_2701 Harbor Blvd_Costa Mesa, California 92626",
+    "phone": "714-434-8478"
+  },
+  {
+    "position": {
+      "lat": 33.6902563,
+      "lng": -117.8938476
+    },
+    "name": "Starbucks - CA - Costa Mesa [W]  00692",
+    "address": "Metro Point_901 South Coast Drive_Costa Mesa, California 92626_(714) 429-1782"
+  },
+  {
+    "position": {
+      "lat": 38.329183,
+      "lng": -122.698062
+    },
+    "name": "Starbucks - CA - Cotati [W]  00693",
+    "address": "E. Cotati & Lasalle - Cotati_640 E. Cotati Avenue_Cotati, California 94931",
+    "phone": "707-794-9016"
+  },
+  {
+    "position": {
+      "lat": 34.09758527,
+      "lng": -117.9077245
+    },
+    "name": "Starbucks - CA - Covina  00694",
+    "address": "Albertsons-Covina #697/6597_1000 N Azusa_Covina, California 91722",
+    "phone": "626-374-4582"
+  },
+  {
+    "position": {
+      "lat": 34.08680696,
+      "lng": -117.8901033
+    },
+    "name": "Starbucks - CA - Covina [W]  00695",
+    "address": "Citrus & College, Covina_145 N. Citrus Avenue_Covina, California 917232002_6268592760"
+  },
+  {
+    "position": {
+      "lat": 34.0861,
+      "lng": -117.871017
+    },
+    "name": "Starbucks - CA - Covina [W]  00696",
+    "address": "N. Grand Ave & Badillo St, Covina._966 E. Badillo Street_Covina, California 917242950",
+    "phone": "626-858-9744"
+  },
+  {
+    "position": {
+      "lat": 33.98624267,
+      "lng": -118.395346
+    },
+    "name": "Starbucks - CA - Culver City  00697",
+    "address": "Fox Hills_294 Fox Hills Mall_Culver City, California 90230_(310) 313-3229"
+  },
+  {
+    "position": {
+      "lat": 34.00114614,
+      "lng": -118.3949908
+    },
+    "name": "Starbucks - CA - Culver City  00698",
+    "address": "Target Culver City T-198_10820 Jefferson Blvd_Culver City, California 90230"
+  },
+  {
+    "position": {
+      "lat": 33.99744964,
+      "lng": -118.3954401
+    },
+    "name": "Starbucks - CA - Culver City  00699",
+    "address": "Safeway-Culver City #2212_11030 Jefferson Blvd_Culver City, California 90230"
+  },
+  {
+    "position": {
+      "lat": 34.01675995,
+      "lng": -118.4056869
+    },
+    "name": "Starbucks - CA - Culver City [W]  00700",
+    "address": "Washington & Overland - Culver City_10705 W. Washington Blvd._Culver City, California 90232_(310) 202-8984"
+  },
+  {
+    "position": {
+      "lat": 34.02201,
+      "lng": -118.397034
+    },
+    "name": "Starbucks - CA - Culver City [W]  00701",
+    "address": "Washington & Culver_9718 Washington Blvd._Culver City, California 902322722",
+    "phone": "310-204-1075"
+  },
+  {
+    "position": {
+      "lat": 37.323,
+      "lng": -122.035977
+    },
+    "name": "Starbucks - CA - Cupertino  00702",
+    "address": "Target Cupertino T-323_20745 Stevens Creek Blvd_Cupertino, California 95014",
+    "phone": "408-725-2651"
+  },
+  {
+    "position": {
+      "lat": 37.3375,
+      "lng": -122.066904
+    },
+    "name": "Starbucks - CA - Cupertino [W]  00703",
+    "address": "Homestead & Foothill - Cupertino_22390 Homestead Road_Cupertino, California 95014",
+    "phone": "408-746-0151"
+  },
+  {
+    "position": {
+      "lat": 37.32284472,
+      "lng": -122.0414376
+    },
+    "name": "Starbucks - CA - Cupertino [W]  00704",
+    "address": "Steven's Creek & Stelling_21000 Steven's Creek Boulevard_Cupertino, California 95014",
+    "phone": "408-517-0314"
+  },
+  {
+    "position": {
+      "lat": 37.32291916,
+      "lng": -122.032584
+    },
+    "name": "Starbucks - CA - Cupertino [W]  00705",
+    "address": "Cupertino_20520A Stevens Creek Blvd_Cupertino, California 95014_(408) 973-8358"
+  },
+  {
+    "position": {
+      "lat": 37.33701492,
+      "lng": -122.0142665
+    },
+    "name": "Starbucks - CA - Cupertino [W]  00706",
+    "address": "Homestead & Wolfe - Cupertino_11111 N Wolfe Rd_Cupertino, California 95014",
+    "phone": "408-863-1276"
+  },
+  {
+    "position": {
+      "lat": 33.81663883,
+      "lng": -118.0281687
+    },
+    "name": "Starbucks - CA - Cypress [W]  00707",
+    "address": "Valley View & Ball, Cypress_10031 Valley View Street_Cypress, California 906304601",
+    "phone": "714-527-2024"
+  },
+  {
+    "position": {
+      "lat": 33.80357267,
+      "lng": -118.0143307
+    },
+    "name": "Starbucks - CA - Cypress [W]  00708",
+    "address": "Katella & Meridian, Cypress_10953 Meridian Drive_Cypress, California 906305143",
+    "phone": "714-761-3255"
+  },
+  {
+    "position": {
+      "lat": 33.80292381,
+      "lng": -118.037048
+    },
+    "name": "Starbucks - CA - Cypress [W]  00709",
+    "address": "Katella & Walker, Cypress_5373 Katella Avenue_Cypress, California 90630",
+    "phone": "714-995-2884"
+  },
+  {
+    "position": {
+      "lat": 37.7013,
+      "lng": -122.4832
+    },
+    "name": "Starbucks - CA - Daly City  00710",
+    "address": "Westlake Mall - Daly City_332 Westlake Center_Daly City, California 94015",
+    "phone": "650-994-2948"
+  },
+  {
+    "position": {
+      "lat": 37.70161969,
+      "lng": -122.4708926
+    },
+    "name": "Starbucks - CA - Daly City [W]  00711",
+    "address": "John Daly & Highway 280 - Daly City_2001 Junipero Serra Blvd_Daly City, California 94014",
+    "phone": "650-758-2660"
+  },
+  {
+    "position": {
+      "lat": 37.6680254,
+      "lng": -122.4688025
+    },
+    "name": "Starbucks - CA - Daly City [W]  00712",
+    "address": "Gellert & Serramonte - Daly City_321 Gellert Blvd_Daly City, California 94015_(650) 756-4116"
+  },
+  {
+    "position": {
+      "lat": 37.67410615,
+      "lng": -122.4703057
+    },
+    "name": "Starbucks - CA - Daly City [W]  00713",
+    "address": "Serramonte Center - Daly City_49 Serramonte Center_Daly City, California 94015",
+    "phone": "650-997-4556"
+  },
+  {
+    "position": {
+      "lat": 37.6979,
+      "lng": -122.4641
+    },
+    "name": "Starbucks - CA - Daly City [W]  00714",
+    "address": "Mission St.@ Gambetta - Daly City_6873 Mission Street_Daly City, California 940142558_(650) 757-5274"
+  },
+  {
+    "position": {
+      "lat": 33.47486191,
+      "lng": -117.6848456
+    },
+    "name": "Starbucks - CA - Dana Point  00715",
+    "address": "Albertsons-Dana Point #6558_33601 Del Obispo_Dana Point, California 92629",
+    "phone": "949-496-7900"
+  },
+  {
+    "position": {
+      "lat": 33.490748,
+      "lng": -117.697893
+    },
+    "name": "Starbucks - CA - Dana Point [W]  00716",
+    "address": "Golden Lantern & Camino de Avion, D_32515 Golden Lantern Street_Dana Point, California 92629",
+    "phone": "949-487-7043"
+  },
+  {
+    "position": {
+      "lat": 33.4765,
+      "lng": -117.7189
+    },
+    "name": "Starbucks - CA - Dana Point [W]  00717",
+    "address": "Ritz Carlton Dr. & PCH - Dana Point_2 Ritz Carlton Drive_Dana Point, California 926294204",
+    "phone": "949-248-5231"
+  },
+  {
+    "position": {
+      "lat": 33.46552612,
+      "lng": -117.7020682
+    },
+    "name": "Starbucks - CA - Dana Point [W]  00718",
+    "address": "Del Prado & Amber Lantern, Dana Pt_24502 Del Prado_Dana Point, California 92629",
+    "phone": "949-443-1242"
+  },
+  {
+    "position": {
+      "lat": 33.48614646,
+      "lng": -117.7263973
+    },
+    "name": "Starbucks - CA - Dana Point [W]  00719",
+    "address": "PCH & Crown Valley, Dana Point_32880 Pacific Coast Highway_Dana Point, California 926293422",
+    "phone": "949-489-5571"
+  },
+  {
+    "position": {
+      "lat": 37.7986298,
+      "lng": -121.9171833
+    },
+    "name": "Starbucks - CA - Danville  00720",
+    "address": "Safeway-Danville #1211_3496 Camino Tassajar_Danville, California 94506",
+    "phone": "925-736-0298"
+  },
+  {
+    "position": {
+      "lat": 37.82168417,
+      "lng": -122.000033
+    },
+    "name": "Starbucks - CA - Danville [W]  00721",
+    "address": "Danville_398 Hartz Avenue_Danville, California 94526",
+    "phone": "925-855-9657"
+  },
+  {
+    "position": {
+      "lat": 37.79866643,
+      "lng": -121.9214175
+    },
+    "name": "Starbucks - CA - Danville [W]  00722",
+    "address": "Blackhawk_11000 Crow Canyon Road_Danville, California 94506",
+    "phone": "925-648-3977"
+  },
+  {
+    "position": {
+      "lat": 37.82426598,
+      "lng": -122.0033525
+    },
+    "name": "Starbucks - CA - Danville [W]  00723",
+    "address": "Railroad & Love - Danville_1 Railroad Blvd._Danville, California 94526",
+    "phone": "925-743-1664"
+  },
+  {
+    "position": {
+      "lat": 38.560954,
+      "lng": -121.766194
+    },
+    "name": "Starbucks - CA - Davis  00724",
+    "address": "Safeway - Davis #1205_1435 W. Covell_Davis, California 95616"
+  },
+  {
+    "position": {
+      "lat": 38.54021641,
+      "lng": -121.7242418
+    },
+    "name": "Starbucks - CA - Davis  00725",
+    "address": "Safeway-Davis #1561_2121 Cowell Blvd._Davis, California 95616",
+    "phone": "530-792-8500"
+  },
+  {
+    "position": {
+      "lat": 38.56218937,
+      "lng": -121.7694321
+    },
+    "name": "Starbucks - CA - Davis [WD]  00726",
+    "address": "Hwy 113 & Covell - Davis_2038 Lyndell Terrace_Davis, California 95616",
+    "phone": "530-753-4756"
+  },
+  {
+    "position": {
+      "lat": 38.5436876,
+      "lng": -121.7400551
+    },
+    "name": "Starbucks - CA - Davis [W]  00727",
+    "address": "3rd & F Street - Davis_208 F. Street_Davis, California 95616_(530) 753-6309"
+  },
+  {
+    "position": {
+      "lat": 38.54635017,
+      "lng": -121.7606075
+    },
+    "name": "Starbucks - CA - Davis [W]  00728",
+    "address": "Russell & Anderson - Davis_825 Russell Boulevard_Davis, California 95616",
+    "phone": "530-753-2686"
+  },
+  {
+    "position": {
+      "lat": 32.98099592,
+      "lng": -117.2482021
+    },
+    "name": "Starbucks - CA - Del Mar  00729",
+    "address": "Albertsons-Del Mar #6702_2707 Via De La Valle_Del Mar, California 92014"
+  },
+  {
+    "position": {
+      "lat": 32.93783951,
+      "lng": -117.2316208
+    },
+    "name": "Starbucks - CA - Del Mar  00730",
+    "address": "Vons-Del Mar #2119_3850 Valley Center Dr._Del Mar, California 92130"
+  },
+  {
+    "position": {
+      "lat": 32.95894825,
+      "lng": -117.2649804
+    },
+    "name": "Starbucks - CA - Del Mar [W]  00731",
+    "address": "Del Mar_1435 Camino Del Mar_Del Mar, California 92014_(858) 793-4453"
+  },
+  {
+    "position": {
+      "lat": 36.58212,
+      "lng": -121.828173
+    },
+    "name": "Starbucks - CA - Del Rey Oaks [W]  00732",
+    "address": "Canyon Del Rey & Hwy 68 - Del Rey O_441 Canyon Del Rey_Del Rey Oaks, California 93940",
+    "phone": "831-392-1109"
+  },
+  {
+    "position": {
+      "lat": 33.945509,
+      "lng": -116.501335
+    },
+    "name": "Starbucks - CA - Desert Hot Springs [WD]  00733",
+    "address": "Palm Dr. & Two Bunch Palms_14207 Palm Drive_Desert Hot Springs, California 922406872",
+    "phone": "760-251-2217"
+  },
+  {
+    "position": {
+      "lat": 34.021236,
+      "lng": -117.80995
+    },
+    "name": "Starbucks - CA - Diamond Bar  00734",
+    "address": "Vons-Diamond Bar #2062_240 S Diamond Bar Blvd_Diamond Bar, California 91765",
+    "phone": "403-851-1290"
+  },
+  {
+    "position": {
+      "lat": 34.00547,
+      "lng": -117.82109
+    },
+    "name": "Starbucks - CA - Diamond Bar  00735",
+    "address": "Target Diamond Bar T-2179_747 Grand Ave_Diamond Bar, California 91765"
+  },
+  {
+    "position": {
+      "lat": 34.00107051,
+      "lng": -117.8111435
+    },
+    "name": "Starbucks - CA - Diamond Bar [W]  00736",
+    "address": "Diamond Bar & Grand_1194 Grand Avenue_Diamond Bar, California 91765",
+    "phone": "909-860-7030"
+  },
+  {
+    "position": {
+      "lat": 38.458028,
+      "lng": -121.83913
+    },
+    "name": "Starbucks - CA - Dixon  00737",
+    "address": "Safeway - Dixon #1258_1235 Stratford Ave._Dixon, California 95620"
+  },
+  {
+    "position": {
+      "lat": 38.45680297,
+      "lng": -121.8428294
+    },
+    "name": "Starbucks - CA - Dixon [WD]  00738",
+    "address": "I-80 & Pitt School - Dixon_1450 Ary Lane_Dixon, California 95620",
+    "phone": "707-693-1542"
+  },
+  {
+    "position": {
+      "lat": 33.960999,
+      "lng": -118.1102
+    },
+    "name": "Starbucks - CA - Downey [D]  00739",
+    "address": "Lakewood & Telegraph, Downey_8801 Lakewood Blvd._Downey, California 90240",
+    "phone": "562-862-6326"
+  },
+  {
+    "position": {
+      "lat": 33.92753,
+      "lng": -118.12954
+    },
+    "name": "Starbucks - CA - Downey [W]  00740",
+    "address": "Lakewood & Stewart and Gray, Downey_12016 Lakewood Blvd._Downey, California 90242",
+    "phone": "562-803-0950"
+  },
+  {
+    "position": {
+      "lat": 33.93547046,
+      "lng": -118.1239143
+    },
+    "name": "Starbucks - CA - Downey [W]  00741",
+    "address": "Firestone & Lakewood, Downey_9001 East Firestone Blvd._Downey, California 902415317",
+    "phone": "562-861-6588"
+  },
+  {
+    "position": {
+      "lat": 34.1395326,
+      "lng": -117.9810541
+    },
+    "name": "Starbucks - CA - Duarte [W]  00742",
+    "address": "Huntington & Buena Vista - Duarte_1155 Huntington Drive_Duarte, California 91010_(626) 930-0651"
+  },
+  {
+    "position": {
+      "lat": 37.70456997,
+      "lng": -121.9277906
+    },
+    "name": "Starbucks - CA - Dublin  00743",
+    "address": "Safeway-Dublin #1953_7499 Dublin Blvd_Dublin, California 94568"
+  },
+  {
+    "position": {
+      "lat": 37.71973102,
+      "lng": -121.8716483
+    },
+    "name": "Starbucks - CA - Dublin  00744",
+    "address": "Safeway-Dublin #1932_4440 Tassahara_Dublin, California 94568"
+  },
+  {
+    "position": {
+      "lat": 37.71009595,
+      "lng": -121.926868
+    },
+    "name": "Starbucks - CA - Dublin [W]  00745",
+    "address": "Amador Valley & Village Pkwy - Dubl_7197 Village Parkway_Dublin, California 94568",
+    "phone": "925-875-9807"
+  },
+  {
+    "position": {
+      "lat": 37.70621641,
+      "lng": -121.8856956
+    },
+    "name": "Starbucks - CA - Dublin [W]  00746",
+    "address": "Hacienda @ 580 FWY - Dublin_4930 Dublin Blvd_Dublin, California 94568",
+    "phone": "925-875-1990"
+  },
+  {
+    "position": {
+      "lat": 37.70272277,
+      "lng": -121.9337528
+    },
+    "name": "Starbucks - CA - Dublin [W]  00747",
+    "address": "Dublin (B&N)_7904 Dublin Blvd._Dublin, California 94568_(925) 803-7520"
+  },
+  {
+    "position": {
+      "lat": 32.80775773,
+      "lng": -116.9216705
+    },
+    "name": "Starbucks - CA - El Cajon  00748",
+    "address": "Albertsons-El Cajon #6771_1608 Broadway Street_El Cajon, California 92021",
+    "phone": "619-579-3127"
+  },
+  {
+    "position": {
+      "lat": 32.79876305,
+      "lng": -117.0024246
+    },
+    "name": "Starbucks - CA - El Cajon  00749",
+    "address": "Vons-El Cajon #2064_2800 Fletcher Pkwy_El Cajon, California 92020",
+    "phone": "619-463-2633"
+  },
+  {
+    "position": {
+      "lat": 32.80726608,
+      "lng": -116.9674461
+    },
+    "name": "Starbucks - CA - El Cajon  00750",
+    "address": "Parkway Plaza - El Cajon_415 Parkway Plaza_El Cajon, California 920202571_(619) 444-4920"
+  },
+  {
+    "position": {
+      "lat": 32.82888889,
+      "lng": -116.9040993
+    },
+    "name": "Starbucks - CA - El Cajon  00751",
+    "address": "Vons - El Cajon #2333_13439 Camino Canada_El Cajon, California 92021"
+  },
+  {
+    "position": {
+      "lat": 32.779044,
+      "lng": -116.957997
+    },
+    "name": "Starbucks - CA - El Cajon  00752",
+    "address": "Vons - El Cajon #3044_1201 Avocado Ave._El Cajon, California 92020"
+  },
+  {
+    "position": {
+      "lat": 32.82041817,
+      "lng": -116.9623177
+    },
+    "name": "Starbucks - CA - El Cajon [WD]  00753",
+    "address": "Bradley & Magnolia, El Cajon_1591 N. Magnolia Ave_El Cajon, California 920201225",
+    "phone": "619-258-8429"
+  },
+  {
+    "position": {
+      "lat": 32.78045815,
+      "lng": -116.9571131
+    },
+    "name": "Starbucks - CA - El Cajon [WD]  00754",
+    "address": "Chase & Avocado, El Cajon_450 E. Chase Avenue_El Cajon, California 920206409",
+    "phone": "619-444-5107"
+  },
+  {
+    "position": {
+      "lat": 32.80769011,
+      "lng": -116.9509113
+    },
+    "name": "Starbucks - CA - El Cajon [W]  00755",
+    "address": "Broadway & Mollison, El Cajon_903 Broadway_El Cajon, California 92021",
+    "phone": "619-590-0497"
+  },
+  {
+    "position": {
+      "lat": 32.79961138,
+      "lng": -117.0023106
+    },
+    "name": "Starbucks - CA - El Cajon [W]  00756",
+    "address": "Fletcher Hills_2740 Fletcher Parkway_El Cajon, California 92020_(619) 469-6106"
+  },
+  {
+    "position": {
+      "lat": 32.79497913,
+      "lng": -116.9625226
+    },
+    "name": "Starbucks - CA - El Cajon [W]  00757",
+    "address": "Main & Magnolia, El Cajon_124 W. Main Street_El Cajon, California 920203316",
+    "phone": "619-444-7415"
+  },
+  {
+    "position": {
+      "lat": 32.74473626,
+      "lng": -116.9291913
+    },
+    "name": "Starbucks - CA - El Cajon [W]  00758",
+    "address": "Rancho San Diego_2512 Jamacha Road_El Cajon, California 92019_(619) 660-6056"
+  },
+  {
+    "position": {
+      "lat": 32.78654043,
+      "lng": -116.9277843
+    },
+    "name": "Starbucks - CA - El Cajon [W]  00759",
+    "address": "Jamacha & Washington, El Caj_745 Jamacha Road_El Cajon, California 920193202",
+    "phone": "619-590-1352"
+  },
+  {
+    "position": {
+      "lat": 32.80672023,
+      "lng": -115.5699563
+    },
+    "name": "Starbucks - CA - El Centro  00760",
+    "address": "Albertsons-El Centro #1691/6766_1620 North Imperial Ave_El Centro, California 92243",
+    "phone": "760-370-5707"
+  },
+  {
+    "position": {
+      "lat": 32.76677,
+      "lng": -115.54514
+    },
+    "name": "Starbucks - CA - El Centro [D]  00761",
+    "address": "Dogwood & I-8, El Centro_599 E. Danenberg Drive_El Centro, California 92243",
+    "phone": "760-370-0157"
+  },
+  {
+    "position": {
+      "lat": 32.79149915,
+      "lng": -115.569888
+    },
+    "name": "Starbucks - CA - El Centro [D]  00762",
+    "address": "Imperial & Main, El Centro_202 S. Imperial Avenue_El Centro, California 92243",
+    "phone": "760-352-3502"
+  },
+  {
+    "position": {
+      "lat": 37.8990847,
+      "lng": -122.3017721
+    },
+    "name": "Starbucks - CA - El Cerrito  00763",
+    "address": "Albertsons-El Cerrito #7006_1000 El Cerrito Plaza_El Cerrito, California 94530",
+    "phone": "510-524-7282"
+  },
+  {
+    "position": {
+      "lat": 37.92886008,
+      "lng": -122.3209972
+    },
+    "name": "Starbucks - CA - El Cerrito [WD]  00764",
+    "address": "San Pablo & Wall - El Cerrito (UCO)_11861 San Pablo Avenue_El Cerrito, California 94530",
+    "phone": "510-412-0169"
+  },
+  {
+    "position": {
+      "lat": 37.89908729,
+      "lng": -122.3017634
+    },
+    "name": "Starbucks - CA - El Cerrito [W]  00765",
+    "address": "San Pablo & Fairmount - El Cerrito_3090 El Cerrito Plaza_El Cerrito, California 94530",
+    "phone": "510-524-8134"
+  },
+  {
+    "position": {
+      "lat": 38.712068,
+      "lng": -121.085895
+    },
+    "name": "Starbucks - CA - El Dorado Hills  00766",
+    "address": "Green Valley & Francisco - El Dorad_2215 Francisco Dr_El Dorado Hills, California 95762",
+    "phone": "916-941-7524"
+  },
+  {
+    "position": {
+      "lat": 38.70966,
+      "lng": -121.08512
+    },
+    "name": "Starbucks - CA - El Dorado Hills  00767",
+    "address": "Safeway-El Dorado Hills #2683_765 Green Valley Dr_El Dorado Hills, California 95762"
+  },
+  {
+    "position": {
+      "lat": 38.64977631,
+      "lng": -121.0690919
+    },
+    "name": "Starbucks - CA - El Dorado Hills [W]  00768",
+    "address": "Latrobe & Town Center - El Dorado H_4311 Town Center Blvd._El Dorado Hills, California 95762",
+    "phone": "916-933-0846"
+  },
+  {
+    "position": {
+      "lat": 34.07146635,
+      "lng": -118.0254503
+    },
+    "name": "Starbucks - CA - El Monte  00769",
+    "address": "Peck Road & The 10 Fwy, El Monte_3534 Peck Road_El Monte, California 91731",
+    "phone": "626-452-0499"
+  },
+  {
+    "position": {
+      "lat": 34.07163028,
+      "lng": -118.0685488
+    },
+    "name": "Starbucks - CA - El Monte [WD]  00770",
+    "address": "Flair & Aerojet, El Monte_9208 Flair Drive_El Monte, California 91731",
+    "phone": "626-280-0683"
+  },
+  {
+    "position": {
+      "lat": 34.0627,
+      "lng": -118.06649
+    },
+    "name": "Starbucks - CA - El Monte [WD]  00771",
+    "address": "Rosemead & Garvey, El Monte_9327 Garvey Avenue_El Monte, California 917331021_(626) 444-4987"
+  },
+  {
+    "position": {
+      "lat": 39.9139755,
+      "lng": -105.05216
+    },
+    "name": "Starbucks - CO - Westminster [W]  02840",
+    "address": "120th & Sheridan_5180 B West 120th Avenue_Westminster, Colorado 80020_(303) 465-9964"
+  },
+  {
+    "position": {
+      "lat": 39.82994762,
+      "lng": -105.024998
+    },
+    "name": "Starbucks - CO - Westminster [W]  02841",
+    "address": "73rd & Federal-Westminster_7347 N Federal Blvd_Westminster, Colorado 80030",
+    "phone": "303-412-7011"
+  },
+  {
+    "position": {
+      "lat": 39.86743545,
+      "lng": -105.0531582
+    },
+    "name": "Starbucks - CO - Westminster [W]  02842",
+    "address": "Westminster B&N_9372 Sheridan Boulevard_Westminster, Colorado 80030_(303) 657-3282"
+  },
+  {
+    "position": {
+      "lat": 39.77119873,
+      "lng": -105.0815334
+    },
+    "name": "Starbucks - CO - Wheat Ridge  02843",
+    "address": "Safeway-Wheat Ridge #1479_3900 Wadsworth_Wheat Ridge, Colorado 80033",
+    "phone": "303-456-2670"
+  },
+  {
+    "position": {
+      "lat": 39.7619,
+      "lng": -105.142041
+    },
+    "name": "Starbucks - CO - Wheat Ridge [W]  02844",
+    "address": "32nd & Youngfield-Wheat Ridge, #13_12751 W 32nd Ave._Wheat Ridge, Colorado 80033",
+    "phone": "303-232-2758"
+  },
+  {
+    "position": {
+      "lat": 39.76513398,
+      "lng": -105.1424466
+    },
+    "name": "Starbucks - CO - Wheat Ridge [W]  02845",
+    "address": "Applewood Village_3450 Youngfield_Wheat Ridge, Colorado 80033_(303) 274-0370"
+  },
+  {
+    "position": {
+      "lat": 42.026468,
+      "lng": -88.144599
+    },
+    "name": "Starbucks - IL - Schaumburg [W]  04165",
+    "address": "Schaumburg & Barrington_181 N. Barrington Road_Schaumburg, Illinois 60194_(847) 519-9711"
+  }
+]

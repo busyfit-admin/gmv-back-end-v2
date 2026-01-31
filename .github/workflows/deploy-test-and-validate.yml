@@ -1,0 +1,384 @@
+name: Deploy Test Environment and Run API Tests
+
+# DISABLED - uncomment to re-enable
+# on:
+#   workflow_run:
+#     workflows: ["Build and Package Lambdas"]
+#     types:
+#       - completed
+#     branches: [main, develop]
+#   pull_request:
+#     branches: [main, develop]
+#     paths:
+#       - 'cfn/tenant-cfn/**'
+#       - 'postman/**'
+#       - '.github/workflows/**'
+#   push:
+#     branches: [develop]
+#     paths:
+#       - 'cfn/tenant-cfn/**'
+#       - 'postman/**'
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Environment to deploy to'
+#         required: true
+#         default: 'test'
+#         type: choice
+#         options:
+#           - test
+#           - staging
+#       run_cleanup:
+#         description: 'Clean up resources after tests'
+#         required: false
+#         default: true
+#         type: boolean
+
+on: []  # Disabled
+
+env:
+  AWS_REGION: ap-southeast-2
+  STACK_NAME: tenant-portal-apis-test
+  TEST_ENV_PREFIX: test
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || github.event_name == 'push' }}
+    outputs:
+      stack-name: ${{ env.STACK_NAME }}
+      api-endpoint: ${{ steps.get-outputs.outputs.api-endpoint }}
+      cognito-client-id: ${{ steps.get-outputs.outputs.cognito-client-id }}
+      cognito-user-pool-id: ${{ steps.get-outputs.outputs.cognito-user-pool-id }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25.3'
+      
+      - name: Build Lambda functions
+        run: |
+          echo "Building tenant lambdas for deployment..."
+          make build-tenant-lambdas
+          
+          # Verify builds completed successfully
+          echo "Verifying bootstrap files exist..."
+          cd lambdas/tenant-lambdas
+          bootstrap_count=$(find . -name "bootstrap" | wc -l)
+          echo "Found $bootstrap_count bootstrap files ready for deployment"
+      
+      - name: Deploy CloudFormation stack
+        run: |
+          cd cfn/tenant-cfn
+          
+          # Deploy the stack with test parameters
+          aws cloudformation deploy \
+            --template-file template.yaml \
+            --stack-name ${{ env.STACK_NAME }} \
+            --parameter-overrides \
+              Environment=${{ env.TEST_ENV_PREFIX }} \
+              DeploymentBucket=${{ env.DEPLOYMENT_BUCKET }} \
+              LambdaPrefix=${{ env.LAMBDA_PREFIX }} \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --region ${{ env.AWS_REGION }} \
+            --tags \
+              Project=GMV \
+              Environment=test \
+              GitHubRun=${{ github.run_number }} \
+              LastUpdated=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      
+      - name: Wait for stack deployment
+        run: |
+          aws cloudformation wait stack-deploy-complete \
+            --stack-name ${{ env.STACK_NAME }} \
+            --region ${{ env.AWS_REGION }}
+      
+      - name: Get stack outputs
+        id: get-outputs
+        run: |
+          # Get stack outputs for use in testing
+          OUTPUTS=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Stacks[0].Outputs' \
+            --output json)
+          
+          # Extract key outputs
+          API_ENDPOINT=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ApiGatewayUrl") | .OutputValue')
+          COGNITO_CLIENT_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="CognitoClientId") | .OutputValue')
+          COGNITO_USER_POOL_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="CognitoUserPoolId") | .OutputValue')
+          
+          echo "api-endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "cognito-client-id=$COGNITO_CLIENT_ID" >> $GITHUB_OUTPUT
+          echo "cognito-user-pool-id=$COGNITO_USER_POOL_ID" >> $GITHUB_OUTPUT
+          
+          echo "Deployed API Endpoint: $API_ENDPOINT"
+          echo "Cognito Client ID: $COGNITO_CLIENT_ID"
+
+  setup-test-data:
+    runs-on: ubuntu-latest
+    needs: deploy-infrastructure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Create test users in Cognito
+        run: |
+          # Create test users for API testing
+          USER_POOL_ID="${{ needs.deploy-infrastructure.outputs.cognito-user-pool-id }}"
+          
+          # Create admin test user
+          aws cognito-idp admin-create-user \
+            --user-pool-id $USER_POOL_ID \
+            --username "testadmin@example.com" \
+            --user-attributes Name=email,Value="testadmin@example.com" Name=email_verified,Value=true \
+            --temporary-password "TempPass123!" \
+            --message-action SUPPRESS \
+            --region ${{ env.AWS_REGION }}
+          
+          # Set permanent password
+          aws cognito-idp admin-set-user-password \
+            --user-pool-id $USER_POOL_ID \
+            --username "testadmin@example.com" \
+            --password "TestPass123!" \
+            --permanent \
+            --region ${{ env.AWS_REGION }}
+          
+          # Create regular test user
+          aws cognito-idp admin-create-user \
+            --user-pool-id $USER_POOL_ID \
+            --username "testuser@example.com" \
+            --user-attributes Name=email,Value="testuser@example.com" Name=email_verified,Value=true \
+            --temporary-password "TempPass123!" \
+            --message-action SUPPRESS \
+            --region ${{ env.AWS_REGION }}
+          
+          aws cognito-idp admin-set-user-password \
+            --user-pool-id $USER_POOL_ID \
+            --username "testuser@example.com" \
+            --password "TestPass123!" \
+            --permanent \
+            --region ${{ env.AWS_REGION }}
+
+  run-api-tests:
+    runs-on: ubuntu-latest
+    needs: [deploy-infrastructure, setup-test-data]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install Newman and dependencies
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+          npm install -g newman-reporter-slackbot
+      
+      - name: Create test environment file
+        run: |
+          cat > postman/test-environment.json << EOF
+          {
+            "id": "test-env-${{ github.run_number }}",
+            "name": "GitHub Actions Test Environment",
+            "values": [
+              {
+                "key": "base_url",
+                "value": "${{ needs.deploy-infrastructure.outputs.api-endpoint }}",
+                "enabled": true
+              },
+              {
+                "key": "cognito_client_id",
+                "value": "${{ needs.deploy-infrastructure.outputs.cognito-client-id }}",
+                "enabled": true
+              },
+              {
+                "key": "cognito_user_pool_id",
+                "value": "${{ needs.deploy-infrastructure.outputs.cognito-user-pool-id }}",
+                "enabled": true
+              },
+              {
+                "key": "aws_region",
+                "value": "${{ env.AWS_REGION }}",
+                "enabled": true
+              },
+              {
+                "key": "test_admin_username",
+                "value": "testadmin@example.com",
+                "enabled": true
+              },
+              {
+                "key": "test_admin_password",
+                "value": "TestPass123!",
+                "enabled": true
+              },
+              {
+                "key": "test_user_username",
+                "value": "testuser@example.com",
+                "enabled": true
+              },
+              {
+                "key": "test_user_password",
+                "value": "TestPass123!",
+                "enabled": true
+              },
+              {
+                "key": "organization_id",
+                "value": "test-org",
+                "enabled": true
+              },
+              {
+                "key": "team_id",
+                "value": "test-team",
+                "enabled": true
+              }
+            ]
+          }
+          EOF
+      
+      - name: Run Postman Tests - Smoke Tests
+        run: |
+          newman run postman/GMV_API_Collection.json \
+            --environment postman/test-environment.json \
+            --folder "Authentication" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export reports/smoke-test-report.html \
+            --reporter-htmlextra-title "GMV API Smoke Tests - Run ${{ github.run_number }}" \
+            --suppress-exit-code \
+            --verbose
+      
+      - name: Run Postman Tests - Organization Management
+        run: |
+          newman run postman/GMV_API_Collection.json \
+            --environment postman/test-environment.json \
+            --folder "Organization Management" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export reports/org-management-report.html \
+            --reporter-htmlextra-title "GMV Organization Management Tests - Run ${{ github.run_number }}" \
+            --suppress-exit-code \
+            --verbose
+      
+      - name: Run Postman Tests - Employee Management
+        run: |
+          newman run postman/GMV_API_Collection.json \
+            --environment postman/test-environment.json \
+            --folder "Employee Management" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export reports/employee-management-report.html \
+            --reporter-htmlextra-title "GMV Employee Management Tests - Run ${{ github.run_number }}" \
+            --suppress-exit-code \
+            --verbose
+      
+      - name: Run Postman Tests - Teams Management
+        run: |
+          newman run postman/GMV_API_Collection.json \
+            --environment postman/test-environment.json \
+            --folder "Teams Management" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export reports/teams-management-report.html \
+            --reporter-htmlextra-title "GMV Teams Management Tests - Run ${{ github.run_number }}" \
+            --suppress-exit-code \
+            --verbose
+      
+      - name: Run Full Integration Test Suite
+        run: |
+          newman run postman/GMV_API_Collection.json \
+            --environment postman/test-environment.json \
+            --reporters cli,htmlextra,json \
+            --reporter-htmlextra-export reports/full-integration-report.html \
+            --reporter-htmlextra-title "GMV Full Integration Tests - Run ${{ github.run_number }}" \
+            --reporter-json-export reports/integration-results.json \
+            --delay-request 500 \
+            --timeout-request 30000 \
+            --suppress-exit-code \
+            --verbose
+      
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postman-test-reports-${{ github.run_number }}
+          path: reports/
+          retention-days: 30
+      
+      - name: Parse test results
+        if: always()
+        run: |
+          if [ -f "reports/integration-results.json" ]; then
+            TOTAL_TESTS=$(jq '.run.stats.tests.total' reports/integration-results.json)
+            FAILED_TESTS=$(jq '.run.stats.tests.failed' reports/integration-results.json)
+            PASSED_TESTS=$(jq '.run.stats.tests.passed' reports/integration-results.json)
+            
+            echo "## 🧪 API Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total Tests**: $TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
+            echo "- **Passed**: $PASSED_TESTS ✅" >> $GITHUB_STEP_SUMMARY
+            echo "- **Failed**: $FAILED_TESTS ❌" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$FAILED_TESTS" != "0" ]; then
+              echo "**❌ Some tests failed. Check the detailed reports for more information.**" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            else
+              echo "**✅ All tests passed successfully!**" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+  cleanup-resources:
+    runs-on: ubuntu-latest
+    needs: [deploy-infrastructure, run-api-tests]
+    if: always() && (github.event.inputs.run_cleanup != 'false')
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Clean up S3 deployment artifacts
+        run: |
+          # Clean up old Lambda packages (keep last 5 deployments)
+          if [ ! -z "${{ env.DEPLOYMENT_BUCKET }}" ]; then
+            echo "Cleaning up old Lambda packages from S3 bucket: ${{ env.DEPLOYMENT_BUCKET }}"
+            
+            # List all lambda-packages prefixes and keep only the 5 most recent
+            aws s3api list-objects-v2 \
+              --bucket ${{ env.DEPLOYMENT_BUCKET }} \
+              --prefix "lambda-packages/" \
+              --delimiter "/" \
+              --query 'CommonPrefixes[?@.Prefix != `lambda-packages/`].Prefix' \
+              --output text | \
+            sort -r | \
+            tail -n +6 | \
+            while read prefix; do
+              if [ ! -z "$prefix" ]; then
+                echo "Deleting old deployment: $prefix"
+                aws s3 rm "s3://${{ env.DEPLOYMENT_BUCKET }}/$prefix" --recursive
+              fi
+            done
+          fi
+      
+      - name: Clean up test data
+        run: |
+          echo "Test completed. Stack ${{ env.STACK_NAME }} remains deployed for reuse."
+          echo "Lambda packages cleaned up, keeping last 5 deployments."
