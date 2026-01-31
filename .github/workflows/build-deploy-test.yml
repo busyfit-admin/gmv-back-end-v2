@@ -11,7 +11,6 @@ env:
   GO_VERSION: '1.25.3'
   AWS_REGION: ap-southeast-2
   ENVIRONMENT: test
-  TEST_ENV_PREFIX: test
   
 jobs:
   build-lambdas:
@@ -52,16 +51,17 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-        continue-on-error: true
 
-      - name: test aws cli
+      - name: deploy tenant CFN stack to test
         run: |
-          echo "Testing AWS CLI access..."
-          if aws sts get-caller-identity; then
-            echo "✅ AWS credentials working"
-            aws s3 ls
-          else
-            echo "⚠️ AWS credentials not available, skipping S3 test"
-          fi
+
+          cd cfn/tenant-cfn/
+          echo "Deploying Tenant CloudFormation stack to test environment..."
+          make deploy ENVIRONMENT=${{ env.ENVIRONMENT }} AWS_REGION=${{ env.AWS_REGION }}
+          cd ../../
+
+
+        
+        
 
 
