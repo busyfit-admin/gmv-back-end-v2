@@ -50,35 +50,46 @@ Authorization: Bearer <cognito-jwt-token>
 {
   "message": "Organization created successfully",
   "organization": {
-    "organizationId": "string",
-    "organizationName": "string",
-    "displayName": "string",
+    "organizationId": "ORG#uuid",
+    "orgName": "string",
+    "orgDesc": "string",
+    "clientName": "string",
     "industry": "string",
-    "description": "string",
-    "clientDetails": {
-      "companySize": "string",
-      "headquarters": "string",
-      "website": "string",
-      "primaryContact": {
-        "name": "string",
-        "email": "string",
-        "phone": "string"
-      },
-      "businessType": "string",
-      "annualRevenue": "string"
-    },
-    "planType": "PROFESSIONAL",
-    "billingCycle": "MONTHLY",
-    "teamLimit": 10,
+    "companySize": "string",
+    "website": "string",
+    "contactEmail": "string",
+    "contactPhone": "string",
+    "address": "string",
+    "city": "string",
+    "state": "string",
+    "country": "string",
+    "zipCode": "string",
+    "taxId": "string",
+    "billingMode": "FREE",
+    "subscriptionType": "TRIAL",
+    "billingPlan": "MONTHLY",
+    "orgBillingStatus": "TRIAL",
+    "currentPlanId": "starter",
+    "planType": "starter",
     "currentTeamCount": 0,
-    "isActive": true,
+    "maxTeamsAllowed": 5,
+    "maxMembersAllowed": 25,
+    "appliedPromoCode": "",
+    "promoDiscountPercent": 0,
+    "promoValidUntil": "",
+    "trialStartDate": "2024-01-01T00:00:00Z",
+    "trialEndDate": "2024-01-31T00:00:00Z",
+    "billingStartDate": "",
+    "nextBillingDate": "",
+    "lastPaymentDate": "",
     "createdAt": "2024-01-01T00:00:00Z",
-    "lastUpdated": "2024-01-01T00:00:00Z",
-    "admins": ["user-123"],
-    "activePromoCode": null
+    "updatedAt": "2024-01-01T00:00:00Z",
+    "creatorUserName": "user-123"
   }
 }
 ```
+
+**Note:** Admin users are now stored separately. Use the "Get Organization Admins" endpoint to retrieve admin information.
 
 ---
 
@@ -318,16 +329,113 @@ Authorization: Bearer <cognito-jwt-token>
 
 ---
 
-### 8. List User Organizations
+### 8. Get Organization Admins
+**Endpoint:** `GET /v2/organization/{organizationId}/admins`  
+**Function:** Lists all active admins for an organization (admin only)
+
+**Path Parameters:**
+- `organizationId` (string, required): Organization ID
+
+**Success Response (200):**
+```json
+{
+  "admins": [
+    {
+      "userName": "user-123",
+      "displayName": "John Doe",
+      "role": "OWNER",
+      "addedAt": "2024-01-01T00:00:00Z",
+      "isActive": true,
+      "updatedAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "userName": "user-456",
+      "displayName": "Jane Smith",
+      "role": "ADMIN",
+      "addedAt": "2024-01-15T10:30:00Z",
+      "isActive": true,
+      "updatedAt": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "totalCount": 2
+}
+```
+
+**Admin Roles:**
+- `OWNER`: Full organization control, can manage all settings and admins
+- `ADMIN`: Can manage organization settings and subscriptions
+- `BILLING_ONLY`: Can only manage billing and subscription details
+
+---
+
+### 9. Add Organization Admin
+**Endpoint:** `POST /v2/organization/{organizationId}/admins`  
+**Function:** Adds a new admin to the organization (owner only)
+
+**Path Parameters:**
+- `organizationId` (string, required): Organization ID
+
+**Request Body:**
+```json
+{
+  "userName": "string (required)",
+  "role": "string (required)" // "OWNER", "ADMIN", or "BILLING_ONLY"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "message": "Admin added successfully",
+  "admin": {
+    "userName": "user-789",
+    "displayName": "Bob Johnson",
+    "role": "ADMIN",
+    "addedAt": "2024-01-20T14:00:00Z",
+    "isActive": true
+  }
+}
+```
+
+**Business Rules:**
+- Only organization owners can add admins
+- Users can only belong to one organization (enforced automatically)
+- If user is already in another organization, they must be removed first
+
+---
+
+### 10. Remove Organization Admin
+**Endpoint:** `DELETE /v2/organization/{organizationId}/admins/{userName}`  
+**Function:** Removes (deactivates) an admin from the organization (owner only)
+
+**Path Parameters:**
+- `organizationId` (string, required): Organization ID
+- `userName` (string, required): Username of admin to remove
+
+**Success Response (200):**
+```json
+{
+  "message": "Admin removed successfully"
+}
+```
+
+**Business Rules:**
+- Only organization owners can remove admins
+- Cannot remove the last owner from an organization
+- Removing an admin deactivates them rather than deleting the record
+
+---
+
+### 11. List User Organizations
 **Endpoint:** `GET /v2/organization/list`  
-**Function:** Lists all organizations where the user is an admin
+**Function:** Lists all organizations where the user is a member
 
 **Success Response (200):**
 ```json
 {
   "organizations": [
     {
-      "orgId": "ORG#uuid1",
+      "organizationId": "ORG#uuid1",
       "orgName": "Acme Corporation",
       "orgDesc": "Technology solutions company",
       "clientName": "Acme Corp",
@@ -335,29 +443,89 @@ Authorization: Bearer <cognito-jwt-token>
       "companySize": "51-200",
       "website": "https://acme.com",
       "contactEmail": "admin@acme.com",
+      "contactPhone": "+1-555-0123",
+      "address": "123 Main St",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "USA",
+      "zipCode": "94105",
+      "taxId": "12-3456789",
       "billingMode": "PAID",
       "subscriptionType": "SUBSCRIPTION",
       "billingPlan": "YEARLY",
       "orgBillingStatus": "ACTIVE",
       "currentPlanId": "professional",
-      "currentPlanName": "Professional Plan",
+      "planType": "professional",
       "currentTeamCount": 8,
       "maxTeamsAllowed": 25,
       "maxMembersAllowed": 150,
-      "appliedPromoCode": "",
-      "promoDiscountPercent": 0,
-      "trialEndDate": "",
-      "nextBillingDate": "2024-12-01T00:00:00Z",
+      "appliedPromoCode": "SAVE20",
+      "promoDiscountPercent": 20.0,
+      "promoValidUntil": "2024-12-31T23:59:59Z",
+      "trialStartDate": "2024-01-01T00:00:00Z",
+      "trialEndDate": "2024-01-31T00:00:00Z",
+      "billingStartDate": "2024-02-01T00:00:00Z",
+      "nextBillingDate": "2025-02-01T00:00:00Z",
+      "lastPaymentDate": "2024-12-01T00:00:00Z",
       "createdAt": "2024-01-01T00:00:00Z",
-      "updatedAt": "2024-01-15T10:30:00Z"
+      "updatedAt": "2024-01-15T10:30:00Z",
+      "creatorUserName": "user-123"
     }
   ],
   "totalCount": 1,
   "availablePlans": [
-    // Array of available subscription plans
+    {
+      "planId": "starter",
+      "planName": "Starter Plan",
+      "planDescription": "Perfect for small teams just getting started",
+      "maxTeams": 5,
+      "maxMembers": 25,
+      "monthlyPrice": 29.99,
+      "yearlyPrice": 299.99,
+      "features": [
+        "Basic team management",
+        "Email support",
+        "5 teams",
+        "25 members"
+      ]
+    },
+    {
+      "planId": "professional",
+      "planName": "Professional Plan",
+      "planDescription": "Great for growing organizations",
+      "maxTeams": 25,
+      "maxMembers": 150,
+      "monthlyPrice": 79.99,
+      "yearlyPrice": 799.99,
+      "features": [
+        "Advanced team management",
+        "Priority support",
+        "25 teams",
+        "150 members",
+        "Analytics dashboard"
+      ]
+    },
+    {
+      "planId": "enterprise",
+      "planName": "Enterprise Plan",
+      "planDescription": "For large organizations with advanced needs",
+      "maxTeams": -1,
+      "maxMembers": -1,
+      "monthlyPrice": 199.99,
+      "yearlyPrice": 1999.99,
+      "features": [
+        "Unlimited teams",
+        "Unlimited members",
+        "24/7 support",
+        "Custom integrations",
+        "Advanced analytics"
+      ]
+    }
   ]
 }
 ```
+
+**Note:** Users can only belong to one organization in this release. The API enforces this constraint automatically.
 
 ---
 
@@ -484,6 +652,52 @@ const applyPromoCode = async (organizationId, promoCode) => {
     body: JSON.stringify({
       promoCode: promoCode
     })
+  });
+  
+  return await response.json();
+};
+```
+
+#### Get Organization Admins
+```javascript
+const getOrgAdmins = async (organizationId) => {
+  const response = await fetch(`/v2/organization/${organizationId}/admins`, {
+    headers: {
+      'Authorization': `Bearer ${cognitoToken}`
+    }
+  });
+  
+  return await response.json();
+};
+```
+
+#### Add Organization Admin
+```javascript
+const addOrgAdmin = async (organizationId, userName, role) => {
+  const response = await fetch(`/v2/organization/${organizationId}/admins`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${cognitoToken}`
+    },
+    body: JSON.stringify({
+      userName: userName,
+      role: role // "OWNER", "ADMIN", or "BILLING_ONLY"
+    })
+  });
+  
+  return await response.json();
+};
+```
+
+#### Remove Organization Admin
+```javascript
+const removeOrgAdmin = async (organizationId, userName) => {
+  const response = await fetch(`/v2/organization/${organizationId}/admins/${userName}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${cognitoToken}`
+    }
   });
   
   return await response.json();

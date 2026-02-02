@@ -96,11 +96,11 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 func (svc *Service) listUserOrganizations(userName string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.logger.Printf("Listing organizations for user: %s", userName)
 
-	// Get all organizations where user is an admin
-	organizations, err := svc.orgSVC.GetUserOrganizations(userName)
+	// Get an organizations where user is an admin
+	organization, err := svc.orgSVC.GetAdminOrganization(userName)
 	if err != nil {
-		svc.logger.Printf("Failed to get user organizations: %v", err)
-		return svc.errorResponse(http.StatusInternalServerError, "Failed to retrieve organizations", err)
+		svc.logger.Printf("Failed to get user organization: %v", err)
+		return svc.errorResponse(http.StatusInternalServerError, "Failed to retrieve organization", err)
 	}
 
 	// Get available subscription plans for reference
@@ -110,71 +110,39 @@ func (svc *Service) listUserOrganizations(userName string, request events.APIGat
 		planMap[plan.PlanID] = plan
 	}
 
-	// Enhance organization data with plan details
-	type OrganizationSummary struct {
-		OrgId                string  `json:"orgId"`
-		OrgName              string  `json:"orgName"`
-		OrgDesc              string  `json:"orgDesc"`
-		ClientName           string  `json:"clientName"`
-		Industry             string  `json:"industry"`
-		CompanySize          string  `json:"companySize"`
-		Website              string  `json:"website"`
-		ContactEmail         string  `json:"contactEmail"`
-		BillingMode          string  `json:"billingMode"`
-		SubscriptionType     string  `json:"subscriptionType"`
-		BillingPlan          string  `json:"billingPlan"`
-		OrgBillingStatus     string  `json:"orgBillingStatus"`
-		CurrentPlanID        string  `json:"currentPlanId"`
-		CurrentPlanName      string  `json:"currentPlanName"`
-		CurrentTeamCount     int     `json:"currentTeamCount"`
-		MaxTeamsAllowed      int     `json:"maxTeamsAllowed"`
-		MaxMembersAllowed    int     `json:"maxMembersAllowed"`
-		AppliedPromoCode     string  `json:"appliedPromoCode"`
-		PromoDiscountPercent float64 `json:"promoDiscountPercent"`
-		TrialEndDate         string  `json:"trialEndDate"`
-		NextBillingDate      string  `json:"nextBillingDate"`
-		CreatedAt            string  `json:"createdAt"`
-		UpdatedAt            string  `json:"updatedAt"`
+	// marshall organization summary from organization details from struct:
+	/*  Create new org summary struct from :
+		type Organization struct {
+	    // Composite key structure
+	    PK     string `dynamodbav:"PK" json:"-"`     // ORG#{organizationId}
+	    SK     string `dynamodbav:"SK" json:"-"`     // METADATA
+	    GSI1PK string `dynamodbav:"GSI1PK" json:"-"` // For GSI queries
+	    GSI1SK string `dynamodbav:"GSI1SK" json:"-"` // For GSI queries
+
+	    // Primary key - matches CloudFormation template
+	    OrganizationId string `dynamodbav:"OrganizationId" json:"organizationId"`
+
+	    // Basic organization info
+	    OrgName string `dynamodbav:"OrgName" json:"orgName"`
+	    OrgDesc string `dynamodbav:"OrgDesc" json:"orgDesc"`
 	}
+	*/
 
-	orgSummaries := make([]OrganizationSummary, len(organizations))
-	for i, org := range organizations {
-		currentPlanName := "Unknown"
-		if plan, exists := planMap[org.CurrentPlanID]; exists {
-			currentPlanName = plan.PlanName
-		}
+	OrgSummary := struct {
+		OrganizationId string `json:"organizationId"`
+		OrgName        string `json:"orgName"`
+		OrgDesc        string `json:"orgDesc"`
+	}{}
 
-		orgSummaries[i] = OrganizationSummary{
-			OrgId:                org.OrganizationId,
-			OrgName:              org.OrgName,
-			OrgDesc:              org.OrgDesc,
-			ClientName:           org.ClientName,
-			Industry:             org.Industry,
-			CompanySize:          org.CompanySize,
-			Website:              org.Website,
-			ContactEmail:         org.ContactEmail,
-			BillingMode:          string(org.BillingMode),
-			SubscriptionType:     string(org.SubscriptionType),
-			BillingPlan:          string(org.BillingPlan),
-			OrgBillingStatus:     string(org.OrgBillingStatus),
-			CurrentPlanID:        org.CurrentPlanID,
-			CurrentPlanName:      currentPlanName,
-			CurrentTeamCount:     org.CurrentTeamCount,
-			MaxTeamsAllowed:      org.MaxTeamsAllowed,
-			MaxMembersAllowed:    org.MaxMembersAllowed,
-			AppliedPromoCode:     org.AppliedPromoCode,
-			PromoDiscountPercent: org.PromoDiscountPercent,
-			TrialEndDate:         org.TrialEndDate,
-			NextBillingDate:      org.NextBillingDate,
-			CreatedAt:            org.CreatedAt,
-			UpdatedAt:            org.UpdatedAt,
-		}
+	if organization != nil {
+		OrgSummary.OrganizationId = organization.OrganizationId
+		OrgSummary.OrgName = organization.OrgName
+		OrgSummary.OrgDesc = organization.OrgDesc
 	}
 
 	// Return the organizations list
 	body, err := json.Marshal(map[string]interface{}{
-		"organizations":  orgSummaries,
-		"totalCount":     len(orgSummaries),
+		"organization":   OrgSummary,
 		"availablePlans": availablePlans,
 	})
 	if err != nil {

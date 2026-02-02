@@ -128,22 +128,28 @@ type Organization struct {
 	NextBillingDate  string `dynamodbav:"NextBillingDate" json:"nextBillingDate"`
 	LastPaymentDate  string `dynamodbav:"LastPaymentDate" json:"lastPaymentDate"`
 
-	// Admin users
-	AdminUsers []OrgAdmin `dynamodbav:"AdminUsers" json:"adminUsers"`
-
 	// Timestamps
 	CreatedAt       string `dynamodbav:"CreatedAt" json:"createdAt"`
 	UpdatedAt       string `dynamodbav:"UpdatedAt" json:"updatedAt"`
 	CreatorUserName string `dynamodbav:"CreatorUserName" json:"creatorUserName"`
 }
 
-// OrgAdmin represents an organization administrator (stored in AdminUsers array)
+// OrgAdmin represents an organization administrator stored as separate table items
 type OrgAdmin struct {
-	UserName    string       `dynamodbav:"UserName" json:"userName"`
-	DisplayName string       `dynamodbav:"DisplayName" json:"displayName"`
-	Role        OrgAdminRole `dynamodbav:"Role" json:"role"`
-	AddedAt     string       `dynamodbav:"AddedAt" json:"addedAt"`
-	IsActive    bool         `dynamodbav:"IsActive" json:"isActive"`
+	// Composite key structure
+	PK     string `dynamodbav:"PK" json:"-"`     // ORG#{organizationId}
+	SK     string `dynamodbav:"SK" json:"-"`     // ADMIN#{username}
+	GSI1PK string `dynamodbav:"GSI1PK" json:"-"` // ADMIN#{username}
+	GSI1SK string `dynamodbav:"GSI1SK" json:"-"` // ORG#{organizationId}
+
+	// Admin information
+	OrganizationId string       `dynamodbav:"OrganizationId" json:"organizationId"`
+	UserName       string       `dynamodbav:"UserName" json:"userName"`
+	DisplayName    string       `dynamodbav:"DisplayName" json:"displayName"`
+	Role           OrgAdminRole `dynamodbav:"Role" json:"role"`
+	AddedAt        string       `dynamodbav:"AddedAt" json:"addedAt"`
+	IsActive       bool         `dynamodbav:"IsActive" json:"isActive"`
+	UpdatedAt      string       `dynamodbav:"UpdatedAt" json:"updatedAt"`
 }
 
 // OrgUser represents a user-organization relationship stored as separate table items
@@ -382,28 +388,9 @@ func (svc *OrgServiceV2) CreateOrganization(input CreateOrganizationInput) (*Org
 		UpdatedAt: now,
 	}
 
-	// Create organization admin entry for creator
-	orgAdmin := OrgAdmin{
-		UserName:    input.CreatorUserName,
-		DisplayName: input.CreatorUserName,
-		Role:        OrgAdminRoleOwner,
-		AddedAt:     now,
-		IsActive:    true,
-	}
-
-	// Fetch display name from employee service if available
-	if svc.employeeSvc != nil {
-		employee, err := svc.employeeSvc.GetEmployeeDataByUserName(input.CreatorUserName)
-		if err == nil && employee.DisplayName != "" {
-			orgAdmin.DisplayName = employee.DisplayName
-		}
-	}
-
-	// Add admin to organization
-	organization.AdminUsers = []OrgAdmin{orgAdmin}
 	organization.CreatorUserName = input.CreatorUserName
 
-	// Marshal organization (includes embedded admin)
+	// Marshal organization
 	orgItem, err := attributevalue.MarshalMap(organization)
 	if err != nil {
 		svc.logger.Printf("Failed to marshal organization: %v", err)
@@ -415,11 +402,53 @@ func (svc *OrgServiceV2) CreateOrganization(input CreateOrganizationInput) (*Org
 
 	svc.logger.Printf("Creating organization with ID: %s", orgId)
 
-	// Use PutItem for organization (admins will be managed separately)
-	_, err = svc.dynamodbClient.PutItem(svc.ctx, &dynamodb.PutItemInput{
-		TableName:           aws.String(svc.OrganizationTable),
-		Item:                orgItem,
-		ConditionExpression: aws.String("attribute_not_exists(OrganizationId)"),
+	// Create organization admin entry for creator
+	displayName := input.CreatorUserName
+	if svc.employeeSvc != nil {
+		employee, err := svc.employeeSvc.GetEmployeeDataByUserName(input.CreatorUserName)
+		if err == nil && employee.DisplayName != "" {
+			displayName = employee.DisplayName
+		}
+	}
+
+	orgAdmin := OrgAdmin{
+		PK:             fmt.Sprintf("ORG#%s", orgId),
+		SK:             fmt.Sprintf("ADMIN#%s", input.CreatorUserName),
+		GSI1PK:         fmt.Sprintf("ADMIN#%s", input.CreatorUserName),
+		GSI1SK:         fmt.Sprintf("ORG#%s", orgId),
+		OrganizationId: orgId,
+		UserName:       input.CreatorUserName,
+		DisplayName:    displayName,
+		Role:           OrgAdminRoleOwner,
+		AddedAt:        now,
+		IsActive:       true,
+		UpdatedAt:      now,
+	}
+
+	adminItem, err := attributevalue.MarshalMap(orgAdmin)
+	if err != nil {
+		svc.logger.Printf("Failed to marshal admin: %v", err)
+		return nil, fmt.Errorf("failed to marshal admin: %w", err)
+	}
+
+	// Use TransactWriteItems to create both organization and admin atomically
+	_, err = svc.dynamodbClient.TransactWriteItems(svc.ctx, &dynamodb.TransactWriteItemsInput{
+		TransactItems: []types.TransactWriteItem{
+			{
+				Put: &types.Put{
+					TableName:           aws.String(svc.OrganizationTable),
+					Item:                orgItem,
+					ConditionExpression: aws.String("attribute_not_exists(PK)"),
+				},
+			},
+			{
+				Put: &types.Put{
+					TableName:           aws.String(svc.OrganizationTable),
+					Item:                adminItem,
+					ConditionExpression: aws.String("attribute_not_exists(PK)"),
+				},
+			},
+		},
 	})
 
 	if err != nil {
@@ -465,20 +494,33 @@ func (svc *OrgServiceV2) GetOrganization(organizationId string) (*Organization, 
 func (svc *OrgServiceV2) IsOrgAdmin(organizationId string, userName string) (bool, error) {
 	svc.logger.Printf("Checking if user %s is admin of organization %s", userName, organizationId)
 
-	// Get organization details
-	org, err := svc.GetOrganization(organizationId)
+	// Query for admin row
+	input := &dynamodb.GetItemInput{
+		TableName: aws.String(svc.OrganizationTable),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ADMIN#%s", userName)},
+		},
+	}
+
+	result, err := svc.dynamodbClient.GetItem(svc.ctx, input)
 	if err != nil {
-		return false, err
+		svc.logger.Printf("Failed to get admin: %v", err)
+		return false, fmt.Errorf("failed to get admin: %w", err)
 	}
 
-	// Check if user is in the AdminUsers list
-	for _, admin := range org.AdminUsers {
-		if admin.UserName == userName && admin.IsActive {
-			return true, nil
-		}
+	if result.Item == nil {
+		return false, nil
 	}
 
-	return false, nil
+	var admin OrgAdmin
+	err = attributevalue.UnmarshalMap(result.Item, &admin)
+	if err != nil {
+		svc.logger.Printf("Failed to unmarshal admin: %v", err)
+		return false, fmt.Errorf("failed to unmarshal admin: %w", err)
+	}
+
+	return admin.IsActive, nil
 }
 
 // UpdateOrganization updates organization details (only org admins)
@@ -903,7 +945,7 @@ func (svc *OrgServiceV2) ApplyPromoCode(input ApplyPromoCodeInput, requestingUse
 // For this release, users can only be part of one organization
 func (svc *OrgServiceV2) AddOrgAdmin(organizationId string, newAdminUserName string, role OrgAdminRole, requestingUser string) error {
 	// Check if user can join this organization (single org constraint)
-	if err := svc.CheckUserCanJoinOrganization(newAdminUserName, organizationId); err != nil {
+	if err := svc.CheckAdminCanJoinOrganization(newAdminUserName, organizationId); err != nil {
 		return err
 	}
 
@@ -916,80 +958,62 @@ func (svc *OrgServiceV2) AddOrgAdmin(organizationId string, newAdminUserName str
 		return fmt.Errorf("user %s is not an admin of organization %s", requestingUser, organizationId)
 	}
 
-	// Get organization to check current admins and verify requesting user role
-	org, err := svc.GetOrganization(organizationId)
-	if err != nil {
-		return err
-	}
-
 	// Check if requesting user is owner (only owners can add admins)
-	isOwner := false
-	for _, admin := range org.AdminUsers {
-		if admin.UserName == requestingUser && admin.IsActive && admin.Role == OrgAdminRoleOwner {
-			isOwner = true
-			break
-		}
+	requestingAdmin, err := svc.getAdmin(organizationId, requestingUser)
+	if err != nil {
+		return fmt.Errorf("failed to get requesting admin: %w", err)
 	}
-
-	if !isOwner {
+	if requestingAdmin.Role != OrgAdminRoleOwner {
 		return fmt.Errorf("only organization owners can add new admins")
 	}
 
 	// Check if user is already an admin
-	for _, admin := range org.AdminUsers {
-		if admin.UserName == newAdminUserName {
-			if admin.IsActive {
-				return fmt.Errorf("user %s is already an admin of organization %s", newAdminUserName, organizationId)
-			} else {
-				// Reactivate existing admin
-				return svc.reactivateAdmin(organizationId, newAdminUserName, role)
-			}
+	existingAdmin, err := svc.getAdmin(organizationId, newAdminUserName)
+	if err == nil && existingAdmin != nil {
+		if existingAdmin.IsActive {
+			return fmt.Errorf("user %s is already an admin of organization %s", newAdminUserName, organizationId)
 		}
+		// Reactivate existing admin
+		return svc.reactivateAdmin(organizationId, newAdminUserName, role)
 	}
 
 	// Create new admin
 	now := time.Now().UTC().Format(time.RFC3339)
-	newAdmin := OrgAdmin{
-		UserName:    newAdminUserName,
-		DisplayName: newAdminUserName,
-		Role:        role,
-		AddedAt:     now,
-		IsActive:    true,
-	}
+	displayName := newAdminUserName
 
 	// Fetch display name from employee service if available
 	if svc.employeeSvc != nil {
 		employee, err := svc.employeeSvc.GetEmployeeDataByUserName(newAdminUserName)
 		if err == nil && employee.DisplayName != "" {
-			newAdmin.DisplayName = employee.DisplayName
+			displayName = employee.DisplayName
 		}
 	}
 
-	// Add admin to the list
-	updatedAdmins := append(org.AdminUsers, newAdmin)
+	newAdmin := OrgAdmin{
+		PK:             fmt.Sprintf("ORG#%s", organizationId),
+		SK:             fmt.Sprintf("ADMIN#%s", newAdminUserName),
+		GSI1PK:         fmt.Sprintf("ADMIN#%s", newAdminUserName),
+		GSI1SK:         fmt.Sprintf("ORG#%s", organizationId),
+		OrganizationId: organizationId,
+		UserName:       newAdminUserName,
+		DisplayName:    displayName,
+		Role:           role,
+		AddedAt:        now,
+		IsActive:       true,
+		UpdatedAt:      now,
+	}
 
-	// Marshal the updated admins list
-	adminsList, err := attributevalue.MarshalList(updatedAdmins)
+	adminItem, err := attributevalue.MarshalMap(newAdmin)
 	if err != nil {
-		return fmt.Errorf("failed to marshal admins list: %w", err)
+		return fmt.Errorf("failed to marshal admin: %w", err)
 	}
 
-	// Update organization with new admin
-	updateInput := &dynamodb.UpdateItemInput{
-		TableName: aws.String(svc.OrganizationTable),
-		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
-			"SK": &types.AttributeValueMemberS{Value: "METADATA"},
-		},
-		UpdateExpression: aws.String("SET AdminUsers = :adminUsers, UpdatedAt = :updatedAt"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":adminUsers": &types.AttributeValueMemberL{Value: adminsList},
-			":updatedAt":  &types.AttributeValueMemberS{Value: now},
-		},
-		ConditionExpression: aws.String("attribute_exists(OrganizationId)"),
-	}
+	_, err = svc.dynamodbClient.PutItem(svc.ctx, &dynamodb.PutItemInput{
+		TableName:           aws.String(svc.OrganizationTable),
+		Item:                adminItem,
+		ConditionExpression: aws.String("attribute_not_exists(PK)"),
+	})
 
-	_, err = svc.dynamodbClient.UpdateItem(svc.ctx, updateInput)
 	if err != nil {
 		svc.logger.Printf("Failed to add org admin: %v", err)
 		return fmt.Errorf("failed to add org admin: %w", err)
@@ -1010,74 +1034,50 @@ func (svc *OrgServiceV2) RemoveOrgAdmin(organizationId string, adminUserName str
 		return fmt.Errorf("user %s is not an admin of organization %s", requestingUser, organizationId)
 	}
 
-	// Get organization to check current admins
-	org, err := svc.GetOrganization(organizationId)
-	if err != nil {
-		return err
-	}
-
 	// Check if requesting user is owner
-	isOwner := false
-	for _, admin := range org.AdminUsers {
-		if admin.UserName == requestingUser && admin.IsActive && admin.Role == OrgAdminRoleOwner {
-			isOwner = true
-			break
-		}
+	requestingAdmin, err := svc.getAdmin(organizationId, requestingUser)
+	if err != nil {
+		return fmt.Errorf("failed to get requesting admin: %w", err)
 	}
-
-	if !isOwner {
+	if requestingAdmin.Role != OrgAdminRoleOwner {
 		return fmt.Errorf("only organization owners can remove admins")
 	}
 
 	// Can't remove self if they're the only owner
 	if requestingUser == adminUserName {
-		ownerCount := 0
-		for _, admin := range org.AdminUsers {
-			if admin.IsActive && admin.Role == OrgAdminRoleOwner {
-				ownerCount++
-			}
+		ownerCount, err := svc.countActiveOwners(organizationId)
+		if err != nil {
+			return fmt.Errorf("failed to count owners: %w", err)
 		}
 		if ownerCount <= 1 {
 			return fmt.Errorf("cannot remove the only owner of the organization")
 		}
 	}
 
-	// Update the admin list by deactivating the admin
-	var updatedAdmins []OrgAdmin
-	adminFound := false
-	now := time.Now().UTC().Format(time.RFC3339)
-
-	for _, admin := range org.AdminUsers {
-		if admin.UserName == adminUserName {
-			adminFound = true
-			admin.IsActive = false
-			admin.AddedAt = now // Update timestamp
-		}
-		updatedAdmins = append(updatedAdmins, admin)
-	}
-
-	if !adminFound {
+	// Get admin to remove
+	admin, err := svc.getAdmin(organizationId, adminUserName)
+	if err != nil {
 		return fmt.Errorf("admin %s not found in organization %s", adminUserName, organizationId)
 	}
 
-	// Marshal the updated admins list
-	adminsList, err := attributevalue.MarshalList(updatedAdmins)
-	if err != nil {
-		return fmt.Errorf("failed to marshal admins list: %w", err)
+	if !admin.IsActive {
+		return fmt.Errorf("admin %s is already inactive", adminUserName)
 	}
 
-	// Update organization
+	// Deactivate the admin
+	now := time.Now().UTC().Format(time.RFC3339)
 	updateInput := &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.OrganizationTable),
 		Key: map[string]types.AttributeValue{
-			"OrganizationId": &types.AttributeValueMemberS{Value: organizationId},
+			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ADMIN#%s", adminUserName)},
 		},
-		UpdateExpression: aws.String("SET AdminUsers = :adminUsers, UpdatedAt = :updatedAt"),
+		UpdateExpression: aws.String("SET IsActive = :inactive, UpdatedAt = :updatedAt"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":adminUsers": &types.AttributeValueMemberL{Value: adminsList},
-			":updatedAt":  &types.AttributeValueMemberS{Value: now},
+			":inactive":  &types.AttributeValueMemberBOOL{Value: false},
+			":updatedAt": &types.AttributeValueMemberS{Value: now},
 		},
-		ConditionExpression: aws.String("attribute_exists(OrganizationId)"),
+		ConditionExpression: aws.String("attribute_exists(PK)"),
 	}
 
 	_, err = svc.dynamodbClient.UpdateItem(svc.ctx, updateInput)
@@ -1101,15 +1101,30 @@ func (svc *OrgServiceV2) GetOrgAdmins(organizationId string, requestingUser stri
 		return nil, fmt.Errorf("user %s is not an admin of organization %s", requestingUser, organizationId)
 	}
 
-	// Get organization
-	org, err := svc.GetOrganization(organizationId)
+	// Query for all admin rows
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String(svc.OrganizationTable),
+		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk_prefix)"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk":        &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			":sk_prefix": &types.AttributeValueMemberS{Value: "ADMIN#"},
+		},
+	}
+
+	result, err := svc.dynamodbClient.Query(svc.ctx, queryInput)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to query org admins: %w", err)
+	}
+
+	var admins []OrgAdmin
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &admins)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal org admins: %w", err)
 	}
 
 	// Return only active admins
 	var activeAdmins []OrgAdmin
-	for _, admin := range org.AdminUsers {
+	for _, admin := range admins {
 		if admin.IsActive {
 			activeAdmins = append(activeAdmins, admin)
 		}
@@ -1120,94 +1135,30 @@ func (svc *OrgServiceV2) GetOrgAdmins(organizationId string, requestingUser stri
 
 // reactivateAdmin is a helper function to reactivate an existing inactive admin
 func (svc *OrgServiceV2) reactivateAdmin(organizationId string, adminUserName string, newRole OrgAdminRole) error {
-	org, err := svc.GetOrganization(organizationId)
-	if err != nil {
-		return err
-	}
-
-	var updatedAdmins []OrgAdmin
 	now := time.Now().UTC().Format(time.RFC3339)
-
-	for _, admin := range org.AdminUsers {
-		if admin.UserName == adminUserName {
-			admin.IsActive = true
-			admin.Role = newRole
-			admin.AddedAt = now
-		}
-		updatedAdmins = append(updatedAdmins, admin)
-	}
-
-	// Marshal and update
-	adminsList, err := attributevalue.MarshalList(updatedAdmins)
-	if err != nil {
-		return fmt.Errorf("failed to marshal admins list: %w", err)
-	}
 
 	updateInput := &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.OrganizationTable),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
-			"SK": &types.AttributeValueMemberS{Value: "METADATA"},
+			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ADMIN#%s", adminUserName)},
 		},
-		UpdateExpression: aws.String("SET AdminUsers = :adminUsers, UpdatedAt = :updatedAt"),
+		UpdateExpression: aws.String("SET IsActive = :active, #role = :role, AddedAt = :addedAt, UpdatedAt = :updatedAt"),
+		ExpressionAttributeNames: map[string]string{
+			"#role": "Role",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":adminUsers": &types.AttributeValueMemberL{Value: adminsList},
-			":updatedAt":  &types.AttributeValueMemberS{Value: now},
+			":active":    &types.AttributeValueMemberBOOL{Value: true},
+			":role":      &types.AttributeValueMemberS{Value: string(newRole)},
+			":addedAt":   &types.AttributeValueMemberS{Value: now},
+			":updatedAt": &types.AttributeValueMemberS{Value: now},
 		},
+		ConditionExpression: aws.String("attribute_exists(PK)"),
 	}
 
-	_, err = svc.dynamodbClient.UpdateItem(svc.ctx, updateInput)
+	_, err := svc.dynamodbClient.UpdateItem(svc.ctx, updateInput)
 	if err != nil {
 		return fmt.Errorf("failed to reactivate admin: %w", err)
-	}
-
-	return nil
-}
-
-// AddOrgUser adds a user to an organization (separate from admin users in metadata)
-// For this release, users can only be part of one organization
-func (svc *OrgServiceV2) AddOrgUser(organizationId, userName, displayName string, role OrgAdminRole) error {
-	// Check if user can join this organization (single org constraint)
-	if err := svc.CheckUserCanJoinOrganization(userName, organizationId); err != nil {
-		return err
-	}
-
-	now := time.Now().UTC().Format(time.RFC3339)
-
-	orgUser := OrgUser{
-		PK:             fmt.Sprintf("ORG#%s", organizationId),
-		SK:             fmt.Sprintf("USER#%s", userName),
-		GSI1PK:         fmt.Sprintf("USER#%s", userName),
-		GSI1SK:         fmt.Sprintf("ORG#%s", organizationId),
-		OrganizationId: organizationId,
-		UserName:       userName,
-		DisplayName:    displayName,
-		Role:           role,
-		JoinedAt:       now,
-		IsActive:       true,
-		UpdatedAt:      now,
-	}
-
-	// Get display name from employee service if available
-	if svc.employeeSvc != nil && displayName == "" {
-		employee, err := svc.employeeSvc.GetEmployeeDataByUserName(userName)
-		if err == nil && employee.DisplayName != "" {
-			orgUser.DisplayName = employee.DisplayName
-		}
-	}
-
-	userItem, err := attributevalue.MarshalMap(orgUser)
-	if err != nil {
-		return fmt.Errorf("failed to marshal org user: %w", err)
-	}
-
-	_, err = svc.dynamodbClient.PutItem(svc.ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(svc.OrganizationTable),
-		Item:      userItem,
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to add org user: %w", err)
 	}
 
 	return nil
@@ -1267,14 +1218,14 @@ func (svc *OrgServiceV2) GetOrgUsers(organizationId string) ([]OrgMember, error)
 	return members, nil
 }
 
-// GetUserOrganizations retrieves all organizations for a user
-func (svc *OrgServiceV2) GetUserOrganizations(userName string) ([]Organization, error) {
+// GetUserOrganizations retrieves all organizations for a user -- Not required. For this release, users can only be part of one organization
+func (svc *OrgServiceV2) GetAdminsOrganizations(userName string) ([]Organization, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(svc.OrganizationTable),
 		IndexName:              aws.String("GSI1"),
 		KeyConditionExpression: aws.String("GSI1PK = :gsi1pk AND begins_with(GSI1SK, :gsi1sk_prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":gsi1pk":        &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", userName)},
+			":gsi1pk":        &types.AttributeValueMemberS{Value: fmt.Sprintf("ADMIN#%s", userName)},
 			":gsi1sk_prefix": &types.AttributeValueMemberS{Value: "ORG#"},
 		},
 	}
@@ -1284,17 +1235,17 @@ func (svc *OrgServiceV2) GetUserOrganizations(userName string) ([]Organization, 
 		return nil, fmt.Errorf("failed to query user organizations: %w", err)
 	}
 
-	var orgUsers []OrgUser
-	err = attributevalue.UnmarshalListOfMaps(result.Items, &orgUsers)
+	var orgAdmins []OrgAdmin
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &orgAdmins)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal org users: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal org admins: %w", err)
 	}
 
 	// Get organization details for each organization
 	var organizations []Organization
-	for _, orgUser := range orgUsers {
-		if orgUser.IsActive {
-			org, err := svc.GetOrganization(orgUser.OrganizationId)
+	for _, orgAdmin := range orgAdmins {
+		if orgAdmin.IsActive {
+			org, err := svc.GetOrganization(orgAdmin.OrganizationId)
 			if err == nil {
 				organizations = append(organizations, *org)
 			}
@@ -1306,8 +1257,8 @@ func (svc *OrgServiceV2) GetUserOrganizations(userName string) ([]Organization, 
 
 // CheckUserCanJoinOrganization validates if a user can join an organization
 // For this release, users can only be part of one organization
-func (svc *OrgServiceV2) CheckUserCanJoinOrganization(userName, organizationId string) error {
-	existingOrgs, err := svc.GetUserOrganizations(userName)
+func (svc *OrgServiceV2) CheckAdminCanJoinOrganization(userName, organizationId string) error {
+	existingOrgs, err := svc.GetAdminsOrganizations(userName)
 	if err != nil {
 		return fmt.Errorf("failed to check existing user organizations: %w", err)
 	}
@@ -1326,8 +1277,8 @@ func (svc *OrgServiceV2) CheckUserCanJoinOrganization(userName, organizationId s
 
 // GetUserOrganization returns the organization that a user belongs to
 // For this release, users can only be part of one organization
-func (svc *OrgServiceV2) GetUserOrganization(userIdentifier string) (*Organization, error) {
-	orgs, err := svc.GetUserOrganizations(userIdentifier)
+func (svc *OrgServiceV2) GetAdminOrganization(userIdentifier string) (*Organization, error) {
+	orgs, err := svc.GetAdminsOrganizations(userIdentifier)
 	if err != nil {
 		return nil, err
 	}
@@ -1345,39 +1296,58 @@ func (svc *OrgServiceV2) GetUserOrganization(userIdentifier string) (*Organizati
 	return &orgs[0], nil
 }
 
-// TransferUserToOrganization moves a user from their current organization to a new one
-// This is an admin operation that bypasses the single organization constraint
-func (svc *OrgServiceV2) TransferUserToOrganization(userName, fromOrgId, toOrgId string, newRole OrgAdminRole, requestingUser string) error {
-	// Verify requesting user is admin of the target organization
-	isAdmin, err := svc.IsOrgAdmin(toOrgId, requestingUser)
+// getAdmin is a helper function to get an admin by organization and username
+func (svc *OrgServiceV2) getAdmin(organizationId, userName string) (*OrgAdmin, error) {
+	input := &dynamodb.GetItemInput{
+		TableName: aws.String(svc.OrganizationTable),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ADMIN#%s", userName)},
+		},
+	}
+
+	result, err := svc.dynamodbClient.GetItem(svc.ctx, input)
 	if err != nil {
-		return err
-	}
-	if !isAdmin {
-		return fmt.Errorf("user %s is not an admin of target organization %s", requestingUser, toOrgId)
+		return nil, fmt.Errorf("failed to get admin: %w", err)
 	}
 
-	// Remove user from current organization if specified
-	if fromOrgId != "" {
-		if err := svc.RemoveOrgUser(fromOrgId, userName); err != nil {
-			return fmt.Errorf("failed to remove user from current organization: %w", err)
-		}
-	} else {
-		// Remove from all current organizations
-		existingOrgs, err := svc.GetUserOrganizations(userName)
-		if err != nil {
-			return fmt.Errorf("failed to get user's current organizations: %w", err)
-		}
-
-		for _, org := range existingOrgs {
-			if err := svc.RemoveOrgUser(org.OrganizationId, userName); err != nil {
-				svc.logger.Printf("Warning: failed to remove user %s from organization %s: %v", userName, org.OrganizationId, err)
-			}
-		}
+	if result.Item == nil {
+		return nil, fmt.Errorf("admin not found")
 	}
 
-	// Add user to new organization (this will now succeed since they're no longer in another org)
-	return svc.AddOrgUser(toOrgId, userName, "", newRole)
+	var admin OrgAdmin
+	err = attributevalue.UnmarshalMap(result.Item, &admin)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal admin: %w", err)
+	}
+
+	return &admin, nil
+}
+
+// countActiveOwners is a helper function to count active owners in an organization
+func (svc *OrgServiceV2) countActiveOwners(organizationId string) (int, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String(svc.OrganizationTable),
+		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk_prefix)"),
+		FilterExpression:       aws.String("IsActive = :active AND #role = :ownerRole"),
+		ExpressionAttributeNames: map[string]string{
+			"#role": "Role",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk":        &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			":sk_prefix": &types.AttributeValueMemberS{Value: "ADMIN#"},
+			":active":    &types.AttributeValueMemberBOOL{Value: true},
+			":ownerRole": &types.AttributeValueMemberS{Value: string(OrgAdminRoleOwner)},
+		},
+		Select: types.SelectCount,
+	}
+
+	result, err := svc.dynamodbClient.Query(svc.ctx, queryInput)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count owners: %w", err)
+	}
+
+	return int(result.Count), nil
 }
 
 // GetUserOrganizationMembership returns information about user's organization membership
