@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -461,10 +462,14 @@ func (svc *OrgServiceV2) CreateOrganization(input CreateOrganizationInput) (*Org
 
 // GetOrganization retrieves organization details
 func (svc *OrgServiceV2) GetOrganization(organizationId string) (*Organization, error) {
+	// if Org doesn't start with "ORG#", add it
+	if !strings.HasPrefix(organizationId, "ORG#") {
+		organizationId = fmt.Sprintf("ORG#%s", organizationId)
+	}
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String(svc.OrganizationTable),
 		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", organizationId)},
 			"SK": &types.AttributeValueMemberS{Value: "METADATA"},
 		},
 	}
@@ -696,6 +701,7 @@ func (svc *OrgServiceV2) UpdateSubscription(input UpdateSubscriptionInput, reque
 
 // CanCreateTeam checks if organization can create more teams based on their plan
 func (svc *OrgServiceV2) CanCreateTeam(orgId string) (bool, error) {
+
 	org, err := svc.GetOrganization(orgId)
 	if err != nil {
 		return false, err
