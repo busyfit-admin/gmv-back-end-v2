@@ -804,6 +804,42 @@ paths:
         - UserPool: []
 
   /v2/organization/check-admin:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        "200":
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
     get:
       summary: Check if user is organization admin
       description: Returns whether the authenticated user is an organization admin, and if true, returns organization details
@@ -818,6 +854,14 @@ paths:
         responses:
           default:
             statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
       security:
         - UserPool: []
 

@@ -146,6 +146,7 @@ var apiHeaders = map[string][]string{
 		"update-organization",
 		"manage-subscription",
 		"promo-code",
+		"check-org-admin",
 	},
 }
 
