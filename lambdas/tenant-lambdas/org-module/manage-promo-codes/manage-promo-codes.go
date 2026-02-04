@@ -70,6 +70,15 @@ func main() {
 func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.logger.Printf("Received request: %s %s", request.HTTPMethod, request.Path)
 
+	// Handle OPTIONS request for CORS preflight
+	if request.HTTPMethod == "OPTIONS" {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusOK,
+			Headers:    RESP_HEADERS,
+			Body:       "",
+		}, nil
+	}
+
 	// Extract Cognito ID from Cognito authorizer
 	cognitoId, err := svc.getCognitoIdFromRequest(request)
 	if err != nil {
@@ -84,15 +93,20 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 		return svc.errorResponse(http.StatusUnauthorized, "User not found", err)
 	}
 
-	// Extract orgId from path parameters
-	orgId, ok := request.PathParameters["orgId"]
-	if !ok || orgId == "" {
-		return svc.errorResponse(http.StatusBadRequest, "Organization ID is required", nil)
+	// Extract orgId from headers (try lowercase first, then capitalized)
+	orgId := request.Headers["organization-id"]
+	if orgId == "" {
+		orgId = request.Headers["Organization-Id"]
+	}
+	if orgId == "" {
+		return svc.errorResponse(http.StatusBadRequest, "Organization ID is required in headers", nil)
 	}
 
 	switch request.HTTPMethod {
 	case "POST":
 		return svc.applyPromoCode(orgId, employee.EmailID, request)
+	case "GET":
+		return svc.getActivePromoCode(orgId, employee.EmailID)
 	default:
 		return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
 	}
@@ -173,6 +187,74 @@ func (svc *Service) applyPromoCode(orgId string, userName string, request events
 			"promoDiscount":    organization.PromoDiscountPercent,
 			"trialEndDate":     organization.TrialEndDate,
 			"appliedPromoCode": organization.AppliedPromoCode,
+		},
+	})
+	if err != nil {
+		svc.logger.Printf("Failed to marshal response: %v", err)
+		return svc.errorResponse(http.StatusInternalServerError, "Failed to create response", err)
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Headers:    RESP_HEADERS,
+		Body:       string(body),
+	}, nil
+}
+
+// getActivePromoCode retrieves the currently active promo code for an organization
+func (svc *Service) getActivePromoCode(orgId string, userName string) (events.APIGatewayProxyResponse, error) {
+	svc.logger.Printf("Getting active promo code for organization %s, user: %s", orgId, userName)
+
+	// Verify user is admin of this organization
+	orgAdmin, err := svc.orgSVC.GetAdminOrganization(userName)
+	if err != nil {
+		svc.logger.Printf("Failed to verify admin status: %v", err)
+		return svc.errorResponse(http.StatusForbidden, "Only organization admins can view promo code details", err)
+	}
+	if orgAdmin.OrganizationId != orgId {
+		return svc.errorResponse(http.StatusForbidden, "User is not an admin of this organization", nil)
+	}
+
+	// Get organization details
+	organization, err := svc.orgSVC.GetOrganization(orgId)
+	if err != nil {
+		svc.logger.Printf("Failed to get organization: %v", err)
+		return svc.errorResponse(http.StatusNotFound, "Organization not found", err)
+	}
+
+	// Check if there's an active promo code
+	if organization.AppliedPromoCode == "" {
+		body, _ := json.Marshal(map[string]interface{}{
+			"success":      true,
+			"message":      "No active promo code",
+			"promoDetails": nil,
+		})
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusOK,
+			Headers:    RESP_HEADERS,
+			Body:       string(body),
+		}, nil
+	}
+
+	// Get promo code details
+	promoCode, err := svc.orgSVC.GetPromoCode(organization.AppliedPromoCode)
+	if err != nil {
+		svc.logger.Printf("Failed to get promo code details: %v", err)
+		return svc.errorResponse(http.StatusInternalServerError, "Failed to retrieve promo code details", err)
+	}
+
+	// Return promo code details
+	body, err := json.Marshal(map[string]interface{}{
+		"success": true,
+		"promoDetails": map[string]interface{}{
+			"promoCode":       promoCode.PromoCode,
+			"discountPercent": promoCode.DiscountPercent,
+			"discountAmount":  promoCode.DiscountAmount,
+			"freeTrialDays":   promoCode.FreeTrialDays,
+			"validFrom":       promoCode.ValidFrom,
+			"validUntil":      promoCode.ValidUntil,
+			"isActive":        promoCode.IsActive,
+			"appliedUntil":    organization.PromoValidUntil,
 		},
 	})
 	if err != nil {

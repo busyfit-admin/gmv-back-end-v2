@@ -93,10 +93,13 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 		return svc.errorResponse(http.StatusUnauthorized, "User not found", err)
 	}
 
-	// Extract orgId from path parameters
-	orgId, ok := request.PathParameters["orgId"]
-	if !ok || orgId == "" {
-		return svc.errorResponse(http.StatusBadRequest, "Organization ID is required", nil)
+	// Extract orgId from headers (try lowercase first, then capitalized)
+	orgId := request.Headers["organization-id"]
+	if orgId == "" {
+		orgId = request.Headers["Organization-Id"]
+	}
+	if orgId == "" {
+		return svc.errorResponse(http.StatusBadRequest, "Organization ID is required in headers", nil)
 	}
 
 	switch request.HTTPMethod {

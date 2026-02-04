@@ -140,6 +140,7 @@ var apiHeaders = map[string][]string{
 	},
 	"OrganizationAPI": {
 		"organization-id",
+		"Organization-Id",
 		"get-organization",
 		"list-organizations",
 		"create-organization",

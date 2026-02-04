@@ -606,7 +606,7 @@ paths:
           "200":
             statusCode: "200"
             responseParameters:
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,organization-id,Organization-Id'"
               method.response.header.Access-Control-Allow-Methods: "'*'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             responseTemplates:
@@ -622,6 +622,32 @@ paths:
               type: "string"
             Access-Control-Allow-Origin:
               type: "string"
+    get:
+      summary: Get Organization Details
+      description: Retrieve comprehensive organization information including client details and subscription status. Organization ID must be provided in the header.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrganizationLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
     post:
       summary: Create Organization
       description: Create a new organization with client and industry-specific details
@@ -648,73 +674,9 @@ paths:
               type: "string"
       security:
         - UserPool: []
-
-  /v2/organization/{organizationId}:
-    options:
-      summary: CORS support
-      description: Enable CORS by returning correct headers
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      tags:
-        - CORS
-      x-amazon-apigateway-integration:
-        type: mock
-        requestTemplates:
-          application/json: |
-            {
-              "statusCode" : 200
-            }
-        responses:
-          "200":
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
-              method.response.header.Access-Control-Allow-Methods: "'*'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-            responseTemplates:
-              application/json: |
-                {}
-      responses:
-        "200":
-          description: Default response for CORS method
-          headers:
-            Access-Control-Allow-Headers:
-              type: "string"
-            Access-Control-Allow-Methods:
-              type: "string"
-            Access-Control-Allow-Origin:
-              type: "string"
-    get:
-      summary: Get Organization Details
-      description: Retrieve comprehensive organization information including client details and subscription status
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      x-amazon-apigateway-integration:
-        type: AWS_PROXY
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_MATCH
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrganizationLambda.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-      responses:
-        "200":
-          description: Successful response
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-      security:
-        - UserPool: []
     put:
       summary: Update Organization
-      description: Update organization details including client information and industry-specific data
+      description: Update organization details including client information and industry-specific data. Organization ID must be provided in the header.
       consumes:
         - application/json
       produces:
@@ -865,7 +827,7 @@ paths:
       security:
         - UserPool: []
 
-  /v2/organization/{organizationId}/subscription:
+  /v2/organization/subscription:
     options:
       summary: CORS support
       description: Enable CORS by returning correct headers
@@ -886,7 +848,7 @@ paths:
           "200":
             statusCode: "200"
             responseParameters:
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,organization-id,Organization-Id'"
               method.response.header.Access-Control-Allow-Methods: "'*'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             responseTemplates:
@@ -904,7 +866,7 @@ paths:
               type: "string"
     get:
       summary: Get Subscription Plans
-      description: Retrieve available subscription plans with pricing and feature comparison
+      description: Retrieve available subscription plans with pricing and feature comparison. Organization ID must be provided in the header.
       consumes:
         - application/json
       produces:
@@ -930,7 +892,7 @@ paths:
         - UserPool: []
     put:
       summary: Update Subscription
-      description: Switch between subscription plans and update billing cycle
+      description: Switch between subscription plans and update billing cycle. Organization ID must be provided in the header.
       consumes:
         - application/json
       produces:
@@ -955,7 +917,7 @@ paths:
       security:
         - UserPool: []
 
-  /v2/organization/{organizationId}/promo-code:
+  /v2/organization/promo-code:
     options:
       summary: CORS support
       description: Enable CORS by returning correct headers
@@ -976,7 +938,7 @@ paths:
           "200":
             statusCode: "200"
             responseParameters:
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,organization-id,Organization-Id'"
               method.response.header.Access-Control-Allow-Methods: "'*'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             responseTemplates:
@@ -994,7 +956,7 @@ paths:
               type: "string"
     post:
       summary: Apply Promo Code
-      description: Apply promotional codes for percentage discounts or free trial periods
+      description: Apply promotional codes for percentage discounts or free trial periods. Organization ID must be provided in the header.
       consumes:
         - application/json
       produces:
@@ -1020,7 +982,7 @@ paths:
         - UserPool: []
     get:
       summary: Get Active Promo Code Details
-      description: Get details of currently active promo code for the organization
+      description: Get details of currently active promo code for the organization. Organization ID must be provided in the header.
       consumes:
         - application/json
       produces:
