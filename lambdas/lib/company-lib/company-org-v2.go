@@ -1233,8 +1233,8 @@ func (svc *OrgServiceV2) GetAdminsOrganizations(userName string) ([]Organization
 	}
 
 	result, err := svc.dynamodbClient.Query(svc.ctx, queryInput)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query user organizations: %w", err)
+	if err != nil || result.Count == 0 {
+		return nil, fmt.Errorf("failed to query user organizations or the result is empty: %w", err)
 	}
 
 	var orgAdmins []OrgAdmin
@@ -1248,9 +1248,11 @@ func (svc *OrgServiceV2) GetAdminsOrganizations(userName string) ([]Organization
 	for _, orgAdmin := range orgAdmins {
 		if orgAdmin.IsActive {
 			org, err := svc.GetOrganization(orgAdmin.OrganizationId)
-			if err == nil {
-				organizations = append(organizations, *org)
+			if err != nil {
+				svc.logger.Printf("Failed to get organization %s: %v", orgAdmin.OrganizationId, err)
+				return nil, fmt.Errorf("failed to get organization %s: %w", orgAdmin.OrganizationId, err)
 			}
+			organizations = append(organizations, *org)
 		}
 	}
 
