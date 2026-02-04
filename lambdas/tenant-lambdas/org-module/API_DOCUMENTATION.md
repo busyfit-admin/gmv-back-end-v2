@@ -529,6 +529,42 @@ Authorization: Bearer <cognito-jwt-token>
 
 ---
 
+### 12. Check if User is Organization Admin
+**Endpoint:** `GET /v2/organization/check-admin`  
+**Function:** Checks if the authenticated user is an organization admin and returns organization details if true
+
+**Success Response (200) - User IS an Org Admin:**
+```json
+{
+  "isOrgAdmin": true,
+  "organizationId": "ORG#uuid",
+  "orgName": "Acme Corporation",
+  "orgDesc": "Technology solutions company",
+  "role": "OWNER"
+}
+```
+
+**Success Response (200) - User IS NOT an Org Admin:**
+```json
+{
+  "isOrgAdmin": false
+}
+```
+
+**Role Values:**
+- `OWNER`: Full organization control
+- `ADMIN`: Can manage organization settings
+- `BILLING_ONLY`: Can only manage billing
+
+**Use Cases:**
+- Frontend conditional rendering (show/hide admin features)
+- Quick permission checks before operations
+- Navigation guards and route protection
+- Dashboard initialization
+- Feature flag evaluation
+
+---
+
 ## Error Responses
 
 All endpoints return consistent error responses:
@@ -619,6 +655,31 @@ const getUserOrganizations = async () => {
   
   return await response.json();
 };
+```
+
+#### Check if User is Organization Admin
+```javascript
+const checkIsOrgAdmin = async () => {
+  const response = await fetch('/v2/organization/check-admin', {
+    headers: {
+      'Authorization': `Bearer ${cognitoToken}`
+    }
+  });
+  
+  const data = await response.json();
+  return data;
+};
+
+// Usage example
+const adminStatus = await checkIsOrgAdmin();
+if (adminStatus.isOrgAdmin) {
+  console.log(`User is ${adminStatus.role} of ${adminStatus.orgName}`);
+  // Show admin features
+  enableAdminFeatures(adminStatus.organizationId);
+} else {
+  console.log('User is not an organization admin');
+  // Hide admin features
+}
 ```
 
 #### Update Subscription

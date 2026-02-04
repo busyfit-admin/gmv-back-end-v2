@@ -1197,6 +1197,35 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
+  # ---------- Lambda to check if user is org admin ----------
+
+  CheckOrgAdminLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to check if user is an organization admin"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-module/check-org-admin/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  CheckOrgAdminLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CheckOrgAdminLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
   # ---------- Lambda to manage promo codes ----------
 
   ManagePromoCodesLambda:

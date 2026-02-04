@@ -803,6 +803,24 @@ paths:
       security:
         - UserPool: []
 
+  /v2/organization/check-admin:
+    get:
+      summary: Check if user is organization admin
+      description: Returns whether the authenticated user is an organization admin, and if true, returns organization details
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CheckOrgAdminLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   /v2/organization/{organizationId}/subscription:
     options:
       summary: CORS support
