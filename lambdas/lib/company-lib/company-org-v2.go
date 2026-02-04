@@ -133,6 +133,9 @@ type Organization struct {
 	CreatedAt       string `dynamodbav:"CreatedAt" json:"createdAt"`
 	UpdatedAt       string `dynamodbav:"UpdatedAt" json:"updatedAt"`
 	CreatorUserName string `dynamodbav:"CreatorUserName" json:"creatorUserName"`
+
+	// Current Total Users
+	CurrentUserCount int `dynamodbav:"CurrentUserCount" json:"currentUserCount"`
 }
 
 // OrgAdmin represents an organization administrator stored as separate table items
