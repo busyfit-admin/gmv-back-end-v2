@@ -137,6 +137,15 @@ var apiHeaders = map[string][]string{
 		"get-survey-responses",
 		"submit-survey-response",
 	},
+	"OrganizationAPI": {
+		"organization-id",
+		"get-organization",
+		"list-organizations",
+		"create-organization",
+		"update-organization",
+		"manage-subscription",
+		"promo-code",
+	},
 }
 
 // Function to initialize headers for a specific API

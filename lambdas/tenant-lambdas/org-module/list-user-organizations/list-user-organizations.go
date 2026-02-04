@@ -70,6 +70,15 @@ func main() {
 func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.logger.Printf("Received request: %s %s", request.HTTPMethod, request.Path)
 
+	// Handle OPTIONS request for CORS preflight
+	if request.HTTPMethod == "OPTIONS" {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusOK,
+			Headers:    RESP_HEADERS,
+			Body:       "",
+		}, nil
+	}
+
 	// Extract Cognito ID from Cognito authorizer
 	cognitoId, err := svc.getCognitoIdFromRequest(request)
 	if err != nil {
