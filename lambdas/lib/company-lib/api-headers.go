@@ -65,6 +65,7 @@ var apiHeaders = map[string][]string{
 		"related-id",
 		"user-id",
 		"manager-id",
+		"list-org-teams",
 	},
 	"EngagementsAPI": {
 		"get-all-engagements",

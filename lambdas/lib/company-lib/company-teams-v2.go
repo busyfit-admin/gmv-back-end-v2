@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -360,6 +361,51 @@ func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) (
 	}
 
 	return userTeams, nil
+}
+
+// Get Organization Teams retrieves all teams for an organization
+func (svc *TeamsServiceV2) GetOrganizationTeams(orgId string) ([]TeamMetadata, error) {
+
+	// if org id is empty, return error
+	if orgId == "" {
+		return nil, fmt.Errorf("organization ID cannot be empty")
+	}
+
+	// if org id doesnot begin with ORG#, add it
+	if strings.HasPrefix(orgId, "ORG#") == false {
+		orgId = "ORG#" + orgId
+	}
+
+	// Query to get all teams for the organization
+	input := &dynamodb.QueryInput{
+		TableName:              aws.String(svc.TeamsTable),
+		IndexName:              aws.String("OrgId-Index"),
+		KeyConditionExpression: aws.String("OrgId = :orgId AND SK = :metadataSk"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":orgId":      &types.AttributeValueMemberS{Value: orgId},
+			":metadataSk": &types.AttributeValueMemberS{Value: "METADATA"},
+		},
+	}
+
+	result, err := svc.dynamodbClient.Query(svc.ctx, input)
+	if err != nil {
+		svc.logger.Printf("Failed to query organization teams: %v", err)
+		return nil, fmt.Errorf("failed to query organization teams: %w", err)
+	}
+
+	if len(result.Items) == 0 {
+		return []TeamMetadata{}, nil
+	}
+
+	// Unmarshal team metadata
+	var teams []TeamMetadata
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &teams)
+	if err != nil {
+		svc.logger.Printf("Failed to unmarshal organization teams: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal organization teams: %w", err)
+	}
+
+	return teams, nil
 }
 
 // GetTeamMetadata retrieves team metadata

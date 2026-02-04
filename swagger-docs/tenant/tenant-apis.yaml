@@ -53,6 +53,24 @@ paths:
       security:
         - UserPool: []
 
+  /v2/teams/organization:
+    get:
+      summary: List all teams in organization (org admin only)
+      description: Returns all teams in the organization that the user is an admin of. Only accessible by organization admins.
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListOrgTeamsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   /v2/teams/{teamId}:
     get:
       summary: Get team details

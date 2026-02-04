@@ -24,6 +24,7 @@ type Service struct {
 	logger   *log.Logger
 	teamsSVC *companylib.TeamsServiceV2
 	empSVC   *companylib.EmployeeService
+	orgSVC   *companylib.OrgServiceV2
 }
 
 var RESP_HEADERS = companylib.GetHeadersForAPI("TeamsAPI")
@@ -55,11 +56,16 @@ func main() {
 	teamsSvc := companylib.CreateTeamsServiceV2(ctx, ddbclient, logger, empSvc, emailSvc)
 	teamsSvc.TeamsTable = os.Getenv("TEAMS_TABLE")
 
+	// Initialize organization service
+	orgSvc := companylib.CreateOrgServiceV2(ctx, ddbclient, logger, empSvc, emailSvc)
+	orgSvc.OrganizationTable = os.Getenv("ORGANIZATION_TABLE")
+
 	svc := &Service{
 		ctx:      ctx,
 		logger:   logger,
 		teamsSVC: teamsSvc,
 		empSVC:   empSvc,
+		orgSVC:   orgSvc,
 	}
 
 	lambda.Start(svc.Handler)
@@ -68,6 +74,15 @@ func main() {
 // Handler handles the Lambda request
 func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	svc.logger.Printf("Received request: %s %s", request.HTTPMethod, request.Path)
+
+	// Handle OPTIONS request for CORS preflight
+	if request.HTTPMethod == "OPTIONS" {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusOK,
+			Headers:    RESP_HEADERS,
+			Body:       "",
+		}, nil
+	}
 
 	// Extract Cognito ID from Cognito authorizer
 	cognitoId, err := svc.getCognitoIdFromRequest(request)
@@ -107,8 +122,21 @@ func (svc *Service) createTeam(userName string, request events.APIGatewayProxyRe
 		return svc.errorResponse(http.StatusBadRequest, "Team name is required", nil)
 	}
 
+	// Verify user is an organization admin
+	orgAdmins, err := svc.orgSVC.GetAdminOrganization(userName)
+	if err != nil {
+		svc.logger.Printf("Failed to check organization admin status: %v", err)
+		return svc.errorResponse(http.StatusInternalServerError, "Failed to verify permissions", err)
+	}
+
+	if orgAdmins == nil {
+		svc.logger.Printf("User %s is not an organization admin", userName)
+		return svc.errorResponse(http.StatusForbidden, "Only organization admins can create teams", nil)
+	}
+
 	// Set the requesting user as the creator
 	input.UserName = userName
+	input.OrgId = orgAdmins.OrganizationId
 
 	// Create the team
 	teamMetadata, err := svc.teamsSVC.CreateTeam(input)

@@ -418,6 +418,8 @@ Resources:
           AttributeType: S
         - AttributeName: GSI1SK
           AttributeType: S
+        - AttributeName: OrgId
+          AttributeType: S  
       KeySchema:
         - AttributeName: PK
           KeyType: HASH
@@ -433,6 +435,14 @@ Resources:
               KeyType: "RANGE"
           Projection:
             ProjectionType: "ALL"
+        - IndexName: OrgId-Index
+          KeySchema:
+            - AttributeName: "OrgId"
+              KeyType: "HASH"
+            - AttributeName: "SK"
+              KeyType: "RANGE"  
+          Projection:
+            ProjectionType: "ALL"    
 
   # -- Team Attributes Table (V2) -
   # This table stores team-specific attributes (skills, values, milestones, metrics)
@@ -862,6 +872,7 @@ Resources:
           TEAMS_TABLE: !Ref TenantTeamsTableV2
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          ORGANIZATION_TABLE: !Ref OrgsTable
 
   CreateTeamLambdaInvokePermissions:
     Type: AWS::Lambda::Permission
@@ -927,6 +938,36 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt SetCurrentTeamLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to list all teams in organization (org admin only) ----------
+
+  ListOrgTeamsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to list all teams in organization for org admins"
+      Role: !GetAtt TeamsV2LambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/teams-module/list-org-teams/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          ORGANIZATION_TABLE: !Ref OrgsTable
+
+  ListOrgTeamsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ListOrgTeamsLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
@@ -1046,17 +1087,14 @@ Resources:
                   - dynamodb:Scan
                   - dynamodb:BatchGetItem
                   - dynamodb:BatchWriteItem
+                  - dynamodb:TransactWriteItems
                 Resource:
                   - !GetAtt TenantTeamsTableV2.Arn
                   - !Sub ${TenantTeamsTableV2.Arn}/index/*
                   - !GetAtt EmployeeDataTable.Arn
                   - !Sub ${EmployeeDataTable.Arn}/index/*
-              - Effect: Allow
-                Action:
-                  - dynamodb:TransactWriteItems
-                Resource:
-                  - !GetAtt TenantTeamsTableV2.Arn
-                  - !GetAtt EmployeeDataTable.Arn 
+                  - !GetAtt OrgsTable.Arn
+                  - !Sub ${OrgsTable.Arn}/index/*
               - Effect: Allow
                 Action:
                   - ses:SendEmail
