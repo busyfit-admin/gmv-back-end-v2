@@ -499,13 +499,19 @@ func (svc *OrgServiceV2) GetOrganization(organizationId string) (*Organization, 
 
 // IsOrgAdmin checks if a user is an admin of an organization
 func (svc *OrgServiceV2) IsOrgAdmin(organizationId string, userName string) (bool, error) {
+
+	// if Org doesn't start with "ORG#", add it
+	if !strings.HasPrefix(organizationId, "ORG#") {
+		organizationId = fmt.Sprintf("ORG#%s", organizationId)
+	}
+
 	svc.logger.Printf("Checking if user %s is admin of organization %s", userName, organizationId)
 
 	// Query for admin row
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String(svc.OrganizationTable),
 		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", organizationId)},
 			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ADMIN#%s", userName)},
 		},
 	}
