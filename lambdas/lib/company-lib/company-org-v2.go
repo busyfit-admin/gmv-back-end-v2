@@ -343,7 +343,7 @@ func (svc *OrgServiceV2) CreateOrganization(input CreateOrganizationInput) (*Org
 
 	organization := Organization{
 		// Composite key structure
-		PK: fmt.Sprintf("ORG#%s", orgId),
+		PK: orgId,
 		SK: "METADATA",
 		// GSI1PK and GSI1SK omitted for organization metadata (will be omitempty)
 
@@ -411,10 +411,10 @@ func (svc *OrgServiceV2) CreateOrganization(input CreateOrganizationInput) (*Org
 	}
 
 	orgAdmin := OrgAdmin{
-		PK:             fmt.Sprintf("ORG#%s", orgId),
+		PK:             fmt.Sprintf("%s", orgId),
 		SK:             fmt.Sprintf("ADMIN#%s", input.CreatorUserName),
 		GSI1PK:         fmt.Sprintf("ADMIN#%s", input.CreatorUserName),
-		GSI1SK:         fmt.Sprintf("ORG#%s", orgId),
+		GSI1SK:         fmt.Sprintf("%s", orgId),
 		OrganizationId: orgId,
 		UserName:       input.CreatorUserName,
 		DisplayName:    displayName,
