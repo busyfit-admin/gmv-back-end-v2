@@ -75,10 +75,10 @@ type SubscriptionPlan struct {
 // Organization represents the enhanced organization structure
 type Organization struct {
 	// Composite key structure
-	PK     string `dynamodbav:"PK" json:"-"`     // ORG#{organizationId}
-	SK     string `dynamodbav:"SK" json:"-"`     // METADATA
-	GSI1PK string `dynamodbav:"GSI1PK" json:"-"` // For GSI queries
-	GSI1SK string `dynamodbav:"GSI1SK" json:"-"` // For GSI queries
+	PK     string `dynamodbav:"PK" json:"-"`               // ORG#{organizationId}
+	SK     string `dynamodbav:"SK" json:"-"`               // METADATA
+	GSI1PK string `dynamodbav:"GSI1PK,omitempty" json:"-"` // For GSI queries
+	GSI1SK string `dynamodbav:"GSI1SK,omitempty" json:"-"` // For GSI queries
 
 	// Primary key - matches CloudFormation template
 	OrganizationId string `dynamodbav:"OrganizationId" json:"organizationId"`
@@ -343,10 +343,9 @@ func (svc *OrgServiceV2) CreateOrganization(input CreateOrganizationInput) (*Org
 
 	organization := Organization{
 		// Composite key structure
-		PK:     fmt.Sprintf("ORG#%s", orgId),
-		SK:     "METADATA",
-		GSI1PK: "", // Not used for organization metadata
-		GSI1SK: "", // Not used for organization metadata
+		PK: fmt.Sprintf("ORG#%s", orgId),
+		SK: "METADATA",
+		// GSI1PK and GSI1SK omitted for organization metadata (will be omitempty)
 
 		OrganizationId: orgId,
 		OrgName:        input.OrgName,
