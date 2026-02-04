@@ -1,25 +1,16 @@
-.PHONY: build clean tidy
+SUBDIRS := $(filter-out v1_related_lambdas/., $(wildcard */.))
 
-build:
-	$(MAKE) -C create-organization build
-	$(MAKE) -C manage-organization build
-	$(MAKE) -C manage-subscription build
-	$(MAKE) -C manage-promo-codes build
-	$(MAKE) -C list-user-organizations build
+test: $(SUBDIRS)
 
-clean:
-	$(MAKE) -C create-organization clean
-	$(MAKE) -C manage-organization clean
-	$(MAKE) -C manage-subscription clean
-	$(MAKE) -C manage-promo-codes clean
-	$(MAKE) -C list-user-organizations clean
+build: $(SUBDIRS)
 
-tidy:
-	$(MAKE) -C create-organization tidy
-	$(MAKE) -C manage-organization tidy
-	$(MAKE) -C manage-subscription tidy
-	$(MAKE) -C manage-promo-codes tidy
-	$(MAKE) -C list-user-organizations tidy
-		
+update: $(SUBDIRS)
 
+deploy: $(SUBDIRS)
 
+local: $(SUBDIRS)
+
+$(SUBDIRS):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+.PHONY: test build local deploy $(SUBDIRS)
