@@ -1219,6 +1219,9 @@ func (svc *OrgServiceV2) GetOrgUsers(organizationId string) ([]OrgMember, error)
 
 // GetUserOrganizations retrieves all organizations for a user -- Not required. For this release, users can only be part of one organization
 func (svc *OrgServiceV2) GetAdminsOrganizations(userName string) ([]Organization, error) {
+
+	svc.logger.Printf("Fetching organizations for user: ADMIN#%s", userName)
+	// Query GSI1 for organizations where the user is an admin
 	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(svc.OrganizationTable),
 		IndexName:              aws.String("GSI1"),
@@ -1250,6 +1253,9 @@ func (svc *OrgServiceV2) GetAdminsOrganizations(userName string) ([]Organization
 			}
 		}
 	}
+
+	svc.logger.Printf("User %s belongs to %d organizations", userName, len(organizations))
+	svc.logger.Printf("Organizations: %+v", organizations)
 
 	return organizations, nil
 }
