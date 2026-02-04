@@ -32,9 +32,10 @@ The `TenantTeamsTable` uses a single-table design with the following access patt
 ### Lambda Functions
 
 1. **list-user-teams**: Lists all teams for a user
-2. **create-team**: Creates a new team (user becomes admin)
+2. **create-team**: Creates a new team (user becomes admin - org admins only)
 3. **manage-team-operations**: Handles team operations (deactivate, add users, assign admins)
 4. **set-current-team**: Sets the user's current active team
+5. **list-org-teams**: Lists all teams in organization (org admins only)
 
 ### Library
 
@@ -86,15 +87,18 @@ curl -X GET "https://api.example.com/v1/teams?currentTeam=TEAM#123" \
 
 ### 2. Create Team
 
-**Endpoint:** `POST /v1/teams`
+**Endpoint:** `POST /v2/teams`
 
-**Description:** Creates a new team with the requesting user as admin.
+**Description:** Creates a new team with the requesting user as admin. **Only organization admins can create teams.**
+
+**Authorization:** Requires user to be an organization admin. Returns 403 Forbidden if user is not an org admin.
 
 **Request Body:**
 ```json
 {
   "teamName": "Marketing Team",
-  "teamDesc": "Digital marketing and campaigns"
+  "teamDesc": "Digital marketing and campaigns",
+  "orgId": "ORG#uuid"
 }
 ```
 
@@ -116,13 +120,81 @@ curl -X GET "https://api.example.com/v1/teams?currentTeam=TEAM#123" \
 
 **Example:**
 ```bash
-curl -X POST "https://api.example.com/v1/teams" \
+curl -X POST "https://api.example.com/v2/teams" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"teamName":"Marketing Team","teamDesc":"Digital marketing"}'
+  -d '{"teamName":"Marketing Team","teamDesc":"Digital marketing","orgId":"ORG#uuid"}'
 ```
 
-### 3. Get Team Details
+**Error Response (Non-Org Admin):**
+```json
+{
+  "error": "Only organization admins can create teams",
+  "message": "Only organization admins can create teams"
+}
+```
+
+### 3. List Organization Teams (Org Admin Only)
+
+**Endpoint:** `GET /v2/teams/organization`
+
+**Description:** Returns all teams within the organization that the user is an admin of. **Only accessible by organization admins.**
+
+**Authorization:** Requires user to be an organization admin. Returns 403 Forbidden if user is not an org admin.
+
+**Response:**
+```json
+{
+  "organizationId": "ORG#uuid",
+  "teams": [
+    {
+      "teamId": "TEAM#uuid-1",
+      "teamName": "Engineering Team",
+      "teamDesc": "Product engineering team",
+      "status": "ACTIVE",
+      "createdBy": "admin@company.com",
+      "createdAt": "2024-01-10T09:00:00Z",
+      "updatedAt": "2024-01-20T15:00:00Z",
+      "memberCount": 15,
+      "orgId": "ORG#uuid"
+    },
+    {
+      "teamId": "TEAM#uuid-2",
+      "teamName": "Marketing Team",
+      "teamDesc": "Digital marketing campaigns",
+      "status": "ACTIVE",
+      "createdBy": "admin@company.com",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z",
+      "memberCount": 8,
+      "orgId": "ORG#uuid"
+    }
+  ],
+  "totalTeams": 2
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://api.example.com/v2/teams/organization" \
+  -H "Authorization: Bearer <token>"
+```
+
+**Error Response (Non-Org Admin):**
+```json
+{
+  "error": "Only organization admins can view all organization teams",
+  "message": "Only organization admins can view all organization teams"
+}
+```
+
+**Use Cases:**
+- Organization admins viewing all teams across the organization
+- Dashboard displaying organization-wide team statistics
+- Team management and oversight by org admins
+- Reporting and analytics on team distribution
+
+### 4. Get Team Details
 
 **Endpoint:** `GET /v1/teams/{teamId}`
 
@@ -138,11 +210,12 @@ curl -X POST "https://api.example.com/v1/teams" \
   "createdBy": "admin",
   "createdAt": "2024-01-10T09:00:00Z",
   "updatedAt": "2024-01-20T15:00:00Z",
-  "memberCount": 15
+  "memberCount": 15,
+  "orgId": "ORG#uuid"
 }
 ```
 
-### 4. Update Team Status (Deactivate/Activate)
+### 5. Update Team Status (Deactivate/Activate)
 
 **Endpoint:** `PATCH /v1/teams/{teamId}/status`
 
@@ -176,7 +249,7 @@ curl -X PATCH "https://api.example.com/v1/teams/TEAM#123/status" \
   -d '{"status":"INACTIVE"}'
 ```
 
-### 5. Get Team Members
+### 6. Get Team Members
 
 **Endpoint:** `GET /v1/teams/{teamId}/members`
 
@@ -207,7 +280,7 @@ curl -X PATCH "https://api.example.com/v1/teams/TEAM#123/status" \
 }
 ```
 
-### 6. Add Team Members
+### 7. Add Team Members
 
 **Endpoint:** `POST /v1/teams/{teamId}/members`
 
@@ -237,7 +310,7 @@ curl -X POST "https://api.example.com/v1/teams/TEAM#123/members" \
   -d '{"userNames":["jane.smith","bob.jones"]}'
 ```
 
-### 7. Update Member Role (Assign Admin)
+### 8. Update Member Role (Assign Admin)
 
 **Endpoint:** `POST /v1/teams/{teamId}/members/{username}/role`
 
@@ -273,7 +346,7 @@ curl -X POST "https://api.example.com/v1/teams/TEAM#123/members/jane.smith/role"
   -d '{"userName":"jane.smith","role":"ADMIN"}'
 ```
 
-### 8. Set Current Team
+### 9. Set Current Team
 
 **Endpoint:** `PATCH /v1/current-team` or `PUT /v1/current-team`
 
@@ -310,10 +383,14 @@ All endpoints require Cognito authentication. The username is extracted from:
 
 ## Admin Permissions
 
-The following operations require the requesting user to be a team admin:
+The following operations require the requesting user to be a **team admin**:
 - Deactivate/activate team
 - Add members to team
 - Update member roles
+
+The following operations require the requesting user to be an **organization admin**:
+- Create teams
+- View all teams in organization
 
 **Protection:** Cannot demote the last admin of a team.
 
@@ -332,6 +409,20 @@ The following operations require the requesting user to be a team admin:
 {
   "error": "Only admins can add members",
   "message": "user john.doe is not an admin of team TEAM#123"
+}
+```
+
+```json
+{
+  "error": "Only organization admins can create teams",
+  "message": "Only organization admins can create teams"
+}
+```
+
+```json
+{
+  "error": "Only organization admins can view all organization teams",
+  "message": "Only organization admins can view all organization teams"
 }
 ```
 
@@ -376,6 +467,9 @@ cd manage-team-operations && make build && cd ..
 
 # Build set-current-team
 cd set-current-team && make build && cd ..
+
+# Build list-org-teams
+cd list-org-teams && make build && cd ..
 ```
 
 ### Deploy CloudFormation Stack
@@ -387,20 +481,27 @@ make deploy ENVIRONMENT=dev
 
 ## Testing
 
-### Create a Team
+### Create a Team (Org Admin Required)
 ```bash
-curl -X POST "https://api.example.com/v1/teams" \
+curl -X POST "https://api.example.com/v2/teams" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
     "teamName": "Test Team",
-    "teamDesc": "Team for testing"
+    "teamDesc": "Team for testing",
+    "orgId": "ORG#uuid"
   }'
 ```
 
 ### List Your Teams
 ```bash
-curl -X GET "https://api.example.com/v1/teams" \
+curl -X GET "https://api.example.com/v2/teams" \
+  -H "Authorization: Bearer <token>"
+```
+
+### List All Organization Teams (Org Admin Only)
+```bash
+curl -X GET "https://api.example.com/v2/teams/organization" \
   -H "Authorization: Bearer <token>"
 ```
 
