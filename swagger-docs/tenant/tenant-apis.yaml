@@ -1007,6 +1007,199 @@ paths:
       security:
         - UserPool: []
 
+  /v2/organization/send-invitations:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        "200":
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    post:
+      summary: Send Invitation Emails
+      description: |
+        Send HTML-formatted invitation emails to multiple recipients. The inviter's organization details 
+        are automatically detected from their user profile. Supports custom messages and invitation links.
+        Returns individual success/failure status for each email sent.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Invitation details including recipient emails and optional customization
+          required: true
+          schema:
+            type: object
+            required:
+              - emailAddresses
+            properties:
+              emailAddresses:
+                type: array
+                items:
+                  type: string
+                  format: email
+                description: List of email addresses to send invitations to
+                example: ["user1@example.com", "user2@example.com"]
+                minItems: 1
+              organizationName:
+                type: string
+                description: Name of the organization (auto-detected if not provided)
+                example: "4CL Tech"
+              invitationLink:
+                type: string
+                format: uri
+                description: Custom invitation acceptance link (defaults to APP_BASE_URL/accept-invitation)
+                example: "https://mvp-dev.4cl-tech.com.au/accept-invitation?token=abc123"
+              customMessage:
+                type: string
+                description: Personal message to include in the invitation email
+                example: "We're excited to have you join our team!"
+                maxLength: 500
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendInvitationsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: All invitations sent successfully
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Sent 3 invitations successfully, 0 failed"
+              totalSent:
+                type: integer
+                example: 3
+              successCount:
+                type: integer
+                example: 3
+              failedCount:
+                type: integer
+                example: 0
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      example: "user@example.com"
+                    success:
+                      type: boolean
+                      example: true
+                    error:
+                      type: string
+                      description: Error message (only present if success is false)
+        "207":
+          description: Partial success - some invitations sent, others failed
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Sent 2 invitations successfully, 1 failed"
+              totalSent:
+                type: integer
+                example: 3
+              successCount:
+                type: integer
+                example: 2
+              failedCount:
+                type: integer
+                example: 1
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      example: "user@example.com"
+                    success:
+                      type: boolean
+                      example: false
+                    error:
+                      type: string
+                      example: "invalid email address"
+        "400":
+          description: Bad request - invalid input
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "At least one email address is required"
+              details:
+                type: string
+        "401":
+          description: Unauthorized - missing or invalid authentication
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+        "500":
+          description: Internal server error - all invitations failed
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Failed to send invitations"
+              details:
+                type: string
+      security:
+        - UserPool: []
+
 components:
   schemas:
     Tenantrequestbody:

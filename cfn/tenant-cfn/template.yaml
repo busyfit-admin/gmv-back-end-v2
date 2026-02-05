@@ -53,12 +53,22 @@ Mappings:
   #    - Update nameservers at domain registrar if using external domain
   #    - Wait for DNS propagation (24-48 hours)
   # 
-  # 2. Update this mapping with:
+  # 2. AWS SES Setup (Required for email functionality):
+  #    - Verify domain: aws ses verify-domain-identity --domain your-domain.com --region ap-southeast-2
+  #    - Add verification TXT record to Route 53 (provided by SES)
+  #    - Configure DKIM: Add DKIM CNAME records to Route 53 for better deliverability
+  #    - Add SPF record: v=spf1 include:amazonses.com ~all
+  #    - Request production access if sending to unverified emails (sandbox mode restriction)
+  # 
+  # 3. Update this mapping with:
   #    - Your AWS Account ID (get via: aws sts get-caller-identity)
   #    - APSouthDomainName: Your domain/subdomain for API Gateway
   #    - APSouthHostedZoneId: Your Route 53 Hosted Zone ID (without /hostedzone/ prefix)
   #    - TenantClientTokenValidityHRS: Cognito access token validity (hours)
   #    - TenantClientAuthSessionValidityMin: Cognito auth session validity (minutes)
+  #    - DefaultFromEmail: Email address for sending system emails (must be SES-verified)
+  #    - DefaultFromName: Display name for system emails
+  #    - AppBaseURL: Base URL for application links in emails
   # 
   # Example domain setup:
   #   - dev environment:  dev.your-domain.com
@@ -74,6 +84,13 @@ Mappings:
       APSouthHostedZoneId: Z07064771YL69HXR2PLAL
       TenantClientTokenValidityHRS: 10
       TenantClientAuthSessionValidityMin: 5
+      # Email Configuration (for AWS SES)
+      # Ensure the domain/email is verified in AWS SES before deployment
+      # To verify: aws ses verify-domain-identity --domain mvp-dev.4cl-tech.com.au --region ap-southeast-2
+      # Add the TXT record provided by AWS to Route 53 for DKIM verification
+      DefaultFromEmail: noreply@mvp-dev.4cl-tech.com.au
+      DefaultFromName: "4CL Tech"
+      AppBaseURL: https://mvp-dev.4cl-tech.com.au
     
     # Add additional AWS accounts/environments below:
     # 
@@ -82,12 +99,18 @@ Mappings:
     #   APSouthHostedZoneId: Z08123456EXAMPLE
     #   TenantClientTokenValidityHRS: 12
     #   TenantClientAuthSessionValidityMin: 10
+    #   DefaultFromEmail: noreply@uat.your-domain.com
+    #   DefaultFromName: "Your Company Name"
+    #   AppBaseURL: https://uat.your-domain.com
     # 
     # "YOUR_PROD_ACCOUNT_ID": # prod account
     #   APSouthDomainName: www.your-domain.com
     #   APSouthHostedZoneId: Z09123456EXAMPLE
     #   TenantClientTokenValidityHRS: 24
     #   TenantClientAuthSessionValidityMin: 15
+    #   DefaultFromEmail: noreply@your-domain.com
+    #   DefaultFromName: "Your Company Name"
+    #   AppBaseURL: https://www.your-domain.com
 
 Resources:
   #  ---------- 1. General SSM Parameters ------------------------------------------------------
@@ -1130,6 +1153,12 @@ Resources:
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
           PROMO_CODES_TABLE: !Ref PromoCodesTable
+          # Email Configuration: Used by AWS SES to send emails
+          # Configurable per environment via AccountMappings
+          # Ensure the domain is verified in SES: aws ses verify-domain-identity --domain <domain>
+          DEFAULT_FROM_EMAIL: !FindInMap [AccountMappings, !Ref "AWS::AccountId", DefaultFromEmail]
+          DEFAULT_FROM_NAME: !FindInMap [AccountMappings, !Ref "AWS::AccountId", DefaultFromName]
+          APP_BASE_URL: !FindInMap [AccountMappings, !Ref "AWS::AccountId", AppBaseURL]
 
   CreateOrganizationLambdaInvokePermissions:
     Type: AWS::Lambda::Permission
@@ -1282,6 +1311,45 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt ListUserOrganizationsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to send invitation emails ----------
+
+  SendInvitationsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to send invitation emails to multiple recipients with HTML formatting"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-module/send-invitations/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          PROMO_CODES_TABLE: !Ref PromoCodesTable
+          # Email Configuration: Used by AWS SES to send invitation emails
+          # The sender email (DEFAULT_FROM_EMAIL) must be verified in AWS SES
+          # To verify domain: aws ses verify-domain-identity --domain mvp-dev.4cl-tech.com.au --region ap-southeast-2
+          # Add the verification TXT record to Route 53 DNS settings
+          # For production, also configure DKIM and SPF records for better deliverability
+          DEFAULT_FROM_EMAIL: !FindInMap [AccountMappings, !Ref "AWS::AccountId", DefaultFromEmail]
+          DEFAULT_FROM_NAME: !FindInMap [AccountMappings, !Ref "AWS::AccountId", DefaultFromName]
+          # Base URL for invitation links, configurable per environment
+          APP_BASE_URL: !FindInMap [AccountMappings, !Ref "AWS::AccountId", AppBaseURL]
+
+  SendInvitationsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt SendInvitationsLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
