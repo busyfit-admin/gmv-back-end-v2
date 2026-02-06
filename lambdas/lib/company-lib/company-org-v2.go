@@ -497,6 +497,13 @@ func (svc *OrgServiceV2) GetOrganization(organizationId string) (*Organization, 
 	return &org, nil
 }
 
+// Create Org Users in the Organization table with status
+func (svc *OrgServiceV2) createInvitedEmployee(email, organizationId, invitedBy string) error {
+	// Implementation to create an employee record with INVITED status in the Organization table
+
+	return nil
+}
+
 // IsOrgAdmin checks if a user is an admin of an organization
 func (svc *OrgServiceV2) IsOrgAdmin(organizationId string, userName string) (bool, error) {
 

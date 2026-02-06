@@ -1047,9 +1047,15 @@ paths:
     post:
       summary: Send Invitation Emails
       description: |
-        Send HTML-formatted invitation emails to multiple recipients. The inviter's organization details 
-        are automatically detected from their user profile. Supports custom messages and invitation links.
-        Returns individual success/failure status for each email sent.
+        Send HTML-formatted invitation emails to multiple recipients and create employee records with INVITED status.
+        
+        **Workflow:**
+        1. Sends invitation emails to the provided email addresses
+        2. Creates employee records in the Employee table with status "INVITED" for successfully sent invitations
+        3. When invited users sign up via Cognito, their status automatically changes from "INVITED" to "ACTIVE"
+        
+        The inviter's organization details are automatically detected from their user profile. 
+        Supports custom messages and invitation links. Returns individual success/failure status for each email sent.
       consumes:
         - application/json
       produces:
@@ -1057,21 +1063,42 @@ paths:
       parameters:
         - in: body
           name: body
-          description: Invitation details including recipient emails and optional customization
+          description: Invitation details including recipient emails with roles and team assignments
           required: true
           schema:
             type: object
             required:
-              - emailAddresses
+              - invitees
             properties:
-              emailAddresses:
+              invitees:
                 type: array
                 items:
-                  type: string
-                  format: email
-                description: List of email addresses to send invitations to
-                example: ["user1@example.com", "user2@example.com"]
+                  type: object
+                  required:
+                    - email
+                    - role
+                  properties:
+                    email:
+                      type: string
+                      format: email
+                      description: Email address of the invitee
+                      example: "user@example.com"
+                    role:
+                      type: string
+                      description: Role to assign to the invitee (e.g., ADMIN, MEMBER, VIEWER)
+                      example: "MEMBER"
+                    teamId:
+                      type: string
+                      description: Optional team ID to add the invitee to
+                      example: "TEAM-abc123"
+                description: List of invitees with their roles and optional team assignments
                 minItems: 1
+                example:
+                  - email: "user1@example.com"
+                    role: "MEMBER"
+                    teamId: "TEAM-abc123"
+                  - email: "user2@example.com"
+                    role: "ADMIN"
               organizationName:
                 type: string
                 description: Name of the organization (auto-detected if not provided)
@@ -1176,7 +1203,7 @@ paths:
             properties:
               error:
                 type: string
-                example: "At least one email address is required"
+                example: "At least one invitee is required"
               details:
                 type: string
         "401":

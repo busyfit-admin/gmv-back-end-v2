@@ -7,11 +7,15 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
 	"github.com/aws/aws-xray-sdk-go/xray"
@@ -25,6 +29,8 @@ type Service struct {
 	emailSVC *companylib.EmailService
 	orgSVC   *companylib.OrgServiceV2
 	empSVC   *companylib.EmployeeService
+
+	ddbClient *dynamodb.Client
 }
 
 var RESP_HEADERS = companylib.GetHeadersForAPI("OrganizationAPI")
@@ -58,11 +64,12 @@ func main() {
 	orgSvc.PromoCodesTable = os.Getenv("PROMO_CODES_TABLE")
 
 	svc := &Service{
-		ctx:      ctx,
-		logger:   logger,
-		emailSVC: emailSvc,
-		orgSVC:   orgSvc,
-		empSVC:   empSvc,
+		ctx:       ctx,
+		logger:    logger,
+		emailSVC:  emailSvc,
+		orgSVC:    orgSvc,
+		empSVC:    empSvc,
+		ddbClient: ddbclient,
 	}
 
 	lambda.Start(svc.Handler)
@@ -103,12 +110,19 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 	}
 }
 
+// InviteeInfo represents information about a single invitee
+type InviteeInfo struct {
+	Email  string `json:"email" validate:"required,email"`
+	Role   string `json:"role" validate:"required"`
+	TeamId string `json:"teamId,omitempty"`
+}
+
 // SendInvitationsRequest represents the request body for sending invitations
 type SendInvitationsRequest struct {
-	EmailAddresses   []string `json:"emailAddresses" validate:"required,min=1"`
-	OrganizationName string   `json:"organizationName,omitempty"`
-	InvitationLink   string   `json:"invitationLink,omitempty"`
-	CustomMessage    string   `json:"customMessage,omitempty"`
+	Invitees         []InviteeInfo `json:"invitees" validate:"required,min=1"`
+	OrganizationName string        `json:"organizationName,omitempty"`
+	InvitationLink   string        `json:"invitationLink,omitempty"`
+	CustomMessage    string        `json:"customMessage,omitempty"`
 }
 
 // sendInvitations sends invitation emails to the provided email addresses
@@ -123,8 +137,14 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 	}
 
 	// Validate input
-	if len(req.EmailAddresses) == 0 {
-		return svc.errorResponse(http.StatusBadRequest, "At least one email address is required", nil)
+	if len(req.Invitees) == 0 {
+		return svc.errorResponse(http.StatusBadRequest, "At least one invitee is required", nil)
+	}
+
+	// Extract email addresses for sending
+	emailAddresses := make([]string, len(req.Invitees))
+	for i, invitee := range req.Invitees {
+		emailAddresses[i] = invitee.Email
 	}
 
 	// Get employee details to use display name
@@ -160,7 +180,7 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 
 	// Prepare invitation input
 	invitationInput := companylib.InvitationEmailInput{
-		EmailAddresses:   req.EmailAddresses,
+		EmailAddresses:   emailAddresses,
 		OrganizationName: organizationName,
 		InviterName:      inviterName,
 		InvitationLink:   invitationLink,
@@ -174,12 +194,31 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 		return svc.errorResponse(http.StatusInternalServerError, "Failed to send invitations", err)
 	}
 
-	// Count successful and failed sends
+	// Get organization ID for invited users
+	var organizationId string
+	if org, err := svc.orgSVC.GetAdminOrganization(userName); err == nil && org != nil {
+		organizationId = org.OrganizationId
+	}
+
+	// Create employee records for successfully invited users with INVITED status
 	successCount := 0
 	failedCount := 0
+	// Create a map for quick lookup of invitee info by email
+	inviteeMap := make(map[string]InviteeInfo)
+	for _, invitee := range req.Invitees {
+		inviteeMap[invitee.Email] = invitee
+	}
+
 	for _, result := range results {
 		if result.Success {
 			successCount++
+			// Get invitee info for this email
+			inviteeInfo := inviteeMap[result.Email]
+			// Create employee record with INVITED status
+			if err := svc.createInvitedEmployee(result.Email, inviteeInfo.Role, inviteeInfo.TeamId, organizationId, userName); err != nil {
+				svc.logger.Printf("Warning: Failed to create employee record for %s: %v", result.Email, err)
+				// Don't fail the invitation if employee record creation fails
+			}
 		} else {
 			failedCount++
 		}
@@ -190,7 +229,7 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 	// Return results
 	body, err := json.Marshal(map[string]interface{}{
 		"message":      fmt.Sprintf("Sent %d invitations successfully, %d failed", successCount, failedCount),
-		"totalSent":    len(req.EmailAddresses),
+		"totalSent":    len(req.Invitees),
 		"successCount": successCount,
 		"failedCount":  failedCount,
 		"results":      results,
@@ -231,6 +270,106 @@ func (svc *Service) getCognitoIdFromRequest(request events.APIGatewayProxyReques
 	}
 
 	return "", fmt.Errorf("cognito ID not found in request")
+}
+
+// createInvitedEmployee creates an employee record with INVITED status and optionally adds to team
+func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, invitedBy string) error {
+	// Check if employee already exists
+	if _, err := svc.empSVC.GetEmployeeDataByUserName(email); err == nil {
+		svc.logger.Printf("Employee %s already exists, skipping creation", email)
+		return nil
+	}
+
+	// Create employee record with INVITED status
+	employeeData := companylib.EmployeeDynamodbData{
+		UserName:  email,
+		EmailID:   email,
+		Status:    "INVITED",
+		Source:    fmt.Sprintf("Invitation-By-%s", invitedBy),
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+	}
+
+	// Build transaction items
+	transactItems := []types.TransactWriteItem{}
+
+	// 1. Add to Employee table
+	putItemEmployeeTable := types.TransactWriteItem{
+		Put: &types.Put{
+			TableName: aws.String(svc.empSVC.EmployeeTable),
+			Item: map[string]types.AttributeValue{
+				"UserName":  &types.AttributeValueMemberS{Value: employeeData.UserName},
+				"EmailId":   &types.AttributeValueMemberS{Value: employeeData.EmailID},
+				"Status":    &types.AttributeValueMemberS{Value: employeeData.Status},
+				"Source":    &types.AttributeValueMemberS{Value: employeeData.Source},
+				"CreatedAt": &types.AttributeValueMemberS{Value: employeeData.CreatedAt},
+				"UpdatedAt": &types.AttributeValueMemberS{Value: employeeData.UpdatedAt},
+			},
+			ConditionExpression: aws.String("attribute_not_exists(UserName)"),
+		},
+	}
+	transactItems = append(transactItems, putItemEmployeeTable)
+
+	// 2. Add to Organization table (ORG#orgId -> USER#email mapping)
+	if organizationId != "" {
+		putItemOrgTable := types.TransactWriteItem{
+			Put: &types.Put{
+				TableName: aws.String(svc.orgSVC.OrganizationTable),
+				Item: map[string]types.AttributeValue{
+					"PK":        &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+					"SK":        &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
+					"Role":      &types.AttributeValueMemberS{Value: role},
+					"Status":    &types.AttributeValueMemberS{Value: "INVITED"},
+					"CreatedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
+					"UpdatedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
+				},
+				ConditionExpression: aws.String("attribute_not_exists(PK)"),
+			},
+		}
+		transactItems = append(transactItems, putItemOrgTable)
+	}
+
+	// 3. Add to Team table if teamId is provided
+	if teamId != "" {
+		putItemTeamTable := types.TransactWriteItem{
+			Put: &types.Put{
+				TableName: aws.String(svc.orgSVC.OrganizationTable), // Teams use same table
+				Item: map[string]types.AttributeValue{
+					"PK":       &types.AttributeValueMemberS{Value: fmt.Sprintf("TEAM#%s", teamId)},
+					"SK":       &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
+					"GSI1PK":   &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
+					"GSI1SK":   &types.AttributeValueMemberS{Value: fmt.Sprintf("TEAM#%s", teamId)},
+					"TeamId":   &types.AttributeValueMemberS{Value: teamId},
+					"UserName": &types.AttributeValueMemberS{Value: email},
+					"Role":     &types.AttributeValueMemberS{Value: role},
+					"JoinedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
+					"IsActive": &types.AttributeValueMemberBOOL{Value: false}, // Inactive until they accept
+				},
+				ConditionExpression: aws.String("attribute_not_exists(PK)"),
+			},
+		}
+		transactItems = append(transactItems, putItemTeamTable)
+	}
+
+	// Execute transaction
+	_, err := svc.ddbClient.TransactWriteItems(svc.ctx, &dynamodb.TransactWriteItemsInput{
+		TransactItems: transactItems,
+	})
+	if err != nil {
+		// Ignore conditional check failures (user already exists)
+		if strings.Contains(err.Error(), "ConditionalCheckFailed") {
+			svc.logger.Printf("Employee %s already exists in one or more tables", email)
+			return nil
+		}
+		return fmt.Errorf("failed to create employee record: %w", err)
+	}
+
+	logMsg := fmt.Sprintf("Created INVITED employee record for %s with role %s", email, role)
+	if teamId != "" {
+		logMsg += fmt.Sprintf(" in team %s", teamId)
+	}
+	svc.logger.Printf(logMsg)
+	return nil
 }
 
 // errorResponse creates an error response
