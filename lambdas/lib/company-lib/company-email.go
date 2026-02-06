@@ -239,9 +239,9 @@ func (svc *EmailService) SendInvitationEmails(input InvitationEmailInput) ([]Inv
 	textBody := svc.buildInvitationEmailText(input)
 
 	// Create subject
-	subject := "You're invited to join"
+	subject := "You're invited to join our organization"
 	if input.OrganizationName != "" {
-		subject = fmt.Sprintf("You're invited to join %s", input.OrganizationName)
+		subject = fmt.Sprintf("EGS Hub: You're invited to join %s", input.OrganizationName)
 	}
 
 	// Send email to each recipient

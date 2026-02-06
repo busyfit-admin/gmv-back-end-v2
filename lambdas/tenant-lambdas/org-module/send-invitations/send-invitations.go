@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
 	"github.com/aws/aws-xray-sdk-go/xray"
+	"github.com/golang-jwt/jwt/v5"
 
 	companylib "github.com/busyfit-admin/saas-integrated-apis/lambdas/lib/company-lib"
 )
@@ -104,7 +105,7 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 
 	switch request.HTTPMethod {
 	case "POST":
-		return svc.sendInvitations(employee.EmailID, request)
+		return svc.sendInvitations(employee, request)
 	default:
 		return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
 	}
@@ -125,9 +126,20 @@ type SendInvitationsRequest struct {
 	CustomMessage    string        `json:"customMessage,omitempty"`
 }
 
+// InvitationTokenClaims represents the JWT claims for invitation tokens
+type InvitationTokenClaims struct {
+	Email            string `json:"email"`
+	OrganizationId   string `json:"organizationId"`
+	OrganizationName string `json:"organizationName"`
+	TeamId           string `json:"teamId,omitempty"`
+	Role             string `json:"role"`
+	InvitedBy        string `json:"invitedBy"`
+	jwt.RegisteredClaims
+}
+
 // sendInvitations sends invitation emails to the provided email addresses
-func (svc *Service) sendInvitations(userName string, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	svc.logger.Printf("Sending invitations from user: %s", userName)
+func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	svc.logger.Printf("Sending invitations from user: %s", employee.DisplayName)
 
 	// Parse request body
 	var req SendInvitationsRequest
@@ -147,13 +159,7 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 		emailAddresses[i] = invitee.Email
 	}
 
-	// Get employee details to use display name
-	employee, err := svc.empSVC.GetEmployeeDataByUserName(userName)
-	if err != nil {
-		svc.logger.Printf("Warning: Failed to get employee details: %v", err)
-	}
-
-	inviterName := userName
+	inviterName := employee.EmailID
 	if employee.DisplayName != "" {
 		inviterName = employee.DisplayName
 	}
@@ -162,7 +168,7 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 	organizationName := req.OrganizationName
 	if organizationName == "" {
 		// Try to get organization from user's membership
-		org, err := svc.orgSVC.GetAdminOrganization(userName)
+		org, err := svc.orgSVC.GetAdminOrganization(employee.UserName)
 		if err == nil && org != nil {
 			organizationName = org.OrgName
 		}
@@ -175,6 +181,8 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 		if baseURL == "" {
 			baseURL = "https://app.gomovo.com"
 		}
+		// Note: Individual tokens will be generated per invitee later
+		// This is just for backward compatibility if custom link is provided
 		invitationLink = fmt.Sprintf("%s/accept-invitation", baseURL)
 	}
 
@@ -196,8 +204,17 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 
 	// Get organization ID for invited users
 	var organizationId string
-	if org, err := svc.orgSVC.GetAdminOrganization(userName); err == nil && org != nil {
+	if org, err := svc.orgSVC.GetAdminOrganization(employee.UserName); err == nil && org != nil {
 		organizationId = org.OrganizationId
+		if organizationName == "" {
+			organizationName = org.OrgName
+		}
+	}
+
+	// Get base URL for invitation links
+	baseURL := os.Getenv("APP_BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://app.gomovo.com"
 	}
 
 	// Create employee records for successfully invited users with INVITED status
@@ -209,13 +226,31 @@ func (svc *Service) sendInvitations(userName string, request events.APIGatewayPr
 		inviteeMap[invitee.Email] = invitee
 	}
 
+	// Generate invitation links with JWT tokens for each invitee
+	invitationLinks := make(map[string]string)
+	for _, invitee := range req.Invitees {
+		// Check if custom invitation link was provided
+		if req.InvitationLink != "" {
+			invitationLinks[invitee.Email] = req.InvitationLink
+		} else {
+			// Generate JWT token with invitation data
+			token, err := svc.generateInvitationToken(invitee.Email, organizationId, organizationName, invitee.TeamId, invitee.Role, employee.EmailID)
+			if err != nil {
+				svc.logger.Printf("Warning: Failed to generate invitation token for %s: %v", invitee.Email, err)
+				invitationLinks[invitee.Email] = fmt.Sprintf("%s/accept-invitation", baseURL)
+			} else {
+				invitationLinks[invitee.Email] = fmt.Sprintf("%s/accept-invitation?token=%s", baseURL, token)
+			}
+		}
+	}
+
 	for _, result := range results {
 		if result.Success {
 			successCount++
 			// Get invitee info for this email
 			inviteeInfo := inviteeMap[result.Email]
 			// Create employee record with INVITED status
-			if err := svc.createInvitedEmployee(result.Email, inviteeInfo.Role, inviteeInfo.TeamId, organizationId, userName); err != nil {
+			if err := svc.createInvitedEmployee(result.Email, inviteeInfo.Role, inviteeInfo.TeamId, organizationId, employee.UserName); err != nil {
 				svc.logger.Printf("Warning: Failed to create employee record for %s: %v", result.Email, err)
 				// Don't fail the invitation if employee record creation fails
 			}
@@ -317,7 +352,7 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 			Put: &types.Put{
 				TableName: aws.String(svc.orgSVC.OrganizationTable),
 				Item: map[string]types.AttributeValue{
-					"PK":        &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+					"PK":        &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", organizationId)},
 					"SK":        &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
 					"Role":      &types.AttributeValueMemberS{Value: role},
 					"Status":    &types.AttributeValueMemberS{Value: "INVITED"},
@@ -336,10 +371,10 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 			Put: &types.Put{
 				TableName: aws.String(svc.orgSVC.OrganizationTable), // Teams use same table
 				Item: map[string]types.AttributeValue{
-					"PK":       &types.AttributeValueMemberS{Value: fmt.Sprintf("TEAM#%s", teamId)},
+					"PK":       &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", teamId)},
 					"SK":       &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
 					"GSI1PK":   &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
-					"GSI1SK":   &types.AttributeValueMemberS{Value: fmt.Sprintf("TEAM#%s", teamId)},
+					"GSI1SK":   &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", teamId)},
 					"TeamId":   &types.AttributeValueMemberS{Value: teamId},
 					"UserName": &types.AttributeValueMemberS{Value: email},
 					"Role":     &types.AttributeValueMemberS{Value: role},

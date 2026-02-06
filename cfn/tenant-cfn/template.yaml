@@ -90,7 +90,10 @@ Mappings:
       # Add the TXT record provided by AWS to Route 53 for DKIM verification
       DefaultFromEmail: noreply@mvp-dev.4cl-tech.com.au
       DefaultFromName: "4CL Tech"
-      AppBaseURL: https://mvp-dev.4cl-tech.com.au
+      AppBaseURL: https://main.di3e8talik4bb.amplifyapp.com
+      # JWT Secret for invitation tokens - CHANGE THIS IN PRODUCTION!
+      # Generate secure secret: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+      InvitationTokenSecret: "dev-secret-change-in-production-use-64-chars-minimum-for-security"
     
     # Add additional AWS accounts/environments below:
     # 
@@ -1344,6 +1347,10 @@ Resources:
           DEFAULT_FROM_NAME: !FindInMap [AccountMappings, !Ref "AWS::AccountId", DefaultFromName]
           # Base URL for invitation links, configurable per environment
           APP_BASE_URL: !FindInMap [AccountMappings, !Ref "AWS::AccountId", AppBaseURL]
+          # JWT Secret for generating secure invitation tokens
+          # All invitation data (email, org, team, role) is encoded in the JWT
+          # This prevents URL manipulation and keeps sensitive data secure
+          INVITATION_TOKEN_SECRET: !FindInMap [AccountMappings, !Ref "AWS::AccountId", InvitationTokenSecret]
 
   SendInvitationsLambdaInvokePermissions:
     Type: AWS::Lambda::Permission
