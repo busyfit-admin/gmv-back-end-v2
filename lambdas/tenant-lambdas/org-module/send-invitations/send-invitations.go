@@ -353,7 +353,7 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 	}
 
 	// Execute transaction
-	_, err := svc.ddbClient.TransactWriteItems(svc.ctx, &dynamodb.TransactWriteItemsInput{
+	_, err = svc.ddbClient.TransactWriteItems(svc.ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: transactItems,
 	})
 	if err != nil {
