@@ -234,7 +234,7 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 			invitationLinks[invitee.Email] = req.InvitationLink
 		} else {
 			// Generate JWT token with invitation data
-			token, err := svc.generateInvitationToken(invitee.Email, organizationId, organizationName, invitee.TeamId, invitee.Role, employee.EmailID)
+			token, err := svc.GenerateInvitationToken(invitee.Email, organizationId, organizationName, invitee.TeamId, invitee.Role, employee.EmailID)
 			if err != nil {
 				svc.logger.Printf("Warning: Failed to generate invitation token for %s: %v", invitee.Email, err)
 				invitationLinks[invitee.Email] = fmt.Sprintf("%s/accept-invitation", baseURL)

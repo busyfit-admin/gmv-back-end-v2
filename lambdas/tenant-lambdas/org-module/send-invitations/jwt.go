@@ -9,7 +9,7 @@ import (
 )
 
 // generateInvitationToken creates a JWT token containing all invitation data
-func (svc *Service) generateInvitationToken(email, organizationId, organizationName, teamId, role, invitedBy string) (string, error) {
+func (svc *Service) GenerateInvitationToken(email, organizationId, organizationName, teamId, role, invitedBy string) (string, error) {
 	// Get JWT secret from environment
 	secret := os.Getenv("INVITATION_TOKEN_SECRET")
 	if secret == "" {
