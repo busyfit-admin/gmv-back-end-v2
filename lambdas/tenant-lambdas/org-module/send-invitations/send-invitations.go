@@ -275,7 +275,8 @@ func (svc *Service) getCognitoIdFromRequest(request events.APIGatewayProxyReques
 // createInvitedEmployee creates an employee record with INVITED status and optionally adds to team
 func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, invitedBy string) error {
 	// Check if employee already exists
-	if _, err := svc.empSVC.GetEmployeeDataByUserName(email); err == nil {
+	emp, err := svc.empSVC.GetEmployeeDataByUserName(email)
+	if err == nil && emp.CognitoId != "" {
 		svc.logger.Printf("Employee %s already exists, skipping creation", email)
 		return nil
 	}

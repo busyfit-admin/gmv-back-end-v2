@@ -1,5 +1,26 @@
 # Send Invitations API - Frontend Integration Guide
 
+## Quick Reference
+
+**Endpoint:** `POST /v2/organization/send-invitations`
+
+**New Request Format (Updated):**
+```json
+{
+  "invitees": [
+    { "email": "user@example.com", "role": "MEMBER", "teamId": "TEAM-123" }
+  ],
+  "customMessage": "Welcome!"
+}
+```
+
+**Each invitee requires:**
+- ✅ `email` (required) - Email address
+- ✅ `role` (required) - ADMIN, MEMBER, VIEWER, or GUEST
+- ⭕ `teamId` (optional) - Team ID to assign user to
+
+---
+
 ## API Endpoint
 
 ```
@@ -25,11 +46,35 @@ headers: {
 
 ## Request Structure
 
-### TypeScript Interface
+### Important Notes
+
+**What Happens When You Send Invitations:**
+1. The API sends HTML invitation emails to each recipient
+2. Creates employee records in the database with status "INVITED"
+3. Links users to the organization with the specified role
+4. If a teamId is provided, adds the user to that team (inactive until they accept)
+5. When the user signs up via Cognito, their status automatically changes from "INVITED" to "ACTIVE"
+
+**Role Values:**
+- `ADMIN`: Full administrative access
+- `MEMBER`: Standard team member access
+- `VIEWER`: Read-only access
+- `GUEST`: Limited guest access
+
+**Common Use Cases:**
+1. **Invite to Organization Only**: Provide email & role (omit teamId)
+2. **Invite to Specific Team**: Provide email, role & teamId
+3. **Mixed Invitations**: Some with teams, some without in the same request\n\n### TypeScript Interface
 
 ```typescript
+interface InviteeInfo {
+  email: string;                      // Required: Email address
+  role: string;                       // Required: Role (e.g., ADMIN, MEMBER, VIEWER)
+  teamId?: string;                    // Optional: Team ID to assign invitee to
+}
+
 interface SendInvitationsRequest {
-  emailAddresses: string[];           // Required: List of email addresses
+  invitees: InviteeInfo[];            // Required: List of invitees with roles
   organizationName?: string;          // Optional: Organization name (auto-detected if omitted)
   invitationLink?: string;            // Optional: Custom invitation link
   customMessage?: string;             // Optional: Personal message (max 500 chars)
@@ -40,21 +85,38 @@ interface SendInvitationsRequest {
 
 ```json
 {
-  "emailAddresses": [
-    "john.doe@example.com",
-    "jane.smith@example.com"
+  "invitees": [
+    {
+      "email": "john.doe@example.com",
+      "role": "MEMBER"
+    },
+    {
+      "email": "jane.smith@example.com",
+      "role": "ADMIN"
+    }
   ]
 }
 ```
 
-### Sample Request - Full
+### Sample Request - With Team Assignments
 
 ```json
 {
-  "emailAddresses": [
-    "john.doe@example.com",
-    "jane.smith@example.com",
-    "alex.wilson@company.com"
+  "invitees": [
+    {
+      "email": "john.doe@example.com",
+      "role": "MEMBER",
+      "teamId": "TEAM-abc123"
+    },
+    {
+      "email": "jane.smith@example.com",
+      "role": "ADMIN"
+    },
+    {
+      "email": "alex.wilson@company.com",
+      "role": "VIEWER",
+      "teamId": "TEAM-xyz789"
+    }
   ],
   "organizationName": "4CL Tech",
   "invitationLink": "https://mvp-dev.4cl-tech.com.au/accept-invitation?token=abc123xyz",
@@ -145,8 +207,8 @@ Invalid request body or missing required fields.
 
 ```json
 {
-  "error": "At least one email address is required",
-  "details": "At least one email address is required: validation failed"
+  "error": "At least one invitee is required",
+  "details": "At least one invitee is required: validation failed"
 }
 ```
 
@@ -181,8 +243,14 @@ All invitations failed to send.
 ```typescript
 import axios from 'axios';
 
+interface InviteeInfo {
+  email: string;
+  role: string;
+  teamId?: string;
+}
+
 interface SendInvitationsRequest {
-  emailAddresses: string[];
+  invitees: InviteeInfo[];
   organizationName?: string;
   invitationLink?: string;
   customMessage?: string;
@@ -229,7 +297,7 @@ const sendInvitations = async (
 
 // Usage in a React component
 const InvitationForm: React.FC = () => {
-  const [emails, setEmails] = useState<string[]>([]);
+  const [invitees, setInvitees] = useState<InviteeInfo[]>([]);
   const [customMessage, setCustomMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<InvitationResult[]>([]);
@@ -241,7 +309,7 @@ const InvitationForm: React.FC = () => {
       
       const response = await sendInvitations(
         {
-          emailAddresses: emails,
+          invitees: invitees,
           customMessage: customMessage || undefined,
         },
         token
@@ -291,9 +359,9 @@ const InvitationForm: React.FC = () => {
 ### Vanilla JavaScript with Fetch
 
 ```javascript
-async function sendInvitations(emailAddresses, customMessage, token) {
+async function sendInvitations(invitees, customMessage, token) {
   const requestBody = {
-    emailAddresses: emailAddresses,
+    invitees: invitees,
     customMessage: customMessage || undefined
   };
 
@@ -325,12 +393,15 @@ async function sendInvitations(emailAddresses, customMessage, token) {
 
 // Usage
 async function handleSendInvitations() {
-  const emails = ['user1@example.com', 'user2@example.com'];
+  const invitees = [
+    { email: 'user1@example.com', role: 'MEMBER', teamId: 'TEAM-abc123' },
+    { email: 'user2@example.com', role: 'ADMIN' }
+  ];
   const message = 'Welcome to the team!';
   const token = getUserToken(); // Your auth method
 
   try {
-    const result = await sendInvitations(emails, message, token);
+    const result = await sendInvitations(invitees, message, token);
     
     console.log('Success:', result.successCount);
     console.log('Failed:', result.failedCount);
@@ -357,8 +428,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+interface InviteeInfo {
+  email: string;
+  role: string;
+  teamId?: string;
+}
+
 interface SendInvitationsRequest {
-  emailAddresses: string[];
+  invitees: InviteeInfo[];
   organizationName?: string;
   invitationLink?: string;
   customMessage?: string;
@@ -407,12 +484,12 @@ export class InvitationService {
 export class InvitationComponent {
   constructor(private invitationService: InvitationService) {}
 
-  sendInvites(emails: string[], message: string) {
+  sendInvites(invitees: InviteeInfo[], message: string) {
     const token = this.authService.getToken(); // Your auth service
 
     this.invitationService.sendInvitations(
       {
-        emailAddresses: emails,
+        invitees: invitees,
         customMessage: message
       },
       token
@@ -436,11 +513,11 @@ export class InvitationComponent {
 
 ```typescript
 async function sendInvitationsWithErrorHandling(
-  emails: string[],
+  invitees: InviteeInfo[],
   token: string
 ) {
   try {
-    const response = await sendInvitations({ emailAddresses: emails }, token);
+    const response = await sendInvitations({ invitees: invitees }, token);
     
     // Handle different response codes
     if (response.failedCount === 0) {
@@ -467,7 +544,7 @@ async function sendInvitationsWithErrorHandling(
   } catch (error: any) {
     // Handle specific error codes
     if (error.response?.status === 400) {
-      showErrorToast('Invalid request. Please check the email addresses.');
+      showErrorToast('Invalid request. Please check the invitee data.');
     } else if (error.response?.status === 401) {
       showErrorToast('Session expired. Please login again.');
       redirectToLogin();
@@ -486,20 +563,28 @@ async function sendInvitationsWithErrorHandling(
 
 ## Validation Examples
 
-### Email Validation (Frontend)
+### Invitee Validation (Frontend)
 
 ```typescript
-function validateEmails(emails: string[]): { valid: string[], invalid: string[] } {
+function validateInvitees(invitees: InviteeInfo[]): { valid: InviteeInfo[], invalid: InviteeInfo[] } {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validRoles = ['ADMIN', 'MEMBER', 'VIEWER', 'GUEST'];
   
-  const valid: string[] = [];
-  const invalid: string[] = [];
+  const valid: InviteeInfo[] = [];
+  const invalid: InviteeInfo[] = [];
   
-  emails.forEach(email => {
-    if (emailRegex.test(email.trim())) {
-      valid.push(email.trim());
+  invitees.forEach(invitee => {
+    const isEmailValid = emailRegex.test(invitee.email.trim());
+    const isRoleValid = validRoles.includes(invitee.role);
+    
+    if (isEmailValid && isRoleValid) {
+      valid.push({
+        email: invitee.email.trim(),
+        role: invitee.role,
+        teamId: invitee.teamId
+      });
     } else {
-      invalid.push(email);
+      invalid.push(invitee);
     }
   });
   
@@ -507,15 +592,18 @@ function validateEmails(emails: string[]): { valid: string[], invalid: string[] 
 }
 
 // Usage before sending
-function handleSubmit(emails: string[]) {
-  const { valid, invalid } = validateEmails(emails);
+function handleSubmit(invitees: InviteeInfo[]) {
+  const { valid, invalid } = validateInvitees(invitees);
   
   if (invalid.length > 0) {
-    alert(`Invalid emails: ${invalid.join(', ')}`);
+    const errorMsg = invalid.map(i => 
+      `${i.email} (role: ${i.role})`
+    ).join(', ');
+    alert(`Invalid invitees: ${errorMsg}`);
     return;
   }
   
-  sendInvitations({ emailAddresses: valid }, token);
+  sendInvitations({ invitees: valid }, token);
 }
 ```
 
@@ -538,7 +626,11 @@ function validateCustomMessage(message: string): boolean {
 
 ## Testing
 
-### Mock Response for Testing
+### Sample Data for Testing
+
+```typescript
+// Sample invitees for testing
+const sampleInvitees: InviteeInfo[] = [\n  { email: \"test1@example.com\", role: \"MEMBER\", teamId: \"TEAM-abc123\" },\n  { email: \"test2@example.com\", role: \"ADMIN\" },\n  { email: \"test3@example.com\", role: \"VIEWER\", teamId: \"TEAM-xyz789\" }\n];\n```\n\n### Mock Response for Testing
 
 ```typescript
 // Mock successful response
@@ -576,15 +668,20 @@ curl -X POST https://mvp-dev.4cl-tech.com.au/v2/organization/send-invitations \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "emailAddresses": ["test@example.com"]
+    "invitees": [
+      {"email": "test@example.com", "role": "MEMBER"}
+    ]
   }'
 
-# Full request with all options
+# Request with team assignments
 curl -X POST https://mvp-dev.4cl-tech.com.au/v2/organization/send-invitations \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "emailAddresses": ["user1@example.com", "user2@example.com"],
+    "invitees": [
+      {"email": "user1@example.com", "role": "MEMBER", "teamId": "TEAM-abc123"},
+      {"email": "user2@example.com", "role": "ADMIN"}
+    ],
     "organizationName": "4CL Tech",
     "invitationLink": "https://mvp-dev.4cl-tech.com.au/accept?token=abc",
     "customMessage": "Welcome to the team!"
@@ -603,28 +700,28 @@ AWS SES has sending limits:
 
 ```typescript
 async function sendInvitationsInBatches(
-  emails: string[],
+  invitees: InviteeInfo[],
   batchSize: number = 10,
   delayMs: number = 1000
 ) {
   const results = [];
   
-  for (let i = 0; i < emails.length; i += batchSize) {
-    const batch = emails.slice(i, i + batchSize);
+  for (let i = 0; i < invitees.length; i += batchSize) {
+    const batch = invitees.slice(i, i + batchSize);
     
     try {
-      const response = await sendInvitations({ emailAddresses: batch }, token);
+      const response = await sendInvitations({ invitees: batch }, token);
       results.push(...response.results);
       
       // Delay between batches to avoid rate limiting
-      if (i + batchSize < emails.length) {
+      if (i + batchSize < invitees.length) {
         await delay(delayMs);
       }
     } catch (error) {
       console.error(`Batch ${i / batchSize} failed:`, error);
       // Add failed batch to results
-      batch.forEach(email => {
-        results.push({ email, success: false, error: 'Batch failed' });
+      batch.forEach(invitee => {
+        results.push({ email: invitee.email, success: false, error: 'Batch failed' });
       });
     }
   }
