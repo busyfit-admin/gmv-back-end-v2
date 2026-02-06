@@ -165,11 +165,12 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 	}
 
 	// Get organization details if user is part of one
+	var organizationId string
 	organizationName := req.OrganizationName
-	if organizationName == "" {
-		// Try to get organization from user's membership
-		org, err := svc.orgSVC.GetAdminOrganization(employee.UserName)
-		if err == nil && org != nil {
+	org, err := svc.orgSVC.GetAdminOrganization(employee.UserName)
+	if err == nil && org != nil {
+		organizationId = org.OrganizationId
+		if organizationName == "" {
 			organizationName = org.OrgName
 		}
 	}
@@ -202,14 +203,7 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 		return svc.errorResponse(http.StatusInternalServerError, "Failed to send invitations", err)
 	}
 
-	// Get organization ID for invited users
-	var organizationId string
-	if org, err := svc.orgSVC.GetAdminOrganization(employee.UserName); err == nil && org != nil {
-		organizationId = org.OrganizationId
-		if organizationName == "" {
-			organizationName = org.OrgName
-		}
-	}
+	// organizationId and organizationName are already retrieved above
 
 	// Get base URL for invitation links
 	baseURL := os.Getenv("APP_BASE_URL")
