@@ -153,12 +153,6 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 		return svc.errorResponse(http.StatusBadRequest, "At least one invitee is required", nil)
 	}
 
-	// Extract email addresses for sending
-	emailAddresses := make([]string, len(req.Invitees))
-	for i, invitee := range req.Invitees {
-		emailAddresses[i] = invitee.Email
-	}
-
 	inviterName := employee.EmailID
 	if employee.DisplayName != "" {
 		inviterName = employee.DisplayName
@@ -175,82 +169,70 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 		}
 	}
 
-	// Set default invitation link if not provided
-	invitationLink := req.InvitationLink
-	if invitationLink == "" {
-		baseURL := os.Getenv("APP_BASE_URL")
-		if baseURL == "" {
-			baseURL = "https://app.gomovo.com"
-		}
-		// Note: Individual tokens will be generated per invitee later
-		// This is just for backward compatibility if custom link is provided
-		invitationLink = fmt.Sprintf("%s/accept-invitation", baseURL)
-	}
-
-	// Prepare invitation input
-	invitationInput := companylib.InvitationEmailInput{
-		EmailAddresses:   emailAddresses,
-		OrganizationName: organizationName,
-		InviterName:      inviterName,
-		InvitationLink:   invitationLink,
-		CustomMessage:    req.CustomMessage,
-	}
-
-	// Send invitation emails
-	results, err := svc.emailSVC.SendInvitationEmails(invitationInput)
-	if err != nil {
-		svc.logger.Printf("Failed to send invitations: %v", err)
-		return svc.errorResponse(http.StatusInternalServerError, "Failed to send invitations", err)
-	}
-
-	// organizationId and organizationName are already retrieved above
-
 	// Get base URL for invitation links
 	baseURL := os.Getenv("APP_BASE_URL")
 	if baseURL == "" {
 		baseURL = "https://app.gomovo.com"
 	}
 
-	// Create employee records for successfully invited users with INVITED status
+	// Process each invitee: generate token, send email, create DDB record
 	successCount := 0
 	failedCount := 0
-	// Create a map for quick lookup of invitee info by email
-	inviteeMap := make(map[string]InviteeInfo)
-	for _, invitee := range req.Invitees {
-		inviteeMap[invitee.Email] = invitee
-	}
+	results := make([]companylib.InvitationEmailResult, 0, len(req.Invitees))
 
-	// Generate invitation links with JWT tokens for each invitee
-	invitationLinks := make(map[string]string)
 	for _, invitee := range req.Invitees {
-		// Check if custom invitation link was provided
+		result := companylib.InvitationEmailResult{
+			Email: invitee.Email,
+		}
+
+		// Generate invitation link with JWT token for this specific invitee
+		var invitationLink string
 		if req.InvitationLink != "" {
-			invitationLinks[invitee.Email] = req.InvitationLink
+			// Use custom invitation link if provided
+			invitationLink = req.InvitationLink
 		} else {
 			// Generate JWT token with invitation data
 			token, err := svc.GenerateInvitationToken(invitee.Email, organizationId, organizationName, invitee.TeamId, invitee.Role, employee.EmailID)
 			if err != nil {
 				svc.logger.Printf("Warning: Failed to generate invitation token for %s: %v", invitee.Email, err)
-				invitationLinks[invitee.Email] = fmt.Sprintf("%s/accept-invitation", baseURL)
+				invitationLink = fmt.Sprintf("%s/accept-invitation", baseURL)
 			} else {
-				invitationLinks[invitee.Email] = fmt.Sprintf("%s/accept-invitation?token=%s", baseURL, token)
+				invitationLink = fmt.Sprintf("%s/accept-invitation?token=%s", baseURL, token)
 			}
 		}
-	}
 
-	for _, result := range results {
-		if result.Success {
+		// Prepare invitation input for this specific invitee
+		invitationInput := companylib.InvitationEmailInput{
+			EmailAddresses:   []string{invitee.Email},
+			OrganizationName: organizationName,
+			InviterName:      inviterName,
+			InvitationLink:   invitationLink,
+			CustomMessage:    req.CustomMessage,
+		}
+
+		// Send invitation email
+		emailResults, err := svc.emailSVC.SendInvitationEmails(invitationInput)
+		if err != nil || len(emailResults) == 0 || !emailResults[0].Success {
+			svc.logger.Printf("Failed to send invitation to %s: %v", invitee.Email, err)
+			result.Success = false
+			if err != nil {
+				result.Error = err.Error()
+			} else if len(emailResults) > 0 {
+				result.Error = emailResults[0].Error
+			}
+			failedCount++
+		} else {
+			result.Success = true
 			successCount++
-			// Get invitee info for this email
-			inviteeInfo := inviteeMap[result.Email]
+
 			// Create employee record with INVITED status
-			if err := svc.createInvitedEmployee(result.Email, inviteeInfo.Role, inviteeInfo.TeamId, organizationId, employee.UserName); err != nil {
-				svc.logger.Printf("Warning: Failed to create employee record for %s: %v", result.Email, err)
+			if err := svc.createInvitedEmployee(invitee.Email, invitee.Role, invitee.TeamId, organizationId, employee.UserName); err != nil {
+				svc.logger.Printf("Warning: Failed to create employee record for %s: %v", invitee.Email, err)
 				// Don't fail the invitation if employee record creation fails
 			}
-		} else {
-			failedCount++
 		}
+
+		results = append(results, result)
 	}
 
 	svc.logger.Printf("Invitation results - Success: %d, Failed: %d", successCount, failedCount)
