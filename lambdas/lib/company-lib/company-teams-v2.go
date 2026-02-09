@@ -352,21 +352,6 @@ func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) (
 		})
 	}
 
-	// If no current team is set and user has teams, automatically set the first one
-	if currentTeamId == "" && len(userTeams) > 0 {
-		firstTeamId := userTeams[0].TeamId
-		svc.logger.Printf("No current team set for user %s, auto-setting to first team: %s", userName, firstTeamId)
-
-		// Attempt to set the first team as current (ignore error if it fails)
-		if err := svc.SetCurrentTeam(userName, userCognitoId, firstTeamId); err == nil {
-			// Mark the first team as logged in
-			userTeams[0].IsLoggedIn = true
-			svc.logger.Printf("Successfully auto-set current team to %s for user %s", firstTeamId, userName)
-		} else {
-			svc.logger.Printf("Failed to auto-set current team: %v", err)
-		}
-	}
-
 	return userTeams, nil
 }
 
