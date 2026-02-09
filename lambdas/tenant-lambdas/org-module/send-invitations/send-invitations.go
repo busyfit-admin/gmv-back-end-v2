@@ -159,16 +159,13 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 		inviterName = employee.DisplayName
 	}
 
-	// Get organization details if user is part of one
-	var organizationId string
-	organizationName := req.OrganizationName
 	org, err := svc.orgSVC.GetAdminOrganization(employee.EmailID)
 	if err != nil {
 		svc.logger.Printf("Failed to get organization details: %v", err)
-	} else {
-		svc.logger.Printf("User is part of organization: %s (%s)", org.OrgName, org.OrganizationId)
-		organizationId = org.OrganizationId
 	}
+	svc.logger.Printf("User is part of organization: %s (%s)", org.OrgName, org.OrganizationId)
+	organizationId := org.OrganizationId
+	organizationName := org.OrgName
 
 	// Get base URL for invitation links
 	baseURL := os.Getenv("APP_BASE_URL")
@@ -325,6 +322,63 @@ func (svc *Service) getTeamName(teamId string) (string, error) {
 	return "", fmt.Errorf("team name not found in team metadata")
 }
 
+// OrgUserData represents a simplified user record in organization
+type OrgUserData struct {
+	UserName string
+	Role     string
+	Status   string
+	IsActive bool
+}
+
+// checkUserInOrganization checks if a user already exists in the organization
+func (svc *Service) checkUserInOrganization(organizationId, email string) (*OrgUserData, error) {
+	input := &dynamodb.GetItemInput{
+		TableName: aws.String(svc.orgSVC.OrganizationTable),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: organizationId},
+			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
+		},
+	}
+
+	result, err := svc.ddbClient.GetItem(svc.ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user from organization: %w", err)
+	}
+
+	if result.Item == nil {
+		return nil, fmt.Errorf("user not found in organization")
+	}
+
+	// Extract user data
+	userData := &OrgUserData{}
+
+	if userNameAttr, ok := result.Item["UserName"]; ok {
+		if val, ok := userNameAttr.(*types.AttributeValueMemberS); ok {
+			userData.UserName = val.Value
+		}
+	}
+
+	if roleAttr, ok := result.Item["Role"]; ok {
+		if val, ok := roleAttr.(*types.AttributeValueMemberS); ok {
+			userData.Role = val.Value
+		}
+	}
+
+	if statusAttr, ok := result.Item["Status"]; ok {
+		if val, ok := statusAttr.(*types.AttributeValueMemberS); ok {
+			userData.Status = val.Value
+		}
+	}
+
+	if isActiveAttr, ok := result.Item["IsActive"]; ok {
+		if val, ok := isActiveAttr.(*types.AttributeValueMemberBOOL); ok {
+			userData.IsActive = val.Value
+		}
+	}
+
+	return userData, nil
+}
+
 // createInvitedEmployee creates an employee record with INVITED status and optionally adds to team
 func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, invitedBy string) error {
 	// Check if employee already exists
@@ -338,6 +392,16 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 
 	// Build transaction items
 	transactItems := []types.TransactWriteItem{}
+
+	// Check if user already exists in organization and is active
+	userExistsInOrg := false
+	if organizationId != "" {
+		existingUser, err := svc.checkUserInOrganization(organizationId, email)
+		if err == nil && existingUser != nil && existingUser.IsActive {
+			svc.logger.Printf("User %s already exists and is active in organization %s", email, organizationId)
+			userExistsInOrg = true
+		}
+	}
 
 	// 1. Add to Employee table - disabling this as the new employee is record is created only when user is accepting the invitiation.
 	//
@@ -366,7 +430,8 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 	// transactItems = append(transactItems, putItemEmployeeTable)
 
 	// 2. Add to Organization table (ORG#orgId -> USER#email mapping)
-	if organizationId != "" {
+	// Only add if user doesn't already exist and is active in the organization
+	if organizationId != "" && !userExistsInOrg {
 		putItemOrgTable := types.TransactWriteItem{
 			Put: &types.Put{
 				TableName: aws.String(svc.orgSVC.OrganizationTable),
