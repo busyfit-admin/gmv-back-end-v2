@@ -209,6 +209,7 @@ func (svc *EmailService) GetSendingStatistics() (*ses.GetSendStatisticsOutput, e
 type InvitationEmailInput struct {
 	EmailAddresses   []string `json:"emailAddresses" validate:"required,min=1"`
 	OrganizationName string   `json:"organizationName"`
+	TeamName         string   `json:"teamName,omitempty"`
 	InviterName      string   `json:"inviterName"`
 	InvitationLink   string   `json:"invitationLink"`
 	CustomMessage    string   `json:"customMessage,omitempty"`
@@ -276,14 +277,17 @@ func (svc *EmailService) buildInvitationEmailHTML(input InvitationEmailInput) st
 		organizationName = "our organization"
 	}
 
-	inviterName := input.InviterName
-	if inviterName == "" {
-		inviterName = "A team member"
-	}
-
 	invitationLink := input.InvitationLink
 	if invitationLink == "" {
 		invitationLink = "#"
+	}
+
+	// Build invitation message with team name if provided
+	invitationMessage := ""
+	if input.TeamName != "" {
+		invitationMessage = fmt.Sprintf("You are invited to join <strong>%s</strong> team in <strong>%s</strong>.", input.TeamName, organizationName)
+	} else {
+		invitationMessage = fmt.Sprintf("You are invited to join <strong>%s</strong>.", organizationName)
 	}
 
 	customMessage := ""
@@ -323,7 +327,7 @@ func (svc *EmailService) buildInvitationEmailHTML(input InvitationEmailInput) st
 							</p>
 							
 							<p style="margin: 0 0 20px; color: #333333; font-size: 16px; line-height: 1.6;">
-								<strong>%s</strong> has invited you to join <strong>%s</strong>.
+								%s
 							</p>
 							
 							%s
@@ -353,9 +357,6 @@ func (svc *EmailService) buildInvitationEmailHTML(input InvitationEmailInput) st
 					<!-- Footer -->
 					<tr>
 						<td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-radius: 0 0 8px 8px;">
-							<p style="margin: 0 0 10px; color: #666666; font-size: 14px;">
-								This invitation was sent to you by %s
-							</p>
 							<p style="margin: 0; color: #999999; font-size: 12px;">
 								If you didn't expect this invitation, you can safely ignore this email.
 							</p>
@@ -372,7 +373,7 @@ func (svc *EmailService) buildInvitationEmailHTML(input InvitationEmailInput) st
 	</table>
 </body>
 </html>
-	`, inviterName, organizationName, customMessage, invitationLink, invitationLink, invitationLink, inviterName)
+	`, invitationMessage, customMessage, invitationLink, invitationLink, invitationLink)
 }
 
 // buildInvitationEmailText builds the plain text body for the invitation email
@@ -382,14 +383,17 @@ func (svc *EmailService) buildInvitationEmailText(input InvitationEmailInput) st
 		organizationName = "our organization"
 	}
 
-	inviterName := input.InviterName
-	if inviterName == "" {
-		inviterName = "A team member"
-	}
-
 	invitationLink := input.InvitationLink
 	if invitationLink == "" {
 		invitationLink = "#"
+	}
+
+	// Build invitation message with team name if provided
+	invitationMessage := ""
+	if input.TeamName != "" {
+		invitationMessage = fmt.Sprintf("You are invited to join %s team in %s.", input.TeamName, organizationName)
+	} else {
+		invitationMessage = fmt.Sprintf("You are invited to join %s.", organizationName)
 	}
 
 	customMessage := ""
@@ -401,15 +405,13 @@ func (svc *EmailService) buildInvitationEmailText(input InvitationEmailInput) st
 
 Hello,
 
-%s has invited you to join %s.
+%s
 %s
 To accept the invitation, visit:
 %s
 
 If you didn't expect this invitation, you can safely ignore this email.
 
-This invitation was sent to you by %s
-
 © 2026 Gomovo Hub. All rights reserved.
-`, inviterName, organizationName, customMessage, invitationLink, inviterName)
+`, invitationMessage, customMessage, invitationLink)
 }

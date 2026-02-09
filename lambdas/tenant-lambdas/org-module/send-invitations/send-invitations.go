@@ -186,6 +186,17 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 			Email: invitee.Email,
 		}
 
+		// Fetch team name if teamId is provided
+		var teamName string
+		if invitee.TeamId != "" {
+			fetchedTeamName, err := svc.getTeamName(invitee.TeamId)
+			if err != nil {
+				svc.logger.Printf("Warning: Failed to fetch team name for %s: %v", invitee.TeamId, err)
+			} else {
+				teamName = fetchedTeamName
+			}
+		}
+
 		// Generate invitation link with JWT token for this specific invitee
 		var invitationLink string
 		if req.InvitationLink != "" {
@@ -206,6 +217,7 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 		invitationInput := companylib.InvitationEmailInput{
 			EmailAddresses:   []string{invitee.Email},
 			OrganizationName: organizationName,
+			TeamName:         teamName,
 			InviterName:      inviterName,
 			InvitationLink:   invitationLink,
 			CustomMessage:    req.CustomMessage,
@@ -282,6 +294,35 @@ func (svc *Service) getCognitoIdFromRequest(request events.APIGatewayProxyReques
 	}
 
 	return "", fmt.Errorf("cognito ID not found in request")
+}
+
+// getTeamName fetches the team name by teamId from DynamoDB
+func (svc *Service) getTeamName(teamId string) (string, error) {
+	input := &dynamodb.GetItemInput{
+		TableName: aws.String(svc.empSVC.TenantTeamsTable),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: teamId},
+			"SK": &types.AttributeValueMemberS{Value: "METADATA"},
+		},
+	}
+
+	result, err := svc.ddbClient.GetItem(svc.ctx, input)
+	if err != nil {
+		return "", fmt.Errorf("failed to get team: %w", err)
+	}
+
+	if result.Item == nil {
+		return "", fmt.Errorf("team not found")
+	}
+
+	// Extract team name from the result
+	if teamNameAttr, ok := result.Item["TeamName"]; ok {
+		if teamNameVal, ok := teamNameAttr.(*types.AttributeValueMemberS); ok {
+			return teamNameVal.Value, nil
+		}
+	}
+
+	return "", fmt.Errorf("team name not found in team metadata")
 }
 
 // createInvitedEmployee creates an employee record with INVITED status and optionally adds to team
