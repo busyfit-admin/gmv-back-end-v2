@@ -218,6 +218,12 @@ func (svc *TeamsServiceV2) SetCurrentTeam(userName string, userCognitoId string,
 		return fmt.Errorf("employee service not initialized")
 	}
 
+	svc.logger.Printf("Setting current team for user %s (Cognito ID: %s) to team %s", userName, userCognitoId, teamId)
+
+	if !strings.HasPrefix(teamId, "TEAM#") {
+		teamId = fmt.Sprintf("TEAM#%s", teamId)
+	}
+
 	// Verify user is a member of the team
 	memberInput := &dynamodb.GetItemInput{
 		TableName: aws.String(svc.TeamsTable),
