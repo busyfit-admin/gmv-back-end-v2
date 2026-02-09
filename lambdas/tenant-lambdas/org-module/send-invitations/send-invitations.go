@@ -162,7 +162,7 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 	// Get organization details if user is part of one
 	var organizationId string
 	organizationName := req.OrganizationName
-	org, err := svc.orgSVC.GetAdminOrganization(employee.UserName)
+	org, err := svc.orgSVC.GetAdminOrganization(employee.EmailID)
 	if err != nil {
 		svc.logger.Printf("Failed to get organization details: %v", err)
 	} else {
