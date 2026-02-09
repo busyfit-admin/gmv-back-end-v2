@@ -163,11 +163,11 @@ func (svc *Service) sendInvitations(employee companylib.EmployeeDynamodbData, re
 	var organizationId string
 	organizationName := req.OrganizationName
 	org, err := svc.orgSVC.GetAdminOrganization(employee.UserName)
-	if err == nil && org != nil {
+	if err != nil {
+		svc.logger.Printf("Failed to get organization details: %v", err)
+	} else {
+		svc.logger.Printf("User is part of organization: %s (%s)", org.OrgName, org.OrganizationId)
 		organizationId = org.OrganizationId
-		if organizationName == "" {
-			organizationName = org.OrgName
-		}
 	}
 
 	// Get base URL for invitation links
