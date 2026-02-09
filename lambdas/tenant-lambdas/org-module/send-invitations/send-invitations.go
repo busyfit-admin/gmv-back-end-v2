@@ -293,34 +293,35 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 	}
 
 	// Create employee record with INVITED status
-	employeeData := companylib.EmployeeDynamodbData{
-		UserName:  email,
-		EmailID:   email,
-		Status:    "INVITED",
-		Source:    fmt.Sprintf("Invitation-By-%s", invitedBy),
-		CreatedAt: time.Now().UTC().Format(time.RFC3339),
-		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
-	}
 
 	// Build transaction items
 	transactItems := []types.TransactWriteItem{}
 
-	// 1. Add to Employee table
-	putItemEmployeeTable := types.TransactWriteItem{
-		Put: &types.Put{
-			TableName: aws.String(svc.empSVC.EmployeeTable),
-			Item: map[string]types.AttributeValue{
-				"UserName":  &types.AttributeValueMemberS{Value: employeeData.UserName},
-				"EmailId":   &types.AttributeValueMemberS{Value: employeeData.EmailID},
-				"Status":    &types.AttributeValueMemberS{Value: employeeData.Status},
-				"Source":    &types.AttributeValueMemberS{Value: employeeData.Source},
-				"CreatedAt": &types.AttributeValueMemberS{Value: employeeData.CreatedAt},
-				"UpdatedAt": &types.AttributeValueMemberS{Value: employeeData.UpdatedAt},
-			},
-			ConditionExpression: aws.String("attribute_not_exists(UserName)"),
-		},
-	}
-	transactItems = append(transactItems, putItemEmployeeTable)
+	// 1. Add to Employee table - disabling this as the new employee is record is created only when user is accepting the invitiation.
+	//
+	// employeeData := companylib.EmployeeDynamodbData{
+	// 	UserName:  email,
+	// 	EmailID:   email,
+	// 	Status:    "INVITED",
+	// 	Source:    fmt.Sprintf("Invitation-By-%s", invitedBy),
+	// 	CreatedAt: time.Now().UTC().Format(time.RFC3339),
+	// 	UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+	// }
+	// putItemEmployeeTable := types.TransactWriteItem{
+	// 	Put: &types.Put{
+	// 		TableName: aws.String(svc.empSVC.EmployeeTable),
+	// 		Item: map[string]types.AttributeValue{
+	// 			"UserName":  &types.AttributeValueMemberS{Value: employeeData.UserName},
+	// 			"EmailId":   &types.AttributeValueMemberS{Value: employeeData.EmailID},
+	// 			"Status":    &types.AttributeValueMemberS{Value: employeeData.Status},
+	// 			"Source":    &types.AttributeValueMemberS{Value: employeeData.Source},
+	// 			"CreatedAt": &types.AttributeValueMemberS{Value: employeeData.CreatedAt},
+	// 			"UpdatedAt": &types.AttributeValueMemberS{Value: employeeData.UpdatedAt},
+	// 		},
+	// 		ConditionExpression: aws.String("attribute_not_exists(UserName)"),
+	// 	},
+	// }
+	// transactItems = append(transactItems, putItemEmployeeTable)
 
 	// 2. Add to Organization table (ORG#orgId -> USER#email mapping)
 	if organizationId != "" {
@@ -345,7 +346,7 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 	if teamId != "" {
 		putItemTeamTable := types.TransactWriteItem{
 			Put: &types.Put{
-				TableName: aws.String(svc.orgSVC.OrganizationTable), // Teams use same table
+				TableName: aws.String(svc.empSVC.TenantTeamsTable), // Teams use same table
 				Item: map[string]types.AttributeValue{
 					"PK":       &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", teamId)},
 					"SK":       &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
