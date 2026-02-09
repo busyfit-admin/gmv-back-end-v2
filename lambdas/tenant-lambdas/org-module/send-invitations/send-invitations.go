@@ -336,7 +336,7 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 					"CreatedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
 					"UpdatedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
 				},
-				ConditionExpression: aws.String("attribute_not_exists(PK)"),
+				ConditionExpression: aws.String("attribute_not_exists(PK) AND attribute_not_exists(SK)"),
 			},
 		}
 		transactItems = append(transactItems, putItemOrgTable)
@@ -358,7 +358,7 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 					"JoinedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
 					"IsActive": &types.AttributeValueMemberBOOL{Value: false}, // Inactive until they accept
 				},
-				ConditionExpression: aws.String("attribute_not_exists(PK)"),
+				ConditionExpression: aws.String("attribute_not_exists(PK) AND attribute_not_exists(SK)"),
 			},
 		}
 		transactItems = append(transactItems, putItemTeamTable)
