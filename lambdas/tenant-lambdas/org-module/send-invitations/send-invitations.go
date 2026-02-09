@@ -330,12 +330,17 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 			Put: &types.Put{
 				TableName: aws.String(svc.orgSVC.OrganizationTable),
 				Item: map[string]types.AttributeValue{
-					"PK":        &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", organizationId)},
-					"SK":        &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
-					"Role":      &types.AttributeValueMemberS{Value: role},
-					"Status":    &types.AttributeValueMemberS{Value: "INVITED"},
-					"CreatedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
-					"UpdatedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
+					"PK":             &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", organizationId)},
+					"SK":             &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
+					"GSI1PK":         &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", email)},
+					"GSI1SK":         &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", organizationId)},
+					"OrganizationId": &types.AttributeValueMemberS{Value: organizationId},
+					"UserName":       &types.AttributeValueMemberS{Value: email},
+					"Role":           &types.AttributeValueMemberS{Value: role},
+					"Status":         &types.AttributeValueMemberS{Value: "INVITED"},
+					"IsActive":       &types.AttributeValueMemberBOOL{Value: true}, // Active in organization by default unless they are removed later.
+					"AddedAt":        &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
+					"UpdatedAt":      &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
 				},
 				ConditionExpression: aws.String("attribute_not_exists(PK) AND attribute_not_exists(SK)"),
 			},
@@ -357,7 +362,7 @@ func (svc *Service) createInvitedEmployee(email, role, teamId, organizationId, i
 					"UserName": &types.AttributeValueMemberS{Value: email},
 					"Role":     &types.AttributeValueMemberS{Value: role},
 					"JoinedAt": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
-					"IsActive": &types.AttributeValueMemberBOOL{Value: false}, // Inactive until they accept
+					"IsActive": &types.AttributeValueMemberBOOL{Value: true}, // Active in teams by default unless they are removed later.
 				},
 				ConditionExpression: aws.String("attribute_not_exists(PK) AND attribute_not_exists(SK)"),
 			},

@@ -290,7 +290,7 @@ func (svc *TeamsServiceV2) GetCurrentTeam(userCognitoId string) (string, error) 
 // GetUserTeams retrieves all teams for a user
 func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) ([]UserTeamInfo, error) {
 	// Get user's current team preference
-	currentTeamId, _ := svc.GetCurrentTeam(userCognitoId)
+	currentTeamId, _ := svc.GetCurrentTeam(userName)
 
 	// Query GSI1 to get all teams for the user
 	input := &dynamodb.QueryInput{
@@ -309,6 +309,7 @@ func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) (
 	}
 
 	if len(result.Items) == 0 {
+		svc.logger.Printf("No teams found for user %s", userName)
 		return []UserTeamInfo{}, nil
 	}
 

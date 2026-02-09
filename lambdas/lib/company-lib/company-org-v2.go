@@ -171,6 +171,7 @@ type OrgUser struct {
 	Role           OrgAdminRole `dynamodbav:"Role" json:"role"`
 	JoinedAt       string       `dynamodbav:"JoinedAt" json:"joinedAt"`
 	IsActive       bool         `dynamodbav:"IsActive" json:"isActive"`
+	Status         string       `dynamodbav:"Status" json:"status"` // INVITED, ACTIVE, SUSPENDED
 	UpdatedAt      string       `dynamodbav:"UpdatedAt" json:"updatedAt"`
 }
 
