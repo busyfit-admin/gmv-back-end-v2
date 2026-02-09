@@ -1337,6 +1337,7 @@ Resources:
           ORGANIZATION_TABLE: !Ref OrgsTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          TENANT_TEAMS_TABLE: !Ref TenantTeamsTableV2
           PROMO_CODES_TABLE: !Ref PromoCodesTable
           # Email Configuration: Used by AWS SES to send invitation emails
           # The sender email (DEFAULT_FROM_EMAIL) must be verified in AWS SES
@@ -1381,7 +1382,7 @@ Resources:
           PROMO_CODES_TABLE: !Ref PromoCodesTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
-
+          TENANT_TEAMS_TABLE: !Ref TenantTeamsTableV2
   ManageOrgUsersLambdaInvokePermissions:
     Type: AWS::Lambda::Permission
     Properties:
@@ -1440,13 +1441,16 @@ Resources:
                   - !Sub ${PromoCodesTable.Arn}/index/*
                   - !GetAtt EmployeeDataTable.Arn
                   - !Sub ${EmployeeDataTable.Arn}/index/*
+                  - !GetAtt TenantTeamsTableV2.Arn
+                  - !Sub ${TenantTeamsTableV2.Arn}/index/*
               - Effect: Allow
                 Action:
                   - dynamodb:TransactWriteItems
                 Resource:
                   - !GetAtt OrgsTable.Arn
                   - !GetAtt PromoCodesTable.Arn
-                  - !GetAtt EmployeeDataTable.Arn 
+                  - !GetAtt EmployeeDataTable.Arn
+                  - !GetAtt TenantTeamsTableV2.Arn
               - Effect: Allow
                 Action:
                   - ses:SendEmail

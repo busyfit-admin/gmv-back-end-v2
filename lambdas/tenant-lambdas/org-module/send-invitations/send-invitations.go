@@ -55,6 +55,7 @@ func main() {
 	empSvc := companylib.CreateEmployeeService(ctx, ddbclient, nil, logger)
 	empSvc.EmployeeTable = os.Getenv("EMPLOYEE_TABLE")
 	empSvc.EmployeeTable_CognitoId_Index = os.Getenv("EMPLOYEE_TABLE_COGNITO_ID_INDEX")
+	empSvc.TenantTeamsTable = os.Getenv("TENANT_TEAMS_TABLE")
 
 	// Email service
 	emailSvc := companylib.CreateEmailService(ctx, sesClient, logger)
