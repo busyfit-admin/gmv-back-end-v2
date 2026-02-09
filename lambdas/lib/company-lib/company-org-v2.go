@@ -540,6 +540,8 @@ func (svc *OrgServiceV2) IsOrgAdmin(organizationId string, userName string) (boo
 		return false, fmt.Errorf("failed to unmarshal admin: %w", err)
 	}
 
+	svc.logger.Printf("Admin record found: %+v", admin)
+
 	return admin.IsActive, nil
 }
 
@@ -1123,11 +1125,15 @@ func (svc *OrgServiceV2) GetOrgAdmins(organizationId string, requestingUser stri
 	}
 
 	// Query for all admin rows
+	if !strings.HasPrefix(organizationId, "ORG#") {
+		organizationId = fmt.Sprintf("ORG#%s", organizationId)
+	}
+
 	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(svc.OrganizationTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk_prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":        &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			":pk":        &types.AttributeValueMemberS{Value: organizationId},
 			":sk_prefix": &types.AttributeValueMemberS{Value: "ADMIN#"},
 		},
 	}
@@ -1204,11 +1210,16 @@ func (svc *OrgServiceV2) RemoveOrgUser(organizationId, userName string) error {
 
 // GetOrgUsers retrieves all users for an organization
 func (svc *OrgServiceV2) GetOrgUsers(organizationId string) ([]OrgMember, error) {
+
+	if !strings.HasPrefix(organizationId, "ORG#") {
+		organizationId = fmt.Sprintf("ORG#%s", organizationId)
+	}
+
 	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(svc.OrganizationTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk_prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":        &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
+			":pk":        &types.AttributeValueMemberS{Value: organizationId},
 			":sk_prefix": &types.AttributeValueMemberS{Value: "USER#"},
 		},
 	}
