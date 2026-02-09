@@ -565,6 +565,140 @@ Authorization: Bearer <cognito-jwt-token>
 
 ---
 
+### 13. Manage Organization Users
+**Base Endpoint:** `/v2/organization/users`  
+**Function:** Comprehensive user management for organizations (admins and regular users)
+
+#### 13.1 List All Organization Users
+**Endpoint:** `GET /v2/organization/users`  
+**Headers Required:**
+- `Organization-Id`: Organization identifier
+- `Authorization`: Bearer token
+
+**Success Response (200):**
+```json
+{
+  "users": [
+    {
+      "userName": "user@example.com",
+      "displayName": "John Doe",
+      "role": "owner",
+      "userType": "admin",
+      "addedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "userName": "user2@example.com",
+      "displayName": "Jane Smith",
+      "role": "member",
+      "userType": "user",
+      "joinedAt": "2024-01-05T00:00:00Z",
+      "isActive": true
+    }
+  ],
+  "totalCount": 2,
+  "adminCount": 1,
+  "userCount": 1
+}
+```
+
+**User Types:**
+- `admin`: Organization administrator with elevated privileges
+- `user`: Regular organization user
+
+**Admin Roles:**
+- `owner`: Full organization control
+- `admin`: Administrative access
+- `manager`: Management-level access
+
+---
+
+#### 13.2 Add User to Organization
+**Endpoint:** `POST /v2/organization/users`  
+**Headers Required:**
+- `Organization-Id`: Organization identifier
+- `Authorization`: Bearer token
+
+**Request Body:**
+```json
+{
+  "userName": "newuser@example.com",
+  "role": "admin",
+  "userType": "admin"
+}
+```
+
+**Field Descriptions:**
+- `userName` (required): Email address or username of the user to add
+- `role` (required): Role to assign (owner/admin/manager for admin type)
+- `userType` (optional): "admin" or "user" (defaults to "user")
+
+**Success Response (201):**
+```json
+{
+  "message": "User added successfully",
+  "userName": "newuser@example.com",
+  "role": "admin",
+  "userType": "admin"
+}
+```
+
+**Permissions:**
+- Only organization admins can add users
+- Only organization owners can add other admins
+
+---
+
+#### 13.3 Update User Role
+**Endpoint:** `PUT /v2/organization/users`  
+**Status:** Not yet implemented  
+**Headers Required:**
+- `Organization-Id`: Organization identifier
+- `Authorization`: Bearer token
+
+**Request Body:**
+```json
+{
+  "userName": "user@example.com",
+  "role": "manager"
+}
+```
+
+---
+
+#### 13.4 Remove User from Organization
+**Endpoint:** `DELETE /v2/organization/users`  
+**Headers Required:**
+- `Organization-Id`: Organization identifier
+- `Authorization`: Bearer token
+
+**Request Body:**
+```json
+{
+  "userName": "user@example.com"
+}
+```
+
+**Alternate Method:** Query parameter
+```
+DELETE /v2/organization/users?userName=user@example.com
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "User removed successfully",
+  "userName": "user@example.com"
+}
+```
+
+**Permissions:**
+- Only organization admins can remove users
+- Only organization owners can remove other admins
+- Cannot remove the last owner from the organization
+
+---
+
 ## Error Responses
 
 All endpoints return consistent error responses:
@@ -757,6 +891,79 @@ const removeOrgAdmin = async (organizationId, userName) => {
   const response = await fetch(`/v2/organization/${organizationId}/admins/${userName}`, {
     method: 'DELETE',
     headers: {
+      'Authorization': `Bearer ${cognitoToken}`
+    }
+  });
+  
+  return await response.json();
+};
+```
+
+#### List All Organization Users
+```javascript
+const listOrgUsers = async (organizationId) => {
+  const response = await fetch(`/v2/organization/users`, {
+    headers: {
+      'Organization-Id': organizationId,
+      'Authorization': `Bearer ${cognitoToken}`
+    }
+  });
+  
+  const data = await response.json();
+  console.log(`Total users: ${data.totalCount} (${data.adminCount} admins, ${data.userCount} users)`);
+  return data;
+};
+```
+
+#### Add User to Organization
+```javascript
+const addOrgUser = async (organizationId, userName, role, userType = 'admin') => {
+  const response = await fetch(`/v2/organization/users`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Organization-Id': organizationId,
+      'Authorization': `Bearer ${cognitoToken}`
+    },
+    body: JSON.stringify({
+      userName: userName,
+      role: role, // "owner", "admin", "manager"
+      userType: userType // "admin" or "user"
+    })
+  });
+  
+  return await response.json();
+};
+
+// Usage example
+const result = await addOrgUser('ORG#123', 'newuser@example.com', 'admin', 'admin');
+console.log(result.message); // "User added successfully"
+```
+
+#### Remove User from Organization
+```javascript
+const removeOrgUser = async (organizationId, userName) => {
+  const response = await fetch(`/v2/organization/users`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Organization-Id': organizationId,
+      'Authorization': `Bearer ${cognitoToken}`
+    },
+    body: JSON.stringify({
+      userName: userName
+    })
+  });
+  
+  return await response.json();
+};
+
+// Alternate method using query parameters
+const removeOrgUserAlt = async (organizationId, userName) => {
+  const response = await fetch(`/v2/organization/users?userName=${encodeURIComponent(userName)}`, {
+    method: 'DELETE',
+    headers: {
+      'Organization-Id': organizationId,
       'Authorization': `Bearer ${cognitoToken}`
     }
   });

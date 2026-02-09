@@ -1007,6 +1007,289 @@ paths:
       security:
         - UserPool: []
 
+  /v2/organization/users:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,organization-id,Organization-Id'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        "200":
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    get:
+      summary: List all organization users
+      description: Lists all users (admins and regular users) in the organization. Requires Organization-Id header. Only accessible by organization admins.
+      produces:
+        - application/json
+      parameters:
+        - name: Organization-Id
+          in: header
+          description: Organization ID
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgUsersLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+          schema:
+            type: object
+            properties:
+              users:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userName:
+                      type: string
+                      example: "user@example.com"
+                    displayName:
+                      type: string
+                      example: "John Doe"
+                    role:
+                      type: string
+                      example: "owner"
+                    userType:
+                      type: string
+                      enum: [admin, user]
+                      example: "admin"
+                    addedAt:
+                      type: string
+                      format: date-time
+                      example: "2024-01-01T00:00:00Z"
+                    joinedAt:
+                      type: string
+                      format: date-time
+                      example: "2024-01-01T00:00:00Z"
+                    isActive:
+                      type: boolean
+                      example: true
+              totalCount:
+                type: integer
+                example: 10
+              adminCount:
+                type: integer
+                example: 3
+              userCount:
+                type: integer
+                example: 7
+      security:
+        - UserPool: []
+    post:
+      summary: Add user to organization
+      description: Adds a new user (admin or regular user) to the organization. Requires Organization-Id header. Only organization admins can add users; only owners can add admins.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: Organization-Id
+          in: header
+          description: Organization ID
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: User details to add
+          required: true
+          schema:
+            type: object
+            required:
+              - userName
+              - role
+            properties:
+              userName:
+                type: string
+                description: Email address or username of the user to add
+                example: "newuser@example.com"
+              role:
+                type: string
+                description: Role to assign (owner/admin/manager for admin type)
+                example: "admin"
+              userType:
+                type: string
+                enum: [admin, user]
+                description: Type of user (defaults to 'user')
+                example: "admin"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgUsersLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "201":
+          description: User added successfully
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "User added successfully"
+              userName:
+                type: string
+                example: "newuser@example.com"
+              role:
+                type: string
+                example: "admin"
+              userType:
+                type: string
+                example: "admin"
+      security:
+        - UserPool: []
+    put:
+      summary: Update user role
+      description: Updates a user's role in the organization. Requires Organization-Id header. Currently not implemented.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: Organization-Id
+          in: header
+          description: Organization ID
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: User role update details
+          required: true
+          schema:
+            type: object
+            required:
+              - userName
+              - role
+            properties:
+              userName:
+                type: string
+                example: "user@example.com"
+              role:
+                type: string
+                example: "manager"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgUsersLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: Successful response
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+        - UserPool: []
+    delete:
+      summary: Remove user from organization
+      description: Removes a user from the organization. Requires Organization-Id header. Can use request body or query parameter for userName. Only admins can remove users; only owners can remove admins. Cannot remove the last owner.
+      produces:
+        - application/json
+      parameters:
+        - name: Organization-Id
+          in: header
+          description: Organization ID
+          required: true
+          type: string
+        - name: userName
+          in: query
+          description: Username to remove (alternative to body)
+          required: false
+          type: string
+        - in: body
+          name: body
+          description: User to remove
+          required: false
+          schema:
+            type: object
+            required:
+              - userName
+            properties:
+              userName:
+                type: string
+                example: "user@example.com"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgUsersLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      responses:
+        "200":
+          description: User removed successfully
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "User removed successfully"
+              userName:
+                type: string
+                example: "user@example.com"
+      security:
+        - UserPool: []
+
   /v2/organization/send-invitations:
     options:
       summary: CORS support
