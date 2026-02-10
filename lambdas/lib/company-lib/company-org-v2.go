@@ -442,14 +442,14 @@ func (svc *OrgServiceV2) CreateOrganization(input CreateOrganizationInput) (*Org
 				Put: &types.Put{
 					TableName:           aws.String(svc.OrganizationTable),
 					Item:                orgItem,
-					ConditionExpression: aws.String("attribute_not_exists(PK)"),
+					ConditionExpression: aws.String("attribute_not_exists(PK) and attribute_not_exists(SK)"),
 				},
 			},
 			{
 				Put: &types.Put{
 					TableName:           aws.String(svc.OrganizationTable),
 					Item:                adminItem,
-					ConditionExpression: aws.String("attribute_not_exists(PK)"),
+					ConditionExpression: aws.String("attribute_not_exists(PK) and attribute_not_exists(SK)"),
 				},
 			},
 		},
