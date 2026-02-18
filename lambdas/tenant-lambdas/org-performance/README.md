@@ -23,3 +23,7 @@ All lambdas use shared route/auth/service wiring from:
 
 - `ORGANIZATION_TABLE` (org metadata/admin checks)
 - `ORG_PERFORMANCE_TABLE` (all performance entities)
+
+## API Reference
+
+- Detailed API documentation: `API_DOCUMENTATION.md`
