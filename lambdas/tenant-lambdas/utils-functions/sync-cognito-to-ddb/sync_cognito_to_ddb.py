@@ -46,10 +46,44 @@ def extract_user_data(event):
 
 
 def create_user_in_ddb(user_data, source='Cognito-PostConfirmation'):
-    """Create a new user in DynamoDB."""
+    """Create a new user in DynamoDB or activate if already invited."""
     if not table:
         raise ValueError("EMPLOYEE_TABLE environment variable not set")
     
+    try:
+        # Check if user already exists (may have been invited)
+        response = table.get_item(Key={'UserName': user_data['cognito_username']})
+        
+        if 'Item' in response:
+            existing_user = response['Item']
+            
+            # If user was invited, activate them
+            if existing_user.get('Status') == 'INVITED':
+                table.update_item(
+                    Key={'UserName': user_data['cognito_username']},
+                    UpdateExpression='SET #status = :active, CognitoId = :cognito_id, UpdatedAt = :updated, #source = :source',
+                    ExpressionAttributeNames={
+                        '#status': 'Status',
+                        '#source': 'Source'
+                    },
+                    ExpressionAttributeValues={
+                        ':active': 'ACTIVE',
+                        ':cognito_id': user_data['cognito_id'],
+                        ':updated': datetime.utcnow().isoformat(),
+                        ':source': f"{source}-ActivatedFromInvited"
+                    }
+                )
+                print(f"Activated invited user {user_data['cognito_username']} (CognitoId: {user_data['cognito_id']}) - changed status from INVITED to ACTIVE")
+                return existing_user
+            else:
+                print(f"User {user_data['cognito_username']} already exists with status {existing_user.get('Status')}, skipping creation")
+                return existing_user
+    
+    except ClientError as e:
+        if e.response['Error']['Code'] != 'ResourceNotFoundException':
+            raise
+    
+    # User doesn't exist, create new
     item = {
         'UserName': user_data['cognito_username'],
         'CognitoId': user_data['cognito_id'],
@@ -59,7 +93,7 @@ def create_user_in_ddb(user_data, source='Cognito-PostConfirmation'):
         'LastName': user_data['family_name'],
         'E_ID': user_data['e_id'],
         'PhoneNumber': user_data['phone_number'],
-        'Status': 'Active',
+        'Status': 'ACTIVE',
         'CreatedAt': datetime.utcnow().isoformat(),
         'UpdatedAt': datetime.utcnow().isoformat(),
         'Source': source

@@ -5,10 +5,20 @@ ARTIFACT := artifact-$(REVISION).tar.bz2
 
 test: $(SUBDIRS)
 
+test-tenant-cfn:
+	$(MAKE) -C cfn/tenant-cfn test
+
 build: $(SUBDIRS)
 
-build-teams-module: 
+build-tenant-lambdas:
+	$(MAKE) -C lambdas/tenant-lambdas
+
+tidy-v2:
+	$(MAKE) -C lambdas/tenant-lambdas/org-module tidy
+
+build-v2: 
 	$(MAKE) -C lambdas/tenant-lambdas/teams-module build
+	$(MAKE) -C lambdas/tenant-lambdas/org-module build
 
 update: $(SUBDIRS)
 

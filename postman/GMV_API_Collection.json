@@ -1,0 +1,508 @@
+{
+  "info": {
+    "name": "GMV SaaS API Collection",
+    "description": "Complete API collection for GMV multi-tenant SaaS platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level pre-request script for authentication",
+          "const accessToken = pm.environment.get('access_token');",
+          "const tokenExpiry = pm.environment.get('token_expiry');",
+          "",
+          "// Check if token needs refresh",
+          "if (!accessToken || (tokenExpiry && Date.now() > parseInt(tokenExpiry))) {",
+          "    console.log('Token expired or missing, please authenticate manually');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Authentication",
+      "item": [
+        {
+          "name": "Cognito Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Amz-Target",
+                "value": "AWSCognitoIdentityProviderService.InitiateAuth"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-amz-json-1.1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"AuthFlow\": \"USER_PASSWORD_AUTH\",\n  \"ClientId\": \"{{client_id}}\",\n  \"AuthParameters\": {\n    \"USERNAME\": \"{{username}}\",\n    \"PASSWORD\": \"{{password}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{auth_url}}",
+              "host": ["{{auth_url}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Authentication successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('AuthenticationResult');",
+                  "    ",
+                  "    // Store tokens",
+                  "    if (responseJson.AuthenticationResult) {",
+                  "        pm.environment.set('access_token', responseJson.AuthenticationResult.AccessToken);",
+                  "        pm.environment.set('refresh_token', responseJson.AuthenticationResult.RefreshToken);",
+                  "        pm.environment.set('id_token', responseJson.AuthenticationResult.IdToken);",
+                  "        ",
+                  "        const expiryTime = Date.now() + (responseJson.AuthenticationResult.ExpiresIn * 1000);",
+                  "        pm.environment.set('token_expiry', expiryTime);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Organization Management",
+      "item": [
+        {
+          "name": "Create Organization",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orgName\": \"{{random_org_name}}\",\n  \"orgDesc\": \"Test organization created via Postman\",\n  \"clientName\": \"Test Client Corp\",\n  \"industry\": \"Technology\",\n  \"companySize\": \"11-50\",\n  \"website\": \"https://testclient.com\",\n  \"contactEmail\": \"{{random_email}}\",\n  \"contactPhone\": \"+1-555-0123\",\n  \"address\": \"123 Test Street\",\n  \"city\": \"San Francisco\",\n  \"state\": \"CA\",\n  \"country\": \"USA\",\n  \"zipCode\": \"94105\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v2/organization",
+              "host": ["{{base_url}}"],
+              "path": ["v2", "organization"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organization created successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('organizationId');",
+                  "    pm.environment.set('org_id', responseJson.organizationId);",
+                  "});",
+                  "",
+                  "pm.test('Response contains required fields', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('orgName');",
+                  "    pm.expect(responseJson).to.have.property('billingMode');",
+                  "    pm.expect(responseJson).to.have.property('subscriptionType');",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('random_org_name', 'Test Org ' + Math.random().toString(36).substring(7));",
+                  "pm.environment.set('random_email', 'test+' + Math.random().toString(36).substring(7) + '@example.com');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User Organizations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/v2/organizations",
+              "host": ["{{base_url}}"],
+              "path": ["v2", "organizations"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organizations retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('organization');",
+                  "});",
+                  "",
+                  "pm.test('Organization data is valid', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.organization) {",
+                  "        pm.expect(responseJson.organization).to.have.property('orgId');",
+                  "        pm.expect(responseJson.organization).to.have.property('orgName');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Employee Management",
+      "item": [
+        {
+          "name": "Get Employee by Username",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "get_type",
+                "value": "get-user-by-username"
+              },
+              {
+                "key": "user-id",
+                "value": "{{test_username}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/manage-employee-data",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "manage-employee-data"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Employee data retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('UserName');",
+                  "    pm.expect(responseJson).to.have.property('EmailId');",
+                  "});",
+                  "",
+                  "pm.test('Email format is valid', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.EmailId) {",
+                  "        const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;",
+                  "        pm.expect(responseJson.EmailId).to.match(emailRegex);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Employees",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "get_type",
+                "value": "get-all-users"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/manage-employee-data",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "manage-employee-data"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Employee list retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Each employee has required fields', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.length > 0) {",
+                  "        responseJson.forEach(employee => {",
+                  "            pm.expect(employee).to.have.property('UserName');",
+                  "            pm.expect(employee).to.have.property('EmailId');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Teams Management",
+      "item": [
+        {
+          "name": "Create Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teamName\": \"{{random_team_name}}\",\n  \"teamDesc\": \"Test team created via Postman API testing\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v2/teams",
+              "host": ["{{base_url}}"],
+              "path": ["v2", "teams"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Team created successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('teamId');",
+                  "    pm.environment.set('team_id', responseJson.teamId);",
+                  "});",
+                  "",
+                  "pm.test('Team has correct properties', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('teamName');",
+                  "    pm.expect(responseJson).to.have.property('status');",
+                  "    pm.expect(responseJson.status).to.eql('ACTIVE');",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('random_team_name', 'Test Team ' + Math.random().toString(36).substring(7));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List User Teams",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/v2/teams",
+              "host": ["{{base_url}}"],
+              "path": ["v2", "teams"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Teams list retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('teams');",
+                  "    pm.expect(responseJson.teams).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Response includes team count', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('count');",
+                  "    pm.expect(responseJson.count).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Subscription Management",
+      "item": [
+        {
+          "name": "Get Available Subscription Plans",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/v2/subscription/plans",
+              "host": ["{{base_url}}"],
+              "path": ["v2", "subscription", "plans"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Subscription plans retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('plans');",
+                  "    pm.expect(responseJson.plans).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Plans have required properties', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.plans && responseJson.plans.length > 0) {",
+                  "        responseJson.plans.forEach(plan => {",
+                  "            pm.expect(plan).to.have.property('planId');",
+                  "            pm.expect(plan).to.have.property('planName');",
+                  "            pm.expect(plan).to.have.property('maxTeams');",
+                  "            pm.expect(plan).to.have.property('maxMembers');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Subscription",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationId\": \"{{org_id}}\",\n  \"planId\": \"professional\",\n  \"billingPlan\": \"MONTHLY\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v2/subscription",
+              "host": ["{{base_url}}"],
+              "path": ["v2", "subscription"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Subscription updated successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Error Handling Tests",
+      "item": [
+        {
+          "name": "Test Unauthorized Access",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/v2/organizations",
+              "host": ["{{base_url}}"],
+              "path": ["v2", "organizations"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Unauthorized access returns 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Error message is present', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Invalid Organization ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/v2/organization/invalid-id",
+              "host": ["{{base_url}}"],
+              "path": ["v2", "organization", "invalid-id"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid ID returns appropriate error', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+                  "});",
+                  "",
+                  "pm.test('Error response has message', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('error').or.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

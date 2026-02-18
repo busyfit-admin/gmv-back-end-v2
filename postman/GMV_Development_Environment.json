@@ -1,0 +1,101 @@
+{
+  "id": "gmv-dev-environment",
+  "name": "GMV Development",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://mvp-dev.4cl-tech.com.au",
+      "description": "Base API URL for development environment",
+      "enabled": true
+    },
+    {
+      "key": "auth_url",
+      "value": "https://cognito-idp.ap-south-1.amazonaws.com",
+      "description": "AWS Cognito authentication URL",
+      "enabled": true
+    },
+    {
+      "key": "client_id",
+      "value": "YOUR_COGNITO_CLIENT_ID",
+      "description": "Cognito User Pool Client ID - replace with actual value",
+      "enabled": true
+    },
+    {
+      "key": "username",
+      "value": "test@example.com",
+      "description": "Test user username/email",
+      "enabled": true
+    },
+    {
+      "key": "password",
+      "value": "TestPassword123!",
+      "description": "Test user password",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "description": "JWT access token from Cognito authentication",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "description": "Refresh token for token renewal",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "id_token",
+      "value": "",
+      "description": "ID token from Cognito",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "token_expiry",
+      "value": "",
+      "description": "Token expiry timestamp",
+      "enabled": true
+    },
+    {
+      "key": "org_id",
+      "value": "",
+      "description": "Organization ID for testing",
+      "enabled": true
+    },
+    {
+      "key": "team_id",
+      "value": "",
+      "description": "Team ID for testing",
+      "enabled": true
+    },
+    {
+      "key": "test_username",
+      "value": "testuser",
+      "description": "Username for employee testing",
+      "enabled": true
+    },
+    {
+      "key": "random_org_name",
+      "value": "",
+      "description": "Dynamically generated organization name",
+      "enabled": true
+    },
+    {
+      "key": "random_email",
+      "value": "",
+      "description": "Dynamically generated email address",
+      "enabled": true
+    },
+    {
+      "key": "random_team_name",
+      "value": "",
+      "description": "Dynamically generated team name",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,14 +28,17 @@ const (
 type TeamMemberRole string
 
 const (
-	TeamMemberRoleAdmin  TeamMemberRole = "ADMIN"
-	TeamMemberRoleMember TeamMemberRole = "MEMBER"
+	TeamMemberRoleAdmin  TeamMemberRole = "ADMIN"  // Can manage team creation, members, and settings
+	TeamMemberRoleOwner  TeamMemberRole = "OWNER"  // Can handle team management and lifecycle
+	TeamMemberRoleMember TeamMemberRole = "MEMBER" // Regular team member with standard access
+	TeamMemberRoleGuest  TeamMemberRole = "GUEST"  // Limited access member - view only
 )
 
 // TeamMetadata represents team information
 type TeamMetadata struct {
-	PK          string     `dynamodbav:"PK" json:"-"` // TEAM#uuid
-	SK          string     `dynamodbav:"SK" json:"-"` // METADATA
+	PK          string     `dynamodbav:"PK" json:"-"`        // TEAM#uuid
+	SK          string     `dynamodbav:"SK" json:"-"`        // METADATA
+	OrgId       string     `dynamodbav:"OrgId" json:"orgId"` // entered during team creation. Cannot be null
 	TeamId      string     `dynamodbav:"TeamId" json:"teamId"`
 	TeamName    string     `dynamodbav:"TeamName" json:"teamName"`
 	TeamDesc    string     `dynamodbav:"TeamDesc" json:"teamDesc"`
@@ -75,6 +79,7 @@ type UserTeamInfo struct {
 type CreateTeamInput struct {
 	TeamName string `json:"teamName" validate:"required"`
 	TeamDesc string `json:"teamDesc"`
+	OrgId    string `json:"orgId" validate:"required"`
 	UserName string `json:"-"` // Set from auth context
 }
 
@@ -131,6 +136,7 @@ func (svc *TeamsServiceV2) CreateTeam(input CreateTeamInput) (*TeamMetadata, err
 	teamMetadata := TeamMetadata{
 		PK:          teamId,
 		SK:          "METADATA",
+		OrgId:       input.OrgId,
 		TeamId:      teamId,
 		TeamName:    input.TeamName,
 		TeamDesc:    input.TeamDesc,
@@ -212,6 +218,12 @@ func (svc *TeamsServiceV2) SetCurrentTeam(userName string, userCognitoId string,
 		return fmt.Errorf("employee service not initialized")
 	}
 
+	svc.logger.Printf("Setting current team for user %s (Cognito ID: %s) to team %s", userName, userCognitoId, teamId)
+
+	if !strings.HasPrefix(teamId, "TEAM#") {
+		teamId = fmt.Sprintf("TEAM#%s", teamId)
+	}
+
 	// Verify user is a member of the team
 	memberInput := &dynamodb.GetItemInput{
 		TableName: aws.String(svc.TeamsTable),
@@ -284,7 +296,7 @@ func (svc *TeamsServiceV2) GetCurrentTeam(userCognitoId string) (string, error) 
 // GetUserTeams retrieves all teams for a user
 func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) ([]UserTeamInfo, error) {
 	// Get user's current team preference
-	currentTeamId, _ := svc.GetCurrentTeam(userCognitoId)
+	currentTeamId, _ := svc.GetCurrentTeam(userName)
 
 	// Query GSI1 to get all teams for the user
 	input := &dynamodb.QueryInput{
@@ -303,6 +315,7 @@ func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) (
 	}
 
 	if len(result.Items) == 0 {
+		svc.logger.Printf("No teams found for user %s", userName)
 		return []UserTeamInfo{}, nil
 	}
 
@@ -339,22 +352,52 @@ func (svc *TeamsServiceV2) GetUserTeams(userName string, userCognitoId string) (
 		})
 	}
 
-	// If no current team is set and user has teams, automatically set the first one
-	if currentTeamId == "" && len(userTeams) > 0 {
-		firstTeamId := userTeams[0].TeamId
-		svc.logger.Printf("No current team set for user %s, auto-setting to first team: %s", userName, firstTeamId)
+	return userTeams, nil
+}
 
-		// Attempt to set the first team as current (ignore error if it fails)
-		if err := svc.SetCurrentTeam(userName, userCognitoId, firstTeamId); err == nil {
-			// Mark the first team as logged in
-			userTeams[0].IsLoggedIn = true
-			svc.logger.Printf("Successfully auto-set current team to %s for user %s", firstTeamId, userName)
-		} else {
-			svc.logger.Printf("Failed to auto-set current team: %v", err)
-		}
+// Get Organization Teams retrieves all teams for an organization
+func (svc *TeamsServiceV2) GetOrganizationTeams(orgId string) ([]TeamMetadata, error) {
+
+	// if org id is empty, return error
+	if orgId == "" {
+		return nil, fmt.Errorf("organization ID cannot be empty")
 	}
 
-	return userTeams, nil
+	// if org id doesnot begin with ORG#, add it
+	if strings.HasPrefix(orgId, "ORG#") == false {
+		orgId = "ORG#" + orgId
+	}
+
+	// Query to get all teams for the organization
+	input := &dynamodb.QueryInput{
+		TableName:              aws.String(svc.TeamsTable),
+		IndexName:              aws.String("OrgId-Index"),
+		KeyConditionExpression: aws.String("OrgId = :orgId AND SK = :metadataSk"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":orgId":      &types.AttributeValueMemberS{Value: orgId},
+			":metadataSk": &types.AttributeValueMemberS{Value: "METADATA"},
+		},
+	}
+
+	result, err := svc.dynamodbClient.Query(svc.ctx, input)
+	if err != nil {
+		svc.logger.Printf("Failed to query organization teams: %v", err)
+		return nil, fmt.Errorf("failed to query organization teams: %w", err)
+	}
+
+	if len(result.Items) == 0 {
+		return []TeamMetadata{}, nil
+	}
+
+	// Unmarshal team metadata
+	var teams []TeamMetadata
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &teams)
+	if err != nil {
+		svc.logger.Printf("Failed to unmarshal organization teams: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal organization teams: %w", err)
+	}
+
+	return teams, nil
 }
 
 // GetTeamMetadata retrieves team metadata

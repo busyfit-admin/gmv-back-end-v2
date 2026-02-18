@@ -1,4 +1,4 @@
-SUBDIRS := $(wildcard */.)
+SUBDIRS := $(filter-out v1_related_lambdas/., $(wildcard */.))
 
 test: $(SUBDIRS)
 

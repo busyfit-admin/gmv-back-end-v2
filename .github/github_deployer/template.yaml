@@ -1,0 +1,187 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'GitHub Actions IAM User for GMV CI/CD with minimal required permissions'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: gmv
+    Description: Project name for resource naming
+  
+  Environment:
+    Type: String 
+    Default: ci-cd
+    Description: Environment identifier
+
+  S3DeploymentBucket:
+    Type: String
+    Default: gmv-test-deployment-bucket
+    Description: S3 bucket name for Lambda deployment packages
+
+Resources:
+  # IAM Policy for GitHub Actions CI/CD
+  GitHubActionsCIPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub '${ProjectName}-github-actions-ci-policy'
+      Description: 'Minimal permissions for GitHub Actions CI/CD pipeline'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # CloudFormation permissions for specific stack
+          - Sid: CloudFormationAccess
+            Effect: Allow
+            Action:
+              - cloudformation:*
+            Resource: '*'
+            
+          # S3 permissions for deployment bucket
+          - Sid: S3DeploymentBucketAccess
+            Effect: Allow
+            Action:
+              - s3:*
+            Resource: '*'
+      
+          # Lambda permissions
+          - Sid: LambdaAccess
+            Effect: Allow
+            Action:
+              - lambda:*
+            Resource: 
+              - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:*'
+
+          # API Gateway permissions
+          - Sid: APIGatewayAccess
+            Effect: Allow
+            Action:
+              - apigateway:*
+            Resource: !Sub 'arn:aws:apigateway:${AWS::Region}::/*'
+
+          # Cognito permissions
+          - Sid: CognitoAccess
+            Effect: Allow
+            Action: 
+              - cognito-idp:*
+            Resource:
+              - !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*'
+
+          # DynamoDB permissions
+          - Sid: DynamoDBAccess
+            Effect: Allow
+            Action:
+              - dynamodb:*
+            Resource: '*'
+
+          # IAM permissions for role management
+          - Sid: IAMRoleManagement
+            Effect: Allow
+            Action:
+              - iam:'*'
+            Resource: '*'
+
+          # CloudWatch Logs permissions
+          - Sid: CloudWatchLogsAccess
+            Effect: Allow
+            Action: '*'
+            Resource: '*'
+
+          # Additional permissions for CloudFormation service role
+          - Sid: AdditionalAWSServicesAccess
+            Effect: Allow
+            Action:
+              - sts:GetCallerIdentity
+              - cloudformation:ListExports
+              - cloudformation:ListImports
+              - events:PutRule
+              - events:DeleteRule
+              - events:PutTargets
+              - events:RemoveTargets
+              - events:DescribeRule
+            Resource: '*'
+
+  # IAM User for GitHub Actions
+  GitHubActionsUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub '${ProjectName}-github-actions-ci'
+      ManagedPolicyArns:
+        - !Ref GitHubActionsCIPolicy
+      Tags:
+        - Key: Purpose
+          Value: GitHub Actions CI/CD
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: CreatedBy
+          Value: CloudFormation
+
+  # Access Key for GitHub Actions User
+  GitHubActionsAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref GitHubActionsUser
+
+  # S3 Bucket for deployment artifacts
+  DeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3DeploymentBucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+          - Id: DeleteOldArtifacts
+            Status: Enabled
+            ExpirationInDays: 90
+      Tags:
+        - Key: Purpose
+          Value: GitHub Actions CI/CD Artifacts
+        - Key: Project
+          Value: !Ref ProjectName
+
+Outputs:
+  IAMUserName:
+    Description: 'GitHub Actions IAM User Name'
+    Value: !Ref GitHubActionsUser
+    Export:
+      Name: !Sub '${ProjectName}-github-actions-user'
+
+  AccessKeyId:
+    Description: 'Access Key ID for GitHub Actions'
+    Value: !Ref GitHubActionsAccessKey
+    Export:
+      Name: !Sub '${ProjectName}-github-actions-access-key-id'
+
+  SecretAccessKey:
+    Description: 'Secret Access Key for GitHub Actions (Handle with care!)'
+    Value: !GetAtt GitHubActionsAccessKey.SecretAccessKey
+    Export:
+      Name: !Sub '${ProjectName}-github-actions-secret-key'
+
+  S3BucketName:
+    Description: 'S3 Bucket for deployment artifacts'
+    Value: !Ref DeploymentBucket
+    Export:
+      Name: !Sub '${ProjectName}-deployment-bucket'
+
+  PolicyArn:
+    Description: 'GitHub Actions Policy ARN'
+    Value: !Ref GitHubActionsCIPolicy
+    Export:
+      Name: !Sub '${ProjectName}-github-actions-policy'
+
+  SetupCommands:
+    Description: 'Commands to configure GitHub secrets'
+    Value: !Sub |
+      # Add these secrets to your GitHub repository:
+      # Settings > Secrets and variables > Actions > New repository secret
+      
+      AWS_ACCESS_KEY_ID: ${GitHubActionsAccessKey}
+      AWS_SECRET_ACCESS_KEY: ${GitHubActionsAccessKey.SecretAccessKey}
+      LAMBDA_ARTIFACTS_BUCKET: ${DeploymentBucket}

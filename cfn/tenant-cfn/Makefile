@@ -28,7 +28,15 @@ PROJECT := "AdminV1"
 PROVISIONER := CloudFormation
 
 test:
-	cfn-lint $(TEMPLATE) --ignore-checks E1019 E1011
+	@echo "Testing CloudFormation template..."
+	@if command -v cfn-lint >/dev/null 2>&1; then \
+		echo "Running cfn-lint validation..."; \
+		cfn-lint $(TEMPLATE) --ignore-checks E1019 E1011; \
+	else \
+		echo "⚠️  cfn-lint not found, using AWS CloudFormation validate-template..."; \
+		aws cloudformation validate-template --template-body file://$(TEMPLATE) && \
+		echo "✅ CloudFormation template is valid"; \
+	fi
 
 local:
 

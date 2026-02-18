@@ -65,6 +65,7 @@ var apiHeaders = map[string][]string{
 		"related-id",
 		"user-id",
 		"manager-id",
+		"list-org-teams",
 	},
 	"EngagementsAPI": {
 		"get-all-engagements",
@@ -136,6 +137,17 @@ var apiHeaders = map[string][]string{
 		"get-survey-questions",
 		"get-survey-responses",
 		"submit-survey-response",
+	},
+	"OrganizationAPI": {
+		"organization-id",
+		"Organization-Id",
+		"get-organization",
+		"list-organizations",
+		"create-organization",
+		"update-organization",
+		"manage-subscription",
+		"promo-code",
+		"check-org-admin",
 	},
 }
 

@@ -12,6 +12,9 @@ install:
 	pip3 install -r requirements.txt
 	pip3 install pytest pytest-cov pylint
 
+build:
+	@echo "No build step required for this Python module."
+
 test:
 	python3 -m unittest test_sync_cognito_to_ddb.py -v
 
