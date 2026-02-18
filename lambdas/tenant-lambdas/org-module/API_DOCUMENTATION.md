@@ -3,6 +3,25 @@
 ## Overview
 The Organization Management API provides comprehensive endpoints for managing organizations, subscriptions, billing, and promotional codes within the tenant API Gateway. All endpoints are prefixed with `/v2/` and require JWT authentication via AWS Cognito.
 
+## Organization Performance APIs
+
+The Organization Performance APIs are now exposed under `/v2` and mapped to the `manage-org-performance` Lambda. They include:
+
+- Performance Cycles CRUD
+- Quarters CRUD
+- KPI CRUD, Sub-KPI, KPI value updates
+- OKR CRUD, Key Result progress updates
+- Meeting Notes CRUD
+- Cycle/Quarter analytics
+- Goals endpoints (details, value history, tagged teams, sub-items, ladder-up workflow, private tasks)
+
+### Implementation Source Links
+
+- Swagger Paths: `swagger-docs/tenant/tenant-apis.yaml`
+- CFN Lambda Wiring: `cfn/tenant-cfn/template.yaml`
+- Lambda Handler: `lambdas/tenant-lambdas/org-module/manage-org-performance/manage-org-performance.go`
+- Core Business Logic: `lambdas/lib/company-lib/company-org-performance.go`
+
 ## Base URL
 All endpoints are relative to your API Gateway base URL with the `/v2/` prefix:
 ```
