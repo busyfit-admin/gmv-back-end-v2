@@ -1513,6 +1513,17 @@ paths:
   # --------------- Organization Performance Endpoints ---------------
 
   /v2/organizations/{orgId}/performance-cycles:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List performance cycles
       description: List organization performance cycles with optional status/fiscal year filtering and optional nested data.
@@ -1543,6 +1554,17 @@ paths:
         - UserPool: []
 
   /v2/performance-cycles/{cycleId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: Get performance cycle details
       description: Get one performance cycle with optional nested quarters/KPIs/OKRs/analytics.
@@ -1587,6 +1609,17 @@ paths:
         - UserPool: []
 
   /v2/performance-cycles/{cycleId}/quarters:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List quarters for cycle
       description: List all quarters belonging to the performance cycle.
@@ -1617,6 +1650,17 @@ paths:
         - UserPool: []
 
   /v2/quarters/{quarterId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: Get quarter details
       description: Get quarter details with optional nested entities.
@@ -1661,6 +1705,17 @@ paths:
         - UserPool: []
 
   /v2/kpis:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List KPIs
       description: List KPIs with filtering support.
@@ -1691,6 +1746,17 @@ paths:
         - UserPool: []
 
   /v2/kpis/{kpiId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: Get KPI details
       description: Get full KPI details with optional sub-KPIs/value history.
@@ -1735,6 +1801,17 @@ paths:
         - UserPool: []
 
   /v2/kpis/{kpiId}/sub-kpis:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     post:
       summary: Create Sub-KPI
       description: Create KPI as a child of another KPI.
@@ -1751,6 +1828,17 @@ paths:
         - UserPool: []
 
   /v2/kpis/{kpiId}/values:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     post:
       summary: Update KPI value
       description: Add KPI value history entry and refresh KPI current value.
@@ -1767,6 +1855,17 @@ paths:
         - UserPool: []
 
   /v2/okrs:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List OKRs
       description: List OKRs with filtering support.
@@ -1797,6 +1896,17 @@ paths:
         - UserPool: []
 
   /v2/okrs/{okrId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: Get OKR details
       description: Get full OKR details with optional key results/progress history.
@@ -1841,6 +1951,17 @@ paths:
         - UserPool: []
 
   /v2/key-results/{keyResultId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     patch:
       summary: Update key result progress
       description: Update key result status/current value/commentary.
@@ -1857,6 +1978,17 @@ paths:
         - UserPool: []
 
   /v2/quarters/{quarterId}/meeting-notes:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List meeting notes
       description: List meeting notes for quarter.
@@ -1887,6 +2019,17 @@ paths:
         - UserPool: []
 
   /v2/meeting-notes/{noteId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     patch:
       summary: Update meeting note
       description: Update meeting note fields.
@@ -1917,6 +2060,17 @@ paths:
         - UserPool: []
 
   /v2/performance-cycles/{cycleId}/analytics:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: Get cycle analytics
       description: Retrieve aggregated KPI/OKR analytics for cycle.
@@ -1933,6 +2087,17 @@ paths:
         - UserPool: []
 
   /v2/quarters/{quarterId}/analytics:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: Get quarter analytics
       description: Retrieve analytics scoped to quarter.
@@ -1949,6 +2114,17 @@ paths:
         - UserPool: []
 
   /v2/goals/{goalId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: Get goal details
       description: Unified goal view for KPI/OKR with optional linked data.
@@ -1979,6 +2155,17 @@ paths:
         - UserPool: []
 
   /v2/goals/{goalId}/value-history:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List goal value history
       description: Retrieve historical value entries for goal.
@@ -2009,6 +2196,17 @@ paths:
         - UserPool: []
 
   /v2/goals/{goalId}/teams:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List goal tagged teams
       description: List all teams tagged to goal.
@@ -2039,6 +2237,17 @@ paths:
         - UserPool: []
 
   /v2/goals/{goalId}/teams/{teamId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     delete:
       summary: Remove team tag
       description: Remove a team-to-goal tag.
@@ -2055,6 +2264,17 @@ paths:
         - UserPool: []
 
   /v2/goals/{goalId}/sub-items:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List goal sub-items
       description: List sub-KPIs or key result style sub-items under a goal.
@@ -2085,6 +2305,17 @@ paths:
         - UserPool: []
 
   /v2/sub-items/{subItemId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     patch:
       summary: Update sub-item
       description: Update sub-item fields.
@@ -2115,6 +2346,17 @@ paths:
         - UserPool: []
 
   /v2/goals/{goalId}/ladder-up:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List ladder-up suggestions
       description: Get proposed team goal alignments for approval workflow.
@@ -2131,6 +2373,17 @@ paths:
         - UserPool: []
 
   /v2/ladder-up/{ladderUpId}/approve:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     patch:
       summary: Approve ladder-up suggestion
       description: Approve proposed ladder-up relation.
@@ -2147,6 +2400,17 @@ paths:
         - UserPool: []
 
   /v2/ladder-up/{ladderUpId}/reject:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     patch:
       summary: Reject ladder-up suggestion
       description: Reject proposed ladder-up relation.
@@ -2163,6 +2427,17 @@ paths:
         - UserPool: []
 
   /v2/goals/{goalId}/tasks:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     get:
       summary: List private tasks
       description: List current user's private tasks for goal.
@@ -2193,6 +2468,17 @@ paths:
         - UserPool: []
 
   /v2/goals/{goalId}/tasks/{taskId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageOrgPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     patch:
       summary: Update private task
       description: Update current user's private task state/details.
