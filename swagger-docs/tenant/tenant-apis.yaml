@@ -1734,7 +1734,7 @@ paths:
       security:
         - UserPool: []
 
-  /v2/kpis/{parentKpiId}/sub-kpis:
+  /v2/kpis/{kpiId}/sub-kpis:
     post:
       summary: Create Sub-KPI
       description: Create KPI as a child of another KPI.

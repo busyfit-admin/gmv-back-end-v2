@@ -21,6 +21,7 @@ The Organization Performance APIs are now exposed under `/v2` and mapped to the 
 - CFN Lambda Wiring: `cfn/tenant-cfn/template.yaml`
 - Lambda Handler: `lambdas/tenant-lambdas/org-module/manage-org-performance/manage-org-performance.go`
 - Core Business Logic: `lambdas/lib/company-lib/company-org-performance.go`
+- Detailed API Documentation: `lambdas/tenant-lambdas/org-module/manage-org-performance/API_DOCUMENTATION.md`
 
 ## Base URL
 All endpoints are relative to your API Gateway base URL with the `/v2/` prefix:
