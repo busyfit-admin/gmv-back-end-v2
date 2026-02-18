@@ -19,8 +19,10 @@ The Organization Performance APIs are now exposed under `/v2` and mapped to the 
 
 - Swagger Paths: `swagger-docs/tenant/tenant-apis.yaml`
 - CFN Lambda Wiring: `cfn/tenant-cfn/template.yaml`
-- Lambda Handler: `lambdas/tenant-lambdas/org-module/manage-org-performance/manage-org-performance.go`
+- Lambda Handlers (split): `lambdas/tenant-lambdas/org-performance/`
+- Shared Handler: `lambdas/tenant-lambdas/org-performance/common/handler.go`
 - Core Business Logic: `lambdas/lib/company-lib/company-org-performance.go`
+- Performance Lambda Docs: `lambdas/tenant-lambdas/org-performance/README.md`
 - Detailed API Documentation: `lambdas/tenant-lambdas/org-module/manage-org-performance/API_DOCUMENTATION.md`
 
 ## Base URL

@@ -44,7 +44,8 @@ type PerformanceService struct {
 	dynamodbClient awsclients.DynamodbClient
 	logger         *log.Logger
 
-	OrganizationTable string
+	OrgPerformanceTable string
+	OrganizationTable   string
 }
 
 type PerformanceRecord struct {
@@ -88,6 +89,13 @@ func (svc *PerformanceService) normalizeOrgID(orgID string) string {
 
 func (svc *PerformanceService) now() string {
 	return time.Now().UTC().Format(time.RFC3339)
+}
+
+func (svc *PerformanceService) performanceTableName() string {
+	if strings.TrimSpace(svc.OrgPerformanceTable) != "" {
+		return svc.OrgPerformanceTable
+	}
+	return svc.OrganizationTable
 }
 
 func (svc *PerformanceService) ensurePagination(options ListQueryOptions) ListQueryOptions {
@@ -149,7 +157,7 @@ func (svc *PerformanceService) putRecord(record PerformanceRecord) error {
 	}
 
 	_, err = svc.dynamodbClient.PutItem(svc.ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(svc.OrganizationTable),
+		TableName: aws.String(svc.performanceTableName()),
 		Item:      item,
 	})
 	if err != nil {
@@ -162,7 +170,7 @@ func (svc *PerformanceService) putRecord(record PerformanceRecord) error {
 func (svc *PerformanceService) getRecordByPKSK(orgID string, sk string) (*PerformanceRecord, error) {
 	pk := svc.normalizeOrgID(orgID)
 	out, err := svc.dynamodbClient.GetItem(svc.ctx, &dynamodb.GetItemInput{
-		TableName: aws.String(svc.OrganizationTable),
+		TableName: aws.String(svc.performanceTableName()),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: pk},
 			"SK": &types.AttributeValueMemberS{Value: sk},
@@ -184,7 +192,7 @@ func (svc *PerformanceService) getRecordByPKSK(orgID string, sk string) (*Perfor
 
 func (svc *PerformanceService) getRecordByGSI1(gsi1pk string) (*PerformanceRecord, error) {
 	out, err := svc.dynamodbClient.Query(svc.ctx, &dynamodb.QueryInput{
-		TableName:              aws.String(svc.OrganizationTable),
+		TableName:              aws.String(svc.performanceTableName()),
 		IndexName:              aws.String(perfGSIIndexName),
 		KeyConditionExpression: aws.String("GSI1PK = :gsi1pk"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -209,7 +217,7 @@ func (svc *PerformanceService) getRecordByGSI1(gsi1pk string) (*PerformanceRecor
 func (svc *PerformanceService) queryByOrgPrefix(orgID string, skPrefix string) ([]PerformanceRecord, error) {
 	pk := svc.normalizeOrgID(orgID)
 	out, err := svc.dynamodbClient.Query(svc.ctx, &dynamodb.QueryInput{
-		TableName:              aws.String(svc.OrganizationTable),
+		TableName:              aws.String(svc.performanceTableName()),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :skPrefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk":       &types.AttributeValueMemberS{Value: pk},
@@ -233,7 +241,7 @@ func (svc *PerformanceService) queryByOrgPrefix(orgID string, skPrefix string) (
 
 func (svc *PerformanceService) deleteRecord(record *PerformanceRecord) error {
 	_, err := svc.dynamodbClient.DeleteItem(svc.ctx, &dynamodb.DeleteItemInput{
-		TableName: aws.String(svc.OrganizationTable),
+		TableName: aws.String(svc.performanceTableName()),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: record.PK},
 			"SK": &types.AttributeValueMemberS{Value: record.SK},

@@ -1,11 +1,13 @@
 # Manage Org Performance API Documentation
 
 ## Overview
-This Lambda handles organization performance management APIs under the `/v2` prefix.
+Organization performance APIs are handled by split lambdas under `lambdas/tenant-lambdas/org-performance/`.
 
-- Lambda: `lambdas/tenant-lambdas/org-module/manage-org-performance/manage-org-performance.go`
+- Lambda group: `lambdas/tenant-lambdas/org-performance/`
+- Shared handler: `lambdas/tenant-lambdas/org-performance/common/handler.go`
 - Core logic: `lambdas/lib/company-lib/company-org-performance.go`
 - Swagger source: `swagger-docs/tenant/tenant-apis.yaml`
+- Data table: `OrgPerformanceTable` (env var `ORG_PERFORMANCE_TABLE`)
 
 ## Authentication & Authorization
 - All endpoints require Cognito-authenticated requests.

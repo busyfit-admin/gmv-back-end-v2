@@ -551,6 +551,35 @@ Resources:
           Projection:
             ProjectionType: "ALL"
 
+  OrgPerformanceTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub OrgPerformanceTable-${Environment}
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      BillingMode: "PAY_PER_REQUEST"
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: "GSI1PK"
+              KeyType: "HASH"
+            - AttributeName: "GSI1SK"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+
   PromoCodesTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -1391,33 +1420,123 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
-  # ---------- Lambda to manage organization performance ----------
+  # ---------- Lambda to manage performance cycles/quarters/analytics ----------
 
-  ManageOrgPerformanceLambda:
+  ManagePerformanceCyclesLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Description: "Lambda to manage organization performance cycles, KPIs, OKRs, goals, and analytics"
+      Description: "Lambda to manage org performance cycles, quarters, notes, and analytics"
       Role: !GetAtt OrganizationLambdaRole.Arn
       Handler: bootstrap
       Runtime: provided.al2
       Architectures:
         - x86_64
       Timeout: 300
-      CodeUri: ../../lambdas/tenant-lambdas/org-module/manage-org-performance/
+      CodeUri: ../../lambdas/tenant-lambdas/org-performance/manage-performance-cycles/
       Tracing: Active
       Environment:
         Variables:
           Environment: !Ref Environment
           ORGANIZATION_TABLE: !Ref OrgsTable
-          PROMO_CODES_TABLE: !Ref PromoCodesTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
 
-  ManageOrgPerformanceLambdaInvokePermissions:
+  ManagePerformanceCyclesLambdaInvokePermissions:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt ManageOrgPerformanceLambda.Arn
+      FunctionName: !GetAtt ManagePerformanceCyclesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage KPIs ----------
+
+  ManagePerformanceKPIsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage org performance KPIs"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-performance/manage-performance-kpis/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManagePerformanceKPIsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePerformanceKPIsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage OKRs ----------
+
+  ManagePerformanceOKRsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage org performance OKRs"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-performance/manage-performance-okrs/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManagePerformanceOKRsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePerformanceOKRsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage goals/task/ladder-up ----------
+
+  ManagePerformanceGoalsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage org performance goals, ladder-up, and tasks"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-performance/manage-performance-goals/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManagePerformanceGoalsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePerformanceGoalsLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
@@ -1467,6 +1586,8 @@ Resources:
                 Resource:
                   - !GetAtt OrgsTable.Arn
                   - !Sub ${OrgsTable.Arn}/index/*
+                  - !GetAtt OrgPerformanceTable.Arn
+                  - !Sub ${OrgPerformanceTable.Arn}/index/*
                   - !GetAtt PromoCodesTable.Arn
                   - !Sub ${PromoCodesTable.Arn}/index/*
                   - !GetAtt EmployeeDataTable.Arn
@@ -1478,6 +1599,7 @@ Resources:
                   - dynamodb:TransactWriteItems
                 Resource:
                   - !GetAtt OrgsTable.Arn
+                  - !GetAtt OrgPerformanceTable.Arn
                   - !GetAtt PromoCodesTable.Arn
                   - !GetAtt EmployeeDataTable.Arn
                   - !GetAtt TenantTeamsTableV2.Arn
