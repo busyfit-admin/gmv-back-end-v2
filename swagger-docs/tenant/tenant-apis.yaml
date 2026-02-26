@@ -2508,6 +2508,504 @@ paths:
       security:
         - UserPool: []
 
+# ---------- Team Feed APIs ----------
+
+  /v2/teams/{teamId}/feed:
+    get:
+      summary: List team feed
+      description: Returns a paginated list of posts for the team feed, newest first.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: page
+          in: query
+          required: false
+          type: integer
+        - name: limit
+          in: query
+          required: false
+          type: integer
+        - name: type
+          in: query
+          required: false
+          type: string
+          description: "Filter by post type: update | kudos | task | poll | checklist | event"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/posts:
+    post:
+      summary: Create a feed post
+      description: Creates a new post of any supported type in the team feed.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/posts/{postId}:
+    get:
+      summary: Get a single post
+      description: Returns full post detail including comments, poll results, and checklist items.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    put:
+      summary: Edit a post
+      description: Updates an existing post. Only the original author can edit.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete a post
+      description: Deletes a post. Only the author or a team admin can delete.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/likes:
+    get:
+      summary: Get post likes
+      description: Returns the list of users who liked the post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Like a post
+      description: Likes a post. Idempotent — liking an already-liked post is a no-op.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Unlike a post
+      description: Removes the current user's like from a post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/comments:
+    get:
+      summary: List comments
+      description: Returns threaded comments for a post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: page
+          in: query
+          required: false
+          type: integer
+        - name: limit
+          in: query
+          required: false
+          type: integer
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostCommentsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add a comment
+      description: Adds a new comment to a post. Supports threaded replies via parentCommentId.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostCommentsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/comments/{commentId}:
+    put:
+      summary: Edit a comment
+      description: Updates a comment. Only the author can edit.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: commentId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostCommentsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete a comment
+      description: Deletes a comment. Only the author or a team admin can delete.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: commentId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostCommentsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/comments/{commentId}/likes:
+    post:
+      summary: Like a comment
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: commentId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Unlike a comment
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: commentId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/poll/vote:
+    post:
+      summary: Cast or change a poll vote
+      description: Submitting a new vote while one exists replaces the previous vote.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePollVotesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Retract a poll vote
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePollVotesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/poll/results:
+    get:
+      summary: Get poll results
+      description: Returns per-option vote counts and the current user's vote.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePollVotesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/checklist/items:
+    post:
+      summary: Add item to checklist
+      description: Adds a new item to an existing checklist post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageChecklistItemsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/checklist/items/{itemId}:
+    patch:
+      summary: Toggle checklist item completion
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: itemId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageChecklistItemsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Remove a checklist item
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: itemId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageChecklistItemsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/task/status:
+    patch:
+      summary: Update task status
+      description: "Updates the task status. Valid values: todo | in-progress | done"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTaskUpdatesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/task/time:
+    patch:
+      summary: Log time spent on a task
+      description: Adds hours to the task's cumulative time spent counter.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTaskUpdatesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
 components:
   schemas:
     Tenantrequestbody:
