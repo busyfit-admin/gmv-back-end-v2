@@ -156,31 +156,31 @@ func (svc *Service) createPost(teamID, userName, cognitoID, body string) (events
 		UpdatedAt:    now,
 	}
 
-	// Populate type-specific fields
+	// Populate type-specific fields into the data map
 	switch req.Type {
 	case PostTypeKudos:
 		if req.RecipientUserID == "" {
 			return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "recipientUserId is required for kudos posts")
 		}
-		record.KudosRecipientUserID = req.RecipientUserID
+		record.Data.KudosRecipientUserID = req.RecipientUserID
 		if recip, err2 := svc.empSVC.GetEmployeeDataByUserName(req.RecipientUserID); err2 == nil {
-			record.KudosRecipientName = recip.FirstName + " " + recip.LastName
+			record.Data.KudosRecipientName = recip.FirstName + " " + recip.LastName
 		}
 
 	case PostTypeTask:
 		if req.TaskSummary == "" {
 			return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "taskSummary is required for task posts")
 		}
-		record.TaskNumber = fmt.Sprintf("TASK-%s", strings.ToUpper(postID[:6]))
-		record.TaskSummary = req.TaskSummary
-		record.TaskDesc = req.TaskDescription
-		record.AssigneeUserID = req.AssigneeUserID
-		record.DueDate = req.DueDate
-		record.Urgency = req.Urgency
-		record.TaskStatus = "todo"
+		record.Data.TaskNumber = fmt.Sprintf("TASK-%s", strings.ToUpper(postID[:6]))
+		record.Data.TaskSummary = req.TaskSummary
+		record.Data.TaskDesc = req.TaskDescription
+		record.Data.AssigneeUserID = req.AssigneeUserID
+		record.Data.DueDate = req.DueDate
+		record.Data.Urgency = req.Urgency
+		record.Data.TaskStatus = "todo"
 		if req.AssigneeUserID != "" {
 			if assignee, err2 := svc.empSVC.GetEmployeeDataByUserName(req.AssigneeUserID); err2 == nil {
-				record.AssigneeName = assignee.FirstName + " " + assignee.LastName
+				record.Data.AssigneeName = assignee.FirstName + " " + assignee.LastName
 			}
 		}
 
@@ -192,25 +192,25 @@ func (svc *Service) createPost(teamID, userName, cognitoID, body string) (events
 		for i, o := range req.Options {
 			opts[i] = PollOption{OptionID: uuid.New().String(), Text: o.Text}
 		}
-		record.PollQuestion = req.Question
-		record.PollOptions = opts
+		record.Data.PollQuestion = req.Question
+		record.Data.PollOptions = opts
 
 	case PostTypeChecklist:
 		if req.Title == "" {
 			return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "title is required for checklist posts")
 		}
-		record.ChecklistTitle = req.Title
-		record.IsRecurring = req.IsRecurring
-		record.RecurringFrequency = req.RecurringFrequency
+		record.Data.ChecklistTitle = req.Title
+		record.Data.IsRecurring = req.IsRecurring
+		record.Data.RecurringFrequency = req.RecurringFrequency
 
 	case PostTypeEvent:
 		if req.Title == "" || req.EventDate == "" {
 			return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "title and eventDate are required for event posts")
 		}
-		record.EventTitle = req.Title
-		record.EventDate = req.EventDate
-		record.EventTime = req.EventTime
-		record.Location = req.Location
+		record.Data.EventTitle = req.Title
+		record.Data.EventDate = req.EventDate
+		record.Data.EventTime = req.EventTime
+		record.Data.Location = req.Location
 	}
 
 	item, err := attributevalue.MarshalMap(record)
@@ -300,35 +300,35 @@ func (svc *Service) updatePost(teamID, postID, userName, body string) (events.AP
 	switch PostType(record.Type) {
 	case PostTypeTask:
 		if req.TaskSummary != "" {
-			record.TaskSummary = req.TaskSummary
+			record.Data.TaskSummary = req.TaskSummary
 		}
 		if req.TaskDescription != "" {
-			record.TaskDesc = req.TaskDescription
+			record.Data.TaskDesc = req.TaskDescription
 		}
 		if req.DueDate != "" {
-			record.DueDate = req.DueDate
+			record.Data.DueDate = req.DueDate
 		}
 		if req.Urgency != "" {
-			record.Urgency = req.Urgency
+			record.Data.Urgency = req.Urgency
 		}
 	case PostTypeChecklist:
 		if req.Title != "" {
-			record.ChecklistTitle = req.Title
+			record.Data.ChecklistTitle = req.Title
 		}
-		record.IsRecurring = req.IsRecurring
-		record.RecurringFrequency = req.RecurringFrequency
+		record.Data.IsRecurring = req.IsRecurring
+		record.Data.RecurringFrequency = req.RecurringFrequency
 	case PostTypeEvent:
 		if req.Title != "" {
-			record.EventTitle = req.Title
+			record.Data.EventTitle = req.Title
 		}
 		if req.EventDate != "" {
-			record.EventDate = req.EventDate
+			record.Data.EventDate = req.EventDate
 		}
 		if req.EventTime != "" {
-			record.EventTime = req.EventTime
+			record.Data.EventTime = req.EventTime
 		}
 		if req.Location != "" {
-			record.Location = req.Location
+			record.Data.Location = req.Location
 		}
 	}
 
@@ -449,30 +449,30 @@ func (svc *Service) buildPostResponse(r PostRecord, userName string, comments in
 	case PostTypeKudos:
 		resp["kudos"] = map[string]interface{}{
 			"recipient": map[string]interface{}{
-				"userId":     r.KudosRecipientUserID,
-				"name":       r.KudosRecipientName,
+				"userId":     r.Data.KudosRecipientUserID,
+				"name":       r.Data.KudosRecipientName,
 				"profilePic": nil,
 			},
 		}
 
 	case PostTypeTask:
 		resp["task"] = map[string]interface{}{
-			"taskNumber":  r.TaskNumber,
-			"summary":     r.TaskSummary,
-			"description": r.TaskDesc,
+			"taskNumber":  r.Data.TaskNumber,
+			"summary":     r.Data.TaskSummary,
+			"description": r.Data.TaskDesc,
 			"assignee": map[string]interface{}{
-				"userId": r.AssigneeUserID,
-				"name":   r.AssigneeName,
+				"userId": r.Data.AssigneeUserID,
+				"name":   r.Data.AssigneeName,
 			},
-			"dueDate":        r.DueDate,
-			"urgency":        r.Urgency,
-			"status":         r.TaskStatus,
-			"timeSpentHours": r.TimeSpentHours,
+			"dueDate":        r.Data.DueDate,
+			"urgency":        r.Data.Urgency,
+			"status":         r.Data.TaskStatus,
+			"timeSpentHours": r.Data.TimeSpentHours,
 		}
 
 	case PostTypePoll:
-		opts := make([]map[string]interface{}, 0, len(r.PollOptions))
-		for _, o := range r.PollOptions {
+		opts := make([]map[string]interface{}, 0, len(r.Data.PollOptions))
+		for _, o := range r.Data.PollOptions {
 			opts = append(opts, map[string]interface{}{
 				"optionId": o.OptionID,
 				"text":     o.Text,
@@ -480,7 +480,7 @@ func (svc *Service) buildPostResponse(r PostRecord, userName string, comments in
 			})
 		}
 		resp["poll"] = map[string]interface{}{
-			"question":          r.PollQuestion,
+			"question":          r.Data.PollQuestion,
 			"options":           opts,
 			"totalVotes":        0,
 			"userVotedOptionId": nil,
@@ -505,9 +505,9 @@ func (svc *Service) buildPostResponse(r PostRecord, userName string, comments in
 			}
 		}
 		resp["checklist"] = map[string]interface{}{
-			"title":              r.ChecklistTitle,
-			"isRecurring":        r.IsRecurring,
-			"recurringFrequency": r.RecurringFrequency,
+			"title":              r.Data.ChecklistTitle,
+			"isRecurring":        r.Data.IsRecurring,
+			"recurringFrequency": r.Data.RecurringFrequency,
 			"items":              items,
 			"completedCount":     completedCount,
 			"totalCount":         len(items),
@@ -515,10 +515,10 @@ func (svc *Service) buildPostResponse(r PostRecord, userName string, comments in
 
 	case PostTypeEvent:
 		resp["event"] = map[string]interface{}{
-			"title":     r.EventTitle,
-			"eventDate": r.EventDate,
-			"eventTime": r.EventTime,
-			"location":  r.Location,
+			"title":     r.Data.EventTitle,
+			"eventDate": r.Data.EventDate,
+			"eventTime": r.Data.EventTime,
+			"location":  r.Data.Location,
 		}
 	}
 

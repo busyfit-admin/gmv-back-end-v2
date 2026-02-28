@@ -92,6 +92,40 @@ type EventData struct {
 	Location  string `json:"location,omitempty" dynamodbav:"location,omitempty"`
 }
 
+// ==================== PostData (type-specific map stored under "data" in DDB) ====================
+
+type PostData struct {
+	// Kudos fields
+	KudosRecipientUserID string `dynamodbav:"kudosRecipientUserId,omitempty"`
+	KudosRecipientName   string `dynamodbav:"kudosRecipientName,omitempty"`
+
+	// Task fields
+	TaskNumber     string  `dynamodbav:"taskNumber,omitempty"`
+	TaskSummary    string  `dynamodbav:"taskSummary,omitempty"`
+	TaskDesc       string  `dynamodbav:"taskDescription,omitempty"`
+	AssigneeUserID string  `dynamodbav:"assigneeUserId,omitempty"`
+	AssigneeName   string  `dynamodbav:"assigneeName,omitempty"`
+	DueDate        string  `dynamodbav:"dueDate,omitempty"`
+	Urgency        string  `dynamodbav:"urgency,omitempty"`
+	TaskStatus     string  `dynamodbav:"taskStatus,omitempty"`
+	TimeSpentHours float64 `dynamodbav:"timeSpentHours,omitempty"`
+
+	// Poll fields
+	PollQuestion string       `dynamodbav:"pollQuestion,omitempty"`
+	PollOptions  []PollOption `dynamodbav:"pollOptions,omitempty"`
+
+	// Checklist fields
+	ChecklistTitle     string `dynamodbav:"checklistTitle,omitempty"`
+	IsRecurring        bool   `dynamodbav:"isRecurring,omitempty"`
+	RecurringFrequency string `dynamodbav:"recurringFrequency,omitempty"`
+
+	// Event fields
+	EventTitle string `dynamodbav:"eventTitle,omitempty"`
+	EventDate  string `dynamodbav:"eventDate,omitempty"`
+	EventTime  string `dynamodbav:"eventTime,omitempty"`
+	Location   string `dynamodbav:"location,omitempty"`
+}
+
 // ==================== Author ====================
 
 type AuthorInfo struct {
@@ -126,35 +160,8 @@ type PostRecord struct {
 	CreatedAt string `dynamodbav:"createdAt"`
 	UpdatedAt string `dynamodbav:"updatedAt"`
 
-	// Kudos fields
-	KudosRecipientUserID string `dynamodbav:"kudosRecipientUserId,omitempty"`
-	KudosRecipientName   string `dynamodbav:"kudosRecipientName,omitempty"`
-
-	// Task fields
-	TaskNumber     string  `dynamodbav:"taskNumber,omitempty"`
-	TaskSummary    string  `dynamodbav:"taskSummary,omitempty"`
-	TaskDesc       string  `dynamodbav:"taskDescription,omitempty"`
-	AssigneeUserID string  `dynamodbav:"assigneeUserId,omitempty"`
-	AssigneeName   string  `dynamodbav:"assigneeName,omitempty"`
-	DueDate        string  `dynamodbav:"dueDate,omitempty"`
-	Urgency        string  `dynamodbav:"urgency,omitempty"`
-	TaskStatus     string  `dynamodbav:"taskStatus,omitempty"`
-	TimeSpentHours float64 `dynamodbav:"timeSpentHours,omitempty"`
-
-	// Poll fields
-	PollQuestion string       `dynamodbav:"pollQuestion,omitempty"`
-	PollOptions  []PollOption `dynamodbav:"pollOptions,omitempty"`
-
-	// Checklist fields
-	ChecklistTitle     string `dynamodbav:"checklistTitle,omitempty"`
-	IsRecurring        bool   `dynamodbav:"isRecurring,omitempty"`
-	RecurringFrequency string `dynamodbav:"recurringFrequency,omitempty"`
-
-	// Event fields
-	EventTitle string `dynamodbav:"eventTitle,omitempty"`
-	EventDate  string `dynamodbav:"eventDate,omitempty"`
-	EventTime  string `dynamodbav:"eventTime,omitempty"`
-	Location   string `dynamodbav:"location,omitempty"`
+	// Type-specific data stored as a DDB Map under the "data" field
+	Data PostData `dynamodbav:"data,omitempty"`
 }
 
 // ==================== Comment DDB Record ====================

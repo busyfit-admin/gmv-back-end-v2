@@ -64,7 +64,7 @@ func (svc *Service) castVote(postID, userName, body string) (events.APIGatewayPr
 
 	// Validate option exists
 	optionValid := false
-	for _, o := range post.PollOptions {
+	for _, o := range post.Data.PollOptions {
 		if o.OptionID == req.OptionID {
 			optionValid = true
 			break
@@ -150,8 +150,8 @@ func (svc *Service) getPollResults(postID, userName string) (events.APIGatewayPr
 		}
 	}
 
-	opts := make([]map[string]interface{}, 0, len(post.PollOptions))
-	for _, o := range post.PollOptions {
+	opts := make([]map[string]interface{}, 0, len(post.Data.PollOptions))
+	for _, o := range post.Data.PollOptions {
 		cnt := voteCounts[o.OptionID]
 		opts = append(opts, map[string]interface{}{
 			"optionId": o.OptionID,
@@ -167,7 +167,7 @@ func (svc *Service) getPollResults(postID, userName string) (events.APIGatewayPr
 	}
 
 	return svc.okResp(map[string]interface{}{
-		"question":          post.PollQuestion,
+		"question":          post.Data.PollQuestion,
 		"options":           opts,
 		"totalVotes":        totalVotes,
 		"userVotedOptionId": userVotedStr,

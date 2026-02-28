@@ -58,7 +58,7 @@ func (svc *Service) updateTaskStatus(post *PostRecord, userName, body string) (e
 	}
 
 	// Only the assignee or author can update status
-	if post.AssigneeUserID != userName && post.AuthorUserID != userName {
+	if post.Data.AssigneeUserID != userName && post.AuthorUserID != userName {
 		isAdmin, err := svc.teamsSVC.IsTeamAdmin(post.TeamID, userName)
 		if err != nil || !isAdmin {
 			return svc.errResp(http.StatusForbidden, "FORBIDDEN", "Only the assignee, author, or team admin can update task status")
@@ -71,7 +71,11 @@ func (svc *Service) updateTaskStatus(post *PostRecord, userName, body string) (e
 			"PK": &types.AttributeValueMemberS{Value: PrefixPost + post.PostID},
 			"SK": &types.AttributeValueMemberS{Value: SKMetadata},
 		},
-		UpdateExpression: aws.String("SET taskStatus = :status"),
+		UpdateExpression: aws.String("SET #data.#taskStatus = :status"),
+		ExpressionAttributeNames: map[string]string{
+			"#data":       "data",
+			"#taskStatus": "taskStatus",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":status": &types.AttributeValueMemberS{Value: req.Status},
 		},
@@ -94,7 +98,7 @@ func (svc *Service) logTaskTime(post *PostRecord, userName, body string) (events
 		return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "hours must be a positive number")
 	}
 
-	newTotal := post.TimeSpentHours + req.Hours
+	newTotal := post.Data.TimeSpentHours + req.Hours
 
 	_, err = svc.ddb.UpdateItem(svc.ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.feedTable),
@@ -102,7 +106,10 @@ func (svc *Service) logTaskTime(post *PostRecord, userName, body string) (events
 			"PK": &types.AttributeValueMemberS{Value: PrefixPost + post.PostID},
 			"SK": &types.AttributeValueMemberS{Value: SKMetadata},
 		},
-		UpdateExpression: aws.String("SET timeSpentHours = :total"),
+		UpdateExpression: aws.String("SET #data.timeSpentHours = :total"),
+		ExpressionAttributeNames: map[string]string{
+			"#data": "data",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":total": &types.AttributeValueMemberN{Value: fmt.Sprintf("%g", newTotal)},
 		},
