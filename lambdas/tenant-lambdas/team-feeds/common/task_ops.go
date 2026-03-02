@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -65,19 +66,22 @@ func (svc *Service) updateTaskStatus(post *PostRecord, userName, body string) (e
 		}
 	}
 
+	now := time.Now().UTC().Format(time.RFC3339)
+
 	_, err = svc.ddb.UpdateItem(svc.ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.feedTable),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: PrefixPost + post.PostID},
 			"SK": &types.AttributeValueMemberS{Value: SKMetadata},
 		},
-		UpdateExpression: aws.String("SET #data.#taskStatus = :status"),
+		UpdateExpression: aws.String("SET #data.#taskStatus = :status, updatedAt = :updatedAt"),
 		ExpressionAttributeNames: map[string]string{
 			"#data":       "data",
 			"#taskStatus": "taskStatus",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":status": &types.AttributeValueMemberS{Value: req.Status},
+			":status":    &types.AttributeValueMemberS{Value: req.Status},
+			":updatedAt": &types.AttributeValueMemberS{Value: now},
 		},
 	})
 	if err != nil {
@@ -85,8 +89,9 @@ func (svc *Service) updateTaskStatus(post *PostRecord, userName, body string) (e
 	}
 
 	return svc.okResp(map[string]interface{}{
-		"postId": post.PostID,
-		"status": req.Status,
+		"postId":    post.PostID,
+		"status":    req.Status,
+		"updatedAt": now,
 	}, nil)
 }
 
@@ -99,6 +104,7 @@ func (svc *Service) logTaskTime(post *PostRecord, userName, body string) (events
 	}
 
 	newTotal := post.Data.TimeSpentHours + req.Hours
+	now := time.Now().UTC().Format(time.RFC3339)
 
 	_, err = svc.ddb.UpdateItem(svc.ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.feedTable),
@@ -106,12 +112,13 @@ func (svc *Service) logTaskTime(post *PostRecord, userName, body string) (events
 			"PK": &types.AttributeValueMemberS{Value: PrefixPost + post.PostID},
 			"SK": &types.AttributeValueMemberS{Value: SKMetadata},
 		},
-		UpdateExpression: aws.String("SET #data.timeSpentHours = :total"),
+		UpdateExpression: aws.String("SET #data.timeSpentHours = :total, updatedAt = :updatedAt"),
 		ExpressionAttributeNames: map[string]string{
 			"#data": "data",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":total": &types.AttributeValueMemberN{Value: fmt.Sprintf("%g", newTotal)},
+			":total":     &types.AttributeValueMemberN{Value: fmt.Sprintf("%g", newTotal)},
+			":updatedAt": &types.AttributeValueMemberS{Value: now},
 		},
 	})
 	if err != nil {
@@ -121,5 +128,6 @@ func (svc *Service) logTaskTime(post *PostRecord, userName, body string) (events
 	return svc.okResp(map[string]interface{}{
 		"postId":         post.PostID,
 		"timeSpentHours": newTotal,
+		"updatedAt":      now,
 	}, nil)
 }

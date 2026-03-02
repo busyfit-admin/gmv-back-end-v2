@@ -93,7 +93,11 @@ func (svc *Service) castVote(postID, userName, body string) (events.APIGatewayPr
 		return svc.errResp(http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to cast vote")
 	}
 
-	return svc.okResp(map[string]interface{}{"voted": true, "optionId": req.OptionID}, nil)
+	return svc.okResp(map[string]interface{}{
+		"postId":        postID,
+		"votedOptionId": req.OptionID,
+		"votedAt":       now,
+	}, nil)
 }
 
 // ==================== Retract Vote ====================
@@ -109,7 +113,7 @@ func (svc *Service) retractVote(postID, userName string) (events.APIGatewayProxy
 	if err != nil {
 		return svc.errResp(http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to retract vote")
 	}
-	return svc.noContentResp()
+	return svc.okResp(map[string]interface{}{"postId": postID, "retracted": true}, nil)
 }
 
 // ==================== Get Poll Results ====================
@@ -167,9 +171,10 @@ func (svc *Service) getPollResults(postID, userName string) (events.APIGatewayPr
 	}
 
 	return svc.okResp(map[string]interface{}{
-		"question":          post.Data.PollQuestion,
-		"options":           opts,
-		"totalVotes":        totalVotes,
+		"postId":           postID,
+		"question":         post.Data.PollQuestion,
+		"options":          opts,
+		"totalVotes":       totalVotes,
 		"userVotedOptionId": userVotedStr,
 	}, &MetaResponse{Total: totalVotes, Page: 1, Limit: totalVotes + 1})
 }
