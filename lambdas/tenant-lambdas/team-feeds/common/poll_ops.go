@@ -171,10 +171,10 @@ func (svc *Service) getPollResults(postID, userName string) (events.APIGatewayPr
 	}
 
 	return svc.okResp(map[string]interface{}{
-		"postId":           postID,
-		"question":         post.Data.PollQuestion,
-		"options":          opts,
-		"totalVotes":       totalVotes,
+		"postId":            postID,
+		"question":          post.Data.PollQuestion,
+		"options":           opts,
+		"totalVotes":        totalVotes,
 		"userVotedOptionId": userVotedStr,
 	}, &MetaResponse{Total: totalVotes, Page: 1, Limit: totalVotes + 1})
 }

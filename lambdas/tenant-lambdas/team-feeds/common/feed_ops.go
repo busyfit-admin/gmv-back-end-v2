@@ -457,17 +457,17 @@ func (svc *Service) buildPostResponse(r PostRecord, userName string, comments in
 
 	case PostTypeTask:
 		resp["task"] = map[string]interface{}{
-			"taskNumber":  r.Data.TaskNumber,
-			"summary":     r.Data.TaskSummary,
-			"description": r.Data.TaskDesc,
-			"assignee": map[string]interface{}{
+			"taskNumber":      r.Data.TaskNumber,
+			"taskSummary":     r.Data.TaskSummary,
+			"taskDescription": r.Data.TaskDesc,
+			"taskAssignee": map[string]interface{}{
 				"userId": r.Data.AssigneeUserID,
 				"name":   r.Data.AssigneeName,
 			},
-			"dueDate":        r.Data.DueDate,
-			"urgency":        r.Data.Urgency,
-			"status":         r.Data.TaskStatus,
-			"timeSpentHours": r.Data.TimeSpentHours,
+			"taskEndDate":   r.Data.DueDate,
+			"taskUrgency":   r.Data.Urgency,
+			"taskStatus":    r.Data.TaskStatus,
+			"taskTimeSpent": r.Data.TimeSpentHours,
 		}
 
 	case PostTypePoll:

@@ -89,9 +89,9 @@ func (svc *Service) updateTaskStatus(post *PostRecord, userName, body string) (e
 	}
 
 	return svc.okResp(map[string]interface{}{
-		"postId":    post.PostID,
-		"status":    req.Status,
-		"updatedAt": now,
+		"postId":     post.PostID,
+		"taskStatus": req.Status,
+		"updatedAt":  now,
 	}, nil)
 }
 
@@ -126,8 +126,8 @@ func (svc *Service) logTaskTime(post *PostRecord, userName, body string) (events
 	}
 
 	return svc.okResp(map[string]interface{}{
-		"postId":         post.PostID,
-		"timeSpentHours": newTotal,
-		"updatedAt":      now,
+		"postId":        post.PostID,
+		"taskTimeSpent": newTotal,
+		"updatedAt":     now,
 	}, nil)
 }
