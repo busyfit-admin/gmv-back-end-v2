@@ -6,8 +6,7 @@ package common
 // POST  /v2/users/me/goals                               — create goal
 // PATCH /v2/users/me/goals/{goalId}                      — update progress / status
 // POST  /v2/users/me/goals/{goalId}/comments             — add comment
-// POST  /v2/users/me/goals/{goalId}/tasks                — add linked task
-// PATCH /v2/users/me/goals/{goalId}/tasks/{taskId}       — toggle task done
+// POST  /v2/users/me/goals/{goalId}/tasks                — add linked task (sets goalId attribute)
 
 import (
 	"net/http"
@@ -58,15 +57,6 @@ func (svc *Service) handleGoals(request events.APIGatewayProxyRequest, parts []s
 		}
 	}
 
-	// /v2/users/me/goals/{goalId}/tasks/{taskId}  (7 parts)
-	if len(parts) == 7 && parts[5] == "tasks" {
-		goalID := parts[4]
-		taskID := parts[6]
-		if request.HTTPMethod == "PATCH" {
-			return svc.toggleLinkedTask(userName, teamID, goalID, taskID, request.Body)
-		}
-	}
-
 	return svc.errResp(http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed")
 }
 
@@ -90,7 +80,7 @@ func (svc *Service) listGoals(userName, teamID string, queryParams map[string]st
 	}
 
 	// Only goal metadata rows — skip sub-item rows by inspecting SK directly.
-	// Task SKs contain "#TASK#" and comment SKs contain "#CMMNT#"; root goal SKs do not.
+	// Comment SKs contain "#CMMNT#"; tasks are now top-level "TASK#" and won't appear in GOAL# prefix queries.
 	var goals []GoalRecord
 	for _, item := range result.Items {
 		skAttr, ok := item["SK"].(*types.AttributeValueMemberS)
@@ -98,7 +88,7 @@ func (svc *Service) listGoals(userName, teamID string, queryParams map[string]st
 			continue
 		}
 		sk := skAttr.Value
-		if strings.Contains(sk, SKTaskInfix) || strings.Contains(sk, SKCommentInfix) {
+		if strings.Contains(sk, SKCommentInfix) {
 			continue
 		}
 		var rec GoalRecord
@@ -214,7 +204,7 @@ func (svc *Service) updateGoal(userName, teamID, goalID, body string) (events.AP
 			}
 			taskRec := LinkedTaskRecord{
 				PK:        buildPK(userName, teamID),
-				SK:        SKGoalPrefix + goalID + SKTaskInfix + taskID,
+				SK:        SKTaskPrefix + taskID,
 				TaskID:    taskID,
 				GoalID:    goalID,
 				UserName:  userName,
@@ -300,7 +290,7 @@ func (svc *Service) addLinkedTask(userName, teamID, goalID, body string) (events
 
 	rec := LinkedTaskRecord{
 		PK:        buildPK(userName, teamID),
-		SK:        SKGoalPrefix + goalID + SKTaskInfix + taskID,
+		SK:        SKTaskPrefix + taskID,
 		TaskID:    taskID,
 		GoalID:    goalID,
 		UserName:  userName,
@@ -318,42 +308,10 @@ func (svc *Service) addLinkedTask(userName, teamID, goalID, body string) (events
 
 	return svc.createdResp(map[string]interface{}{
 		"task": map[string]interface{}{
-			"id":    taskID,
-			"title": req.Title,
-			"done":  false,
-		},
-	})
-}
-
-// ==================== Toggle Linked Task ====================
-
-func (svc *Service) toggleLinkedTask(userName, teamID, goalID, taskID, body string) (events.APIGatewayProxyResponse, error) {
-	req, err := parseBody[ToggleTaskRequest](body)
-	if err != nil {
-		return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "Invalid request body")
-	}
-
-	_, err = svc.ddb.UpdateItem(svc.ctx, &dynamodb.UpdateItemInput{
-		TableName: aws.String(svc.perfHubTable),
-		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
-			"SK": &types.AttributeValueMemberS{Value: SKGoalPrefix + goalID + SKTaskInfix + taskID},
-		},
-		UpdateExpression: aws.String("SET done = :done"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":done": &types.AttributeValueMemberBOOL{Value: req.Done},
-		},
-		ConditionExpression: aws.String("attribute_exists(PK)"),
-	})
-	if err != nil {
-		return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Task not found")
-	}
-
-	return svc.okResp(map[string]interface{}{
-		"task": map[string]interface{}{
 			"id":     taskID,
 			"goalId": goalID,
-			"done":   req.Done,
+			"title":  req.Title,
+			"done":   false,
 		},
 	})
 }
@@ -380,9 +338,11 @@ func (svc *Service) fetchLinkedTasks(userName, teamID, goalID string) ([]LinkedT
 	result, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(svc.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
+		FilterExpression:       aws.String("goalId = :goalId"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk":     &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
-			":prefix": &types.AttributeValueMemberS{Value: SKGoalPrefix + goalID + SKTaskInfix},
+			":prefix": &types.AttributeValueMemberS{Value: SKTaskPrefix},
+			":goalId": &types.AttributeValueMemberS{Value: goalID},
 		},
 	})
 	if err != nil {
@@ -418,9 +378,11 @@ func buildGoalResponse(g GoalRecord, tasks []LinkedTaskRecord, comments []GoalCo
 	taskList := make([]map[string]interface{}, 0, len(tasks))
 	for _, t := range tasks {
 		taskList = append(taskList, map[string]interface{}{
-			"id":    t.TaskID,
-			"title": t.Title,
-			"done":  t.Done,
+			"id":        t.TaskID,
+			"title":     t.Title,
+			"done":      t.Done,
+			"goalId":    t.GoalID,
+			"createdAt": t.CreatedAt,
 		})
 	}
 	commentList := make([]map[string]interface{}, 0, len(comments))

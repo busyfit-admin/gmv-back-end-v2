@@ -87,7 +87,7 @@ Omit `id` in a `linkedTask` entry to create a new task; supply it to update an e
 ---
 
 ### POST `/v2/users/me/goals/{goalId}/tasks`
-Add a single linked task to a goal.
+Add a task linked to a specific goal. The task is stored as a top-level item with `goalId` as an attribute.
 
 **Request body**
 ```json
@@ -96,22 +96,7 @@ Add a single linked task to a goal.
 
 **Response `201`**
 ```json
-{ "data": { "task": { "id": "uuid", "title": "string", "done": false } } }
-```
-
----
-
-### PATCH `/v2/users/me/goals/{goalId}/tasks/{taskId}`
-Toggle a linked task's completion state.
-
-**Request body**
-```json
-{ "done": true }
-```
-
-**Response `200`**
-```json
-{ "data": { "task": { "id": "uuid", "goalId": "uuid", "done": true } } }
+{ "data": { "task": { "id": "uuid", "goalId": "uuid", "title": "string", "done": false } } }
 ```
 
 ---
@@ -131,6 +116,76 @@ Add a comment to a goal. Author name and initials are resolved from the authenti
     "comment": { "id": "uuid", "author": "Jane Doe", "initials": "JD", "text": "string", "date": "2026-03-01" }
   }
 }
+```
+
+---
+
+## Tasks
+
+Tasks are **top-level items** stored as `SK = TASK#{taskId}` on the user+team partition. A task may optionally carry a `goalId` attribute to link it to a goal. Use the endpoints below to list all tasks, create standalone tasks, or relink tasks between goals.
+
+### GET `/v2/users/me/tasks`
+List all tasks for the authenticated user within a team.
+
+**Query params**
+| Param | Required | Description |
+|-------|----------|-------------|
+| `teamId` | ✅ | Team scope |
+| `goalId` | optional | Filter by goal UUID; use `none` for tasks with no goal linked |
+| `done` | optional | `true` or `false` |
+
+**Response `200`**
+```json
+{
+  "data": {
+    "tasks": [
+      { "id": "uuid", "title": "string", "done": false, "goalId": "uuid-or-empty", "createdAt": "RFC3339" }
+    ]
+  }
+}
+```
+
+---
+
+### POST `/v2/users/me/tasks`
+Create a standalone task. Optionally link it to a goal by including `goalId` in the body.
+
+**Query params**: `teamId` (required)
+
+**Request body**
+```json
+{ "title": "string", "goalId": "uuid" }   // goalId is optional
+```
+
+**Response `201`**
+```json
+{ "data": { "task": { "id": "uuid", "title": "string", "done": false, "goalId": "uuid-or-empty", "createdAt": "RFC3339" } } }
+```
+
+---
+
+### PATCH `/v2/users/me/tasks/{taskId}`
+Update a task's completion state, title, or goal linkage.
+
+**Query params**: `teamId` (required)
+
+**Request body** (all fields optional — send only what to change)
+```json
+{
+  "done": true,
+  "title": "Updated title",
+  "goalId": "new-goal-uuid"
+}
+```
+
+`goalId` semantics:
+- **field absent**: existing goal linkage unchanged
+- **`"goalId": ""`** (empty string): **unlinks** the task from any goal
+- **`"goalId": "uuid"`**: relinks the task to the specified goal (goal must exist)
+
+**Response `200`**
+```json
+{ "data": { "task": { "id": "uuid", "teamId": "uuid", "updated": true } } }
 ```
 
 ---

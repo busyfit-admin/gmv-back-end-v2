@@ -9,7 +9,7 @@ const (
 	SKMeetingPrefix      = "MEETING#"
 	SKAppreciationPrefix = "APPR#"
 	SKFeedbackReqPrefix  = "FBREQ#"
-	SKTaskInfix          = "#TASK#"
+	SKTaskPrefix         = "TASK#"
 	SKCommentInfix       = "#CMMNT#"
 )
 
@@ -78,12 +78,13 @@ type GoalRecord struct {
 	UpdatedAt   string `dynamodbav:"updatedAt"`
 }
 
-// LinkedTaskRecord — PK=USER#{userName} SK=GOAL#{goalId}#TASK#{taskId}
+// LinkedTaskRecord — PK=USER#{userName}#TEAM#{teamId} SK=TASK#{taskId}
+// GoalID is optional — empty string means the task is not linked to any goal.
 type LinkedTaskRecord struct {
 	PK        string `dynamodbav:"PK"`
 	SK        string `dynamodbav:"SK"`
 	TaskID    string `dynamodbav:"taskId"`
-	GoalID    string `dynamodbav:"goalId"`
+	GoalID    string `dynamodbav:"goalId,omitempty"`
 	UserName  string `dynamodbav:"userName"`
 	Title     string `dynamodbav:"title"`
 	Done      bool   `dynamodbav:"done"`
@@ -177,6 +178,20 @@ type AddGoalCommentRequest struct {
 
 type AddLinkedTaskRequest struct {
 	Title string `json:"title"`
+}
+
+// CreateTaskRequest — for POST /v2/users/me/tasks (standalone or linked)
+type CreateTaskRequest struct {
+	Title  string `json:"title"`
+	GoalID string `json:"goalId,omitempty"`
+}
+
+// UpdateTaskRequest — for PATCH /v2/users/me/tasks/{taskId}
+// GoalID: nil = don't change; pointer to "" = unlink from goal; pointer to UUID = relink
+type UpdateTaskRequest struct {
+	Done   *bool   `json:"done,omitempty"`
+	Title  string  `json:"title,omitempty"`
+	GoalID *string `json:"goalId"`
 }
 
 type ToggleTaskRequest struct {

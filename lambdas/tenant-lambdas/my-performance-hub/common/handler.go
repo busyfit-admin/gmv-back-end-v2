@@ -71,6 +71,8 @@ func (svc *Service) handleMe(request events.APIGatewayProxyRequest, parts []stri
 		return svc.handleAppreciations(request, parts, userName, teamID)
 	case "feedback-requests":
 		return svc.handleFeedbackRequests(request, parts, userName, displayName, teamID)
+	case "tasks":
+		return svc.handleTasks(request, parts, userName, teamID)
 	}
 
 	return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Route not found")
