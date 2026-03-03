@@ -1510,6 +1510,1502 @@ paths:
       security:
         - UserPool: []
 
+  # --------------- Organization Performance Endpoints ---------------
+
+  /v2/organizations/{orgId}/performance-cycles:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List performance cycles
+      description: List organization performance cycles with optional status/fiscal year filtering and optional nested data.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create performance cycle
+      description: Create a new performance cycle for the organization.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/performance-cycles/{cycleId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get performance cycle details
+      description: Get one performance cycle with optional nested quarters/KPIs/OKRs/analytics.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    patch:
+      summary: Update performance cycle
+      description: Update fields of a performance cycle.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete performance cycle
+      description: Delete a performance cycle (with cascade to related performance data).
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/performance-cycles/{cycleId}/quarters:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List quarters for cycle
+      description: List all quarters belonging to the performance cycle.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create quarter
+      description: Create a quarter within a performance cycle.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/quarters/{quarterId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get quarter details
+      description: Get quarter details with optional nested entities.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    patch:
+      summary: Update quarter
+      description: Update quarter fields.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete quarter
+      description: Delete a quarter.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/kpis:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List KPIs
+      description: List KPIs with filtering support.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create KPI
+      description: Create KPI with full KPI data structure.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/kpis/{kpiId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get KPI details
+      description: Get full KPI details with optional sub-KPIs/value history.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    patch:
+      summary: Update KPI
+      description: Update KPI fields.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete KPI
+      description: Delete KPI with optional sub-KPI cascade.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/kpis/{kpiId}/sub-kpis:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    post:
+      summary: Create Sub-KPI
+      description: Create KPI as a child of another KPI.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/kpis/{kpiId}/values:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    post:
+      summary: Update KPI value
+      description: Add KPI value history entry and refresh KPI current value.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/okrs:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List OKRs
+      description: List OKRs with filtering support.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create OKR
+      description: Create OKR and optional key results.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/okrs/{okrId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get OKR details
+      description: Get full OKR details with optional key results/progress history.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    patch:
+      summary: Update OKR
+      description: Update OKR fields.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete OKR
+      description: Delete OKR and key results.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/key-results/{keyResultId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    patch:
+      summary: Update key result progress
+      description: Update key result status/current value/commentary.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/quarters/{quarterId}/meeting-notes:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List meeting notes
+      description: List meeting notes for quarter.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create meeting note
+      description: Create quarter meeting note.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/meeting-notes/{noteId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    patch:
+      summary: Update meeting note
+      description: Update meeting note fields.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete meeting note
+      description: Delete meeting note.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/performance-cycles/{cycleId}/analytics:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get cycle analytics
+      description: Retrieve aggregated KPI/OKR analytics for cycle.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/quarters/{quarterId}/analytics:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get quarter analytics
+      description: Retrieve analytics scoped to quarter.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceCyclesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get goal details
+      description: Unified goal view for KPI/OKR with optional linked data.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    patch:
+      summary: Update goal
+      description: Update goal metadata and targets.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}/value-history:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List goal value history
+      description: Retrieve historical value entries for goal.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add goal value entry
+      description: Create new goal progress entry.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}/teams:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List goal tagged teams
+      description: List all teams tagged to goal.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Tag team to goal
+      description: Create goal/team alignment link.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}/teams/{teamId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    delete:
+      summary: Remove team tag
+      description: Remove a team-to-goal tag.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}/sub-items:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List goal sub-items
+      description: List sub-KPIs or key result style sub-items under a goal.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add goal sub-item
+      description: Create a new sub-item for goal.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/sub-items/{subItemId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    patch:
+      summary: Update sub-item
+      description: Update sub-item fields.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete sub-item
+      description: Delete goal sub-item.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}/ladder-up:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List ladder-up suggestions
+      description: Get proposed team goal alignments for approval workflow.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/ladder-up/{ladderUpId}/approve:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    patch:
+      summary: Approve ladder-up suggestion
+      description: Approve proposed ladder-up relation.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/ladder-up/{ladderUpId}/reject:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    patch:
+      summary: Reject ladder-up suggestion
+      description: Reject proposed ladder-up relation.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}/tasks:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List private tasks
+      description: List current user's private tasks for goal.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create private task
+      description: Create current user's private task for goal.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}/tasks/{taskId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    patch:
+      summary: Update private task
+      description: Update current user's private task state/details.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete private task
+      description: Delete current user's private task.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+# ---------- Team Feed APIs ----------
+
+  /v2/teams/{teamId}/feed:
+    get:
+      summary: List team feed
+      description: Returns a paginated list of posts for the team feed, newest first.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: page
+          in: query
+          required: false
+          type: integer
+        - name: limit
+          in: query
+          required: false
+          type: integer
+        - name: type
+          in: query
+          required: false
+          type: string
+          description: "Filter by post type: update | kudos | task | poll | checklist | event"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/posts:
+    post:
+      summary: Create a feed post
+      description: Creates a new post of any supported type in the team feed.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/posts/{postId}:
+    get:
+      summary: Get a single post
+      description: Returns full post detail including comments, poll results, and checklist items.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    put:
+      summary: Edit a post
+      description: Updates an existing post. Only the original author can edit.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete a post
+      description: Deletes a post. Only the author or a team admin can delete.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageFeedPostsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/likes:
+    get:
+      summary: Get post likes
+      description: Returns the list of users who liked the post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Like a post
+      description: Likes a post. Idempotent — liking an already-liked post is a no-op.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Unlike a post
+      description: Removes the current user's like from a post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/comments:
+    get:
+      summary: List comments
+      description: Returns threaded comments for a post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: page
+          in: query
+          required: false
+          type: integer
+        - name: limit
+          in: query
+          required: false
+          type: integer
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostCommentsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add a comment
+      description: Adds a new comment to a post. Supports threaded replies via parentCommentId.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostCommentsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/comments/{commentId}:
+    put:
+      summary: Edit a comment
+      description: Updates a comment. Only the author can edit.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: commentId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostCommentsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete a comment
+      description: Deletes a comment. Only the author or a team admin can delete.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: commentId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostCommentsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/comments/{commentId}/likes:
+    post:
+      summary: Like a comment
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: commentId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Unlike a comment
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: commentId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePostLikesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/poll/vote:
+    post:
+      summary: Cast or change a poll vote
+      description: Submitting a new vote while one exists replaces the previous vote.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePollVotesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Retract a poll vote
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePollVotesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/poll/results:
+    get:
+      summary: Get poll results
+      description: Returns per-option vote counts and the current user's vote.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePollVotesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/checklist/items:
+    post:
+      summary: Add item to checklist
+      description: Adds a new item to an existing checklist post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageChecklistItemsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/checklist/items/{itemId}:
+    patch:
+      summary: Toggle checklist item completion
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: itemId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageChecklistItemsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Remove a checklist item
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+        - name: itemId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageChecklistItemsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/task/status:
+    patch:
+      summary: Update task status
+      description: "Updates the task status. Valid values: todo | in-progress | done"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTaskUpdatesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/posts/{postId}/task/time:
+    patch:
+      summary: Log time spent on a task
+      description: Adds hours to the task's cumulative time spent counter.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTaskUpdatesLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
 components:
   schemas:
     Tenantrequestbody:

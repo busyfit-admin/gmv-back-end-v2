@@ -551,6 +551,35 @@ Resources:
           Projection:
             ProjectionType: "ALL"
 
+  OrgPerformanceTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub OrgPerformanceTable-${Environment}
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      BillingMode: "PAY_PER_REQUEST"
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: "GSI1PK"
+              KeyType: "HASH"
+            - AttributeName: "GSI1SK"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+
   PromoCodesTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -572,7 +601,46 @@ Resources:
           Projection:
             ProjectionType: "ALL"
 
+  # -- TeamFeedTable -
+  # Single-table design for team feed (posts, comments, likes, votes, checklist items)
+  # PK / SK access patterns:
+  #   Post metadata :  PK = POST#{postId}           SK = #METADATA
+  #   Post like     :  PK = POST#{postId}           SK = LIKE#{userId}
+  #   Comment       :  PK = POST#{postId}           SK = CMMNT#{createdAt}#{commentId}
+  #   Comment like  :  PK = COMMENT#{commentId}     SK = LIKE#{userId}
+  #   Poll vote     :  PK = POST#{postId}           SK = VOTE#{userId}
+  #   Checklist item:  PK = POST#{postId}           SK = ITEM#{itemId}
+  # GSI1: GSI1PK (TEAM#{teamId}) / GSI1SK ({createdAt}#{postId}) — paginated team feed, newest-first
+  #       GSI1PK (COMMENT#{commentId}) / GSI1SK (META) — comment lookup by ID
 
+  TeamFeedTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub TeamFeedTable-${Environment}
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      BillingMode: "PAY_PER_REQUEST"
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: "GSI1PK"
+              KeyType: "HASH"
+            - AttributeName: "GSI1SK"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
 
   # ------------------------------------------------------------------------------------------------------------------------------------------------
   # --------------- 5.Tenant user pool and client --------------------------------------------------------------------------------------------------
@@ -1132,6 +1200,253 @@ Resources:
                 Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${TenantCognitoUserPool}  
 
   # ------------------------------------------------------------------------------------------------------------------------------------------------
+  # --------------- Team Feed Lambda Functions -----------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------------------------------------------
+
+  # ---------- Shared IAM Role for Team Feed Lambdas ----------
+
+  TeamFeedLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub TeamFeed-Lambda-Role-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/TeamFeed/"
+      Policies:
+        - PolicyName: TeamFeedLambdaExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !GetAtt TeamFeedTable.Arn
+                  - !Sub ${TeamFeedTable.Arn}/index/*
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt TenantTeamsTableV2.Arn
+                  - !Sub ${TenantTeamsTableV2.Arn}/index/*
+                  - !GetAtt EmployeeDataTable.Arn
+                  - !Sub ${EmployeeDataTable.Arn}/index/*
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: "*"
+
+  # ---------- Lambda: Manage Feed Posts ----------
+
+  ManageFeedPostsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages team feed posts: list feed, create/get/update/delete posts"
+      Role: !GetAtt TeamFeedLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/team-feeds/manage-feed-posts/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAM_FEED_TABLE: !Ref TeamFeedTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManageFeedPostsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageFeedPostsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda: Manage Post Likes ----------
+
+  ManagePostLikesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages likes on posts and comments"
+      Role: !GetAtt TeamFeedLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/team-feeds/manage-post-likes/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAM_FEED_TABLE: !Ref TeamFeedTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManagePostLikesLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePostLikesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda: Manage Post Comments ----------
+
+  ManagePostCommentsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages comments and comment likes on feed posts"
+      Role: !GetAtt TeamFeedLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/team-feeds/manage-post-comments/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAM_FEED_TABLE: !Ref TeamFeedTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManagePostCommentsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePostCommentsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda: Manage Poll Votes ----------
+
+  ManagePollVotesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages poll voting: cast, retract, and view results"
+      Role: !GetAtt TeamFeedLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/team-feeds/manage-poll-votes/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAM_FEED_TABLE: !Ref TeamFeedTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManagePollVotesLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePollVotesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda: Manage Checklist Items ----------
+
+  ManageChecklistItemsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages checklist items: toggle, add, and remove items"
+      Role: !GetAtt TeamFeedLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/team-feeds/manage-checklist-items/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAM_FEED_TABLE: !Ref TeamFeedTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManageChecklistItemsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageChecklistItemsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda: Manage Task Updates ----------
+
+  ManageTaskUpdatesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages task post updates: status changes and time logging"
+      Role: !GetAtt TeamFeedLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/team-feeds/manage-task-updates/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          TEAM_FEED_TABLE: !Ref TeamFeedTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManageTaskUpdatesLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageTaskUpdatesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ------------------------------------------------------------------------------------------------------------------------------------------------
   # --------------- Organization Management Related functions --------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1391,6 +1706,126 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
+  # ---------- Lambda to manage performance cycles/quarters/analytics ----------
+
+  ManagePerformanceCyclesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage org performance cycles, quarters, notes, and analytics"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-performance/manage-performance-cycles/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManagePerformanceCyclesLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePerformanceCyclesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage KPIs ----------
+
+  ManagePerformanceKPIsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage org performance KPIs"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-performance/manage-performance-kpis/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManagePerformanceKPIsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePerformanceKPIsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage OKRs ----------
+
+  ManagePerformanceOKRsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage org performance OKRs"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-performance/manage-performance-okrs/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManagePerformanceOKRsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePerformanceOKRsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda to manage goals/task/ladder-up ----------
+
+  ManagePerformanceGoalsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Lambda to manage org performance goals, ladder-up, and tasks"
+      Role: !GetAtt OrganizationLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/org-performance/manage-performance-goals/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+
+  ManagePerformanceGoalsLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManagePerformanceGoalsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
   # ---------- Shared IAM Role for Organization Lambdas ----------
 
   OrganizationLambdaRole:
@@ -1437,6 +1872,8 @@ Resources:
                 Resource:
                   - !GetAtt OrgsTable.Arn
                   - !Sub ${OrgsTable.Arn}/index/*
+                  - !GetAtt OrgPerformanceTable.Arn
+                  - !Sub ${OrgPerformanceTable.Arn}/index/*
                   - !GetAtt PromoCodesTable.Arn
                   - !Sub ${PromoCodesTable.Arn}/index/*
                   - !GetAtt EmployeeDataTable.Arn
@@ -1448,6 +1885,7 @@ Resources:
                   - dynamodb:TransactWriteItems
                 Resource:
                   - !GetAtt OrgsTable.Arn
+                  - !GetAtt OrgPerformanceTable.Arn
                   - !GetAtt PromoCodesTable.Arn
                   - !GetAtt EmployeeDataTable.Arn
                   - !GetAtt TenantTeamsTableV2.Arn
