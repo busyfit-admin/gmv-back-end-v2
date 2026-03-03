@@ -4,6 +4,10 @@ All endpoints require a Cognito JWT in the `Authorization` header.
 Every response is wrapped in `{ "data": { ... } }` on success or `{ "error": { "code": "...", "message": "..." } }` on failure.  
 Dates are `YYYY-MM-DD`, timestamps are ISO 8601 (UTC).
 
+> **Team scoping** — all `/v2/users/me/...` endpoints require a `teamId` query parameter. Data is stored and retrieved per-user per-team, so goals, meetings, appreciations and feedback requests from one team are never visible under another team.
+>
+> Example: `GET /v2/users/me/goals?teamId=<teamId>`
+
 ---
 
 ## Goals

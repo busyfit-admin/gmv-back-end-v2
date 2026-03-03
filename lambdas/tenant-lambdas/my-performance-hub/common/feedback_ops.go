@@ -22,19 +22,19 @@ import (
 
 // ==================== Appreciations ====================
 
-func (svc *Service) handleAppreciations(request events.APIGatewayProxyRequest, parts []string, userName string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) handleAppreciations(request events.APIGatewayProxyRequest, parts []string, userName, teamID string) (events.APIGatewayProxyResponse, error) {
 	if len(parts) == 4 && request.HTTPMethod == "GET" {
-		return svc.listAppreciations(userName)
+		return svc.listAppreciations(userName, teamID)
 	}
 	return svc.errResp(http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed")
 }
 
-func (svc *Service) listAppreciations(userName string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) listAppreciations(userName, teamID string) (events.APIGatewayProxyResponse, error) {
 	result, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(svc.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: PrefixUser + userName},
+			":pk":     &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
 			":prefix": &types.AttributeValueMemberS{Value: SKAppreciationPrefix},
 		},
 	})
@@ -69,26 +69,26 @@ func (svc *Service) listAppreciations(userName string) (events.APIGatewayProxyRe
 
 // ==================== Feedback Requests ====================
 
-func (svc *Service) handleFeedbackRequests(request events.APIGatewayProxyRequest, parts []string, userName, displayName string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) handleFeedbackRequests(request events.APIGatewayProxyRequest, parts []string, userName, displayName, teamID string) (events.APIGatewayProxyResponse, error) {
 	if len(parts) == 4 {
 		switch request.HTTPMethod {
 		case "GET":
-			return svc.listFeedbackRequests(userName, request.QueryStringParameters)
+			return svc.listFeedbackRequests(userName, teamID, request.QueryStringParameters)
 		case "POST":
-			return svc.sendFeedbackRequest(userName, displayName, request.Body)
+			return svc.sendFeedbackRequest(userName, teamID, request.Body)
 		}
 	}
 	return svc.errResp(http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed")
 }
 
-func (svc *Service) listFeedbackRequests(userName string, queryParams map[string]string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) listFeedbackRequests(userName, teamID string, queryParams map[string]string) (events.APIGatewayProxyResponse, error) {
 	statusFilter := queryString(queryParams, "status")
 
 	result, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(svc.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: PrefixUser + userName},
+			":pk":     &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
 			":prefix": &types.AttributeValueMemberS{Value: SKFeedbackReqPrefix},
 		},
 	})
@@ -122,7 +122,7 @@ func (svc *Service) listFeedbackRequests(userName string, queryParams map[string
 	return svc.okResp(map[string]interface{}{"feedbackRequests": out})
 }
 
-func (svc *Service) sendFeedbackRequest(userName, _, body string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) sendFeedbackRequest(userName, teamID, body string) (events.APIGatewayProxyResponse, error) {
 	req, err := parseBody[SendFeedbackRequestBody](body)
 	if err != nil || req.ToUsername == "" || req.Message == "" {
 		return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "toUsername and message are required")
@@ -133,7 +133,7 @@ func (svc *Service) sendFeedbackRequest(userName, _, body string) (events.APIGat
 	requestID := uuid.New().String()
 
 	rec := FeedbackRequestRecord{
-		PK:        PrefixUser + userName,
+		PK:        buildPK(userName, teamID),
 		SK:        SKFeedbackReqPrefix + requestID,
 		RequestID: requestID,
 		UserName:  userName,

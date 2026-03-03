@@ -13,6 +13,12 @@ const (
 	SKCommentInfix       = "#CMMNT#"
 )
 
+// buildPK constructs the DynamoDB partition key scoped per-user per-team.
+// Format: USER#{userName}#TEAM#{teamID}
+func buildPK(userName, teamID string) string {
+	return PrefixUser + userName + "#TEAM#" + teamID
+}
+
 // ==================== Goal Types & Statuses ====================
 
 type GoalType string

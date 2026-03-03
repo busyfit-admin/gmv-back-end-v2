@@ -12,6 +12,7 @@ package common
 import (
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -22,14 +23,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func (svc *Service) handleGoals(request events.APIGatewayProxyRequest, parts []string, userName, displayName string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) handleGoals(request events.APIGatewayProxyRequest, parts []string, userName, displayName, teamID string) (events.APIGatewayProxyResponse, error) {
 	// /v2/users/me/goals  (4 parts)
 	if len(parts) == 4 {
 		switch request.HTTPMethod {
 		case "GET":
-			return svc.listGoals(userName, request.QueryStringParameters)
+			return svc.listGoals(userName, teamID, request.QueryStringParameters)
 		case "POST":
-			return svc.createGoal(userName, request.Body)
+			return svc.createGoal(userName, teamID, request.Body)
 		}
 	}
 
@@ -37,7 +38,7 @@ func (svc *Service) handleGoals(request events.APIGatewayProxyRequest, parts []s
 	if len(parts) == 5 {
 		goalID := parts[4]
 		if request.HTTPMethod == "PATCH" {
-			return svc.updateGoal(userName, goalID, request.Body)
+			return svc.updateGoal(userName, teamID, goalID, request.Body)
 		}
 	}
 
@@ -45,7 +46,7 @@ func (svc *Service) handleGoals(request events.APIGatewayProxyRequest, parts []s
 	if len(parts) == 6 && parts[5] == "comments" {
 		goalID := parts[4]
 		if request.HTTPMethod == "POST" {
-			return svc.addGoalComment(userName, displayName, goalID, request.Body)
+			return svc.addGoalComment(userName, teamID, displayName, goalID, request.Body)
 		}
 	}
 
@@ -53,7 +54,7 @@ func (svc *Service) handleGoals(request events.APIGatewayProxyRequest, parts []s
 	if len(parts) == 6 && parts[5] == "tasks" {
 		goalID := parts[4]
 		if request.HTTPMethod == "POST" {
-			return svc.addLinkedTask(userName, goalID, request.Body)
+			return svc.addLinkedTask(userName, teamID, goalID, request.Body)
 		}
 	}
 
@@ -62,7 +63,7 @@ func (svc *Service) handleGoals(request events.APIGatewayProxyRequest, parts []s
 		goalID := parts[4]
 		taskID := parts[6]
 		if request.HTTPMethod == "PATCH" {
-			return svc.toggleLinkedTask(userName, goalID, taskID, request.Body)
+			return svc.toggleLinkedTask(userName, teamID, goalID, taskID, request.Body)
 		}
 	}
 
@@ -71,7 +72,7 @@ func (svc *Service) handleGoals(request events.APIGatewayProxyRequest, parts []s
 
 // ==================== List Goals ====================
 
-func (svc *Service) listGoals(userName string, queryParams map[string]string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) listGoals(userName, teamID string, queryParams map[string]string) (events.APIGatewayProxyResponse, error) {
 	typeFilter := queryString(queryParams, "type")
 	statusFilter := queryString(queryParams, "status")
 
@@ -79,7 +80,7 @@ func (svc *Service) listGoals(userName string, queryParams map[string]string) (e
 		TableName:              aws.String(svc.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: PrefixUser + userName},
+			":pk":     &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
 			":prefix": &types.AttributeValueMemberS{Value: SKGoalPrefix},
 		},
 	})
@@ -88,15 +89,20 @@ func (svc *Service) listGoals(userName string, queryParams map[string]string) (e
 		return svc.errResp(http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list goals")
 	}
 
-	// Only goal metadata rows — exclude sub-item rows (GOAL#{id}#TASK# / GOAL#{id}#CMMNT#)
+	// Only goal metadata rows — skip sub-item rows by inspecting SK directly.
+	// Task SKs contain "#TASK#" and comment SKs contain "#CMMNT#"; root goal SKs do not.
 	var goals []GoalRecord
 	for _, item := range result.Items {
-		var rec GoalRecord
-		if err := attributevalue.UnmarshalMap(item, &rec); err != nil {
+		skAttr, ok := item["SK"].(*types.AttributeValueMemberS)
+		if !ok {
 			continue
 		}
-		// skip task/comment sub-items
-		if rec.GoalID == "" {
+		sk := skAttr.Value
+		if strings.Contains(sk, SKTaskInfix) || strings.Contains(sk, SKCommentInfix) {
+			continue
+		}
+		var rec GoalRecord
+		if err := attributevalue.UnmarshalMap(item, &rec); err != nil {
 			continue
 		}
 		if typeFilter != "" && rec.Type != typeFilter {
@@ -111,8 +117,8 @@ func (svc *Service) listGoals(userName string, queryParams map[string]string) (e
 	// Build response enriched with tasks and comments
 	goalResp := make([]map[string]interface{}, 0, len(goals))
 	for _, g := range goals {
-		tasks, _ := svc.fetchLinkedTasks(userName, g.GoalID)
-		comments, _ := svc.fetchGoalComments(userName, g.GoalID)
+		tasks, _ := svc.fetchLinkedTasks(userName, teamID, g.GoalID)
+		comments, _ := svc.fetchGoalComments(userName, teamID, g.GoalID)
 		goalResp = append(goalResp, buildGoalResponse(g, tasks, comments))
 	}
 
@@ -121,7 +127,7 @@ func (svc *Service) listGoals(userName string, queryParams map[string]string) (e
 
 // ==================== Create Goal ====================
 
-func (svc *Service) createGoal(userName, body string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) createGoal(userName, teamID, body string) (events.APIGatewayProxyResponse, error) {
 	req, err := parseBody[CreateGoalRequest](body)
 	if err != nil || req.Title == "" || req.Type == "" {
 		return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "title and type are required")
@@ -139,7 +145,7 @@ func (svc *Service) createGoal(userName, body string) (events.APIGatewayProxyRes
 	}
 
 	rec := GoalRecord{
-		PK:          PrefixUser + userName,
+		PK:          buildPK(userName, teamID),
 		SK:          SKGoalPrefix + goalID,
 		GoalID:      goalID,
 		UserName:    userName,
@@ -170,8 +176,8 @@ func (svc *Service) createGoal(userName, body string) (events.APIGatewayProxyRes
 
 // ==================== Update Goal ====================
 
-func (svc *Service) updateGoal(userName, goalID, body string) (events.APIGatewayProxyResponse, error) {
-	rec, err := svc.fetchGoal(userName, goalID)
+func (svc *Service) updateGoal(userName, teamID, goalID, body string) (events.APIGatewayProxyResponse, error) {
+	rec, err := svc.fetchGoal(userName, teamID, goalID)
 	if err != nil {
 		return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Goal not found")
 	}
@@ -207,7 +213,7 @@ func (svc *Service) updateGoal(userName, goalID, body string) (events.APIGateway
 				taskID = uuid.New().String()
 			}
 			taskRec := LinkedTaskRecord{
-				PK:        PrefixUser + userName,
+				PK:        buildPK(userName, teamID),
 				SK:        SKGoalPrefix + goalID + SKTaskInfix + taskID,
 				TaskID:    taskID,
 				GoalID:    goalID,
@@ -225,15 +231,15 @@ func (svc *Service) updateGoal(userName, goalID, body string) (events.APIGateway
 		}
 	}
 
-	tasks, _ := svc.fetchLinkedTasks(userName, goalID)
-	comments, _ := svc.fetchGoalComments(userName, goalID)
+	tasks, _ := svc.fetchLinkedTasks(userName, teamID, goalID)
+	comments, _ := svc.fetchGoalComments(userName, teamID, goalID)
 	return svc.okResp(map[string]interface{}{"goal": buildGoalResponse(*rec, tasks, comments)})
 }
 
 // ==================== Add Comment ====================
 
-func (svc *Service) addGoalComment(userName, displayName, goalID, body string) (events.APIGatewayProxyResponse, error) {
-	if _, err := svc.fetchGoal(userName, goalID); err != nil {
+func (svc *Service) addGoalComment(userName, teamID, displayName, goalID, body string) (events.APIGatewayProxyResponse, error) {
+	if _, err := svc.fetchGoal(userName, teamID, goalID); err != nil {
 		return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Goal not found")
 	}
 
@@ -247,7 +253,7 @@ func (svc *Service) addGoalComment(userName, displayName, goalID, body string) (
 	commentID := uuid.New().String()
 
 	rec := GoalCommentRecord{
-		PK:        PrefixUser + userName,
+		PK:        buildPK(userName, teamID),
 		SK:        SKGoalPrefix + goalID + SKCommentInfix + commentID,
 		CommentID: commentID,
 		GoalID:    goalID,
@@ -279,8 +285,8 @@ func (svc *Service) addGoalComment(userName, displayName, goalID, body string) (
 
 // ==================== Add Linked Task ====================
 
-func (svc *Service) addLinkedTask(userName, goalID, body string) (events.APIGatewayProxyResponse, error) {
-	if _, err := svc.fetchGoal(userName, goalID); err != nil {
+func (svc *Service) addLinkedTask(userName, teamID, goalID, body string) (events.APIGatewayProxyResponse, error) {
+	if _, err := svc.fetchGoal(userName, teamID, goalID); err != nil {
 		return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Goal not found")
 	}
 
@@ -293,7 +299,7 @@ func (svc *Service) addLinkedTask(userName, goalID, body string) (events.APIGate
 	taskID := uuid.New().String()
 
 	rec := LinkedTaskRecord{
-		PK:        PrefixUser + userName,
+		PK:        buildPK(userName, teamID),
 		SK:        SKGoalPrefix + goalID + SKTaskInfix + taskID,
 		TaskID:    taskID,
 		GoalID:    goalID,
@@ -321,7 +327,7 @@ func (svc *Service) addLinkedTask(userName, goalID, body string) (events.APIGate
 
 // ==================== Toggle Linked Task ====================
 
-func (svc *Service) toggleLinkedTask(userName, goalID, taskID, body string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) toggleLinkedTask(userName, teamID, goalID, taskID, body string) (events.APIGatewayProxyResponse, error) {
 	req, err := parseBody[ToggleTaskRequest](body)
 	if err != nil {
 		return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "Invalid request body")
@@ -330,7 +336,7 @@ func (svc *Service) toggleLinkedTask(userName, goalID, taskID, body string) (eve
 	_, err = svc.ddb.UpdateItem(svc.ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(svc.perfHubTable),
 		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: PrefixUser + userName},
+			"PK": &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
 			"SK": &types.AttributeValueMemberS{Value: SKGoalPrefix + goalID + SKTaskInfix + taskID},
 		},
 		UpdateExpression: aws.String("SET done = :done"),
@@ -354,11 +360,11 @@ func (svc *Service) toggleLinkedTask(userName, goalID, taskID, body string) (eve
 
 // ==================== DDB Helpers ====================
 
-func (svc *Service) fetchGoal(userName, goalID string) (*GoalRecord, error) {
+func (svc *Service) fetchGoal(userName, teamID, goalID string) (*GoalRecord, error) {
 	result, err := svc.ddb.GetItem(svc.ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(svc.perfHubTable),
 		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: PrefixUser + userName},
+			"PK": &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
 			"SK": &types.AttributeValueMemberS{Value: SKGoalPrefix + goalID},
 		},
 	})
@@ -370,12 +376,12 @@ func (svc *Service) fetchGoal(userName, goalID string) (*GoalRecord, error) {
 	return &rec, nil
 }
 
-func (svc *Service) fetchLinkedTasks(userName, goalID string) ([]LinkedTaskRecord, error) {
+func (svc *Service) fetchLinkedTasks(userName, teamID, goalID string) ([]LinkedTaskRecord, error) {
 	result, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(svc.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: PrefixUser + userName},
+			":pk":     &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
 			":prefix": &types.AttributeValueMemberS{Value: SKGoalPrefix + goalID + SKTaskInfix},
 		},
 	})
@@ -388,12 +394,12 @@ func (svc *Service) fetchLinkedTasks(userName, goalID string) ([]LinkedTaskRecor
 	return tasks, nil
 }
 
-func (svc *Service) fetchGoalComments(userName, goalID string) ([]GoalCommentRecord, error) {
+func (svc *Service) fetchGoalComments(userName, teamID, goalID string) ([]GoalCommentRecord, error) {
 	result, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(svc.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: PrefixUser + userName},
+			":pk":     &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
 			":prefix": &types.AttributeValueMemberS{Value: SKGoalPrefix + goalID + SKCommentInfix},
 		},
 	})

@@ -53,18 +53,24 @@ func (svc *Service) Handle(request events.APIGatewayProxyRequest) (events.APIGat
 
 // handleMe dispatches /v2/users/me/{resource}/... routes.
 func (svc *Service) handleMe(request events.APIGatewayProxyRequest, parts []string, userName, displayName string) (events.APIGatewayProxyResponse, error) {
+	// All /v2/users/me/... endpoints are team-scoped.
+	teamID := strings.TrimSpace(request.QueryStringParameters["teamId"])
+	if teamID == "" {
+		return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "teamId query parameter is required")
+	}
+
 	// parts: [v2, users, me, resource, ...]
 	resource := parts[3]
 
 	switch resource {
 	case "goals":
-		return svc.handleGoals(request, parts, userName, displayName)
+		return svc.handleGoals(request, parts, userName, displayName, teamID)
 	case "meetings":
-		return svc.handleMeetings(request, parts, userName, displayName)
+		return svc.handleMeetings(request, parts, userName, teamID)
 	case "appreciations":
-		return svc.handleAppreciations(request, parts, userName)
+		return svc.handleAppreciations(request, parts, userName, teamID)
 	case "feedback-requests":
-		return svc.handleFeedbackRequests(request, parts, userName, displayName)
+		return svc.handleFeedbackRequests(request, parts, userName, displayName, teamID)
 	}
 
 	return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Route not found")

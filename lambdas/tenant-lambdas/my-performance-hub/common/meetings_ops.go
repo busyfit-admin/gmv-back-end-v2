@@ -18,14 +18,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func (svc *Service) handleMeetings(request events.APIGatewayProxyRequest, parts []string, userName, _ string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) handleMeetings(request events.APIGatewayProxyRequest, parts []string, userName, teamID string) (events.APIGatewayProxyResponse, error) {
 	// /v2/users/me/meetings  (4 parts)
 	if len(parts) == 4 {
 		switch request.HTTPMethod {
 		case "GET":
-			return svc.listMeetings(userName, request.QueryStringParameters)
+			return svc.listMeetings(userName, teamID, request.QueryStringParameters)
 		case "POST":
-			return svc.createMeeting(userName, request.Body)
+			return svc.createMeeting(userName, teamID, request.Body)
 		}
 	}
 	return svc.errResp(http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed")
@@ -33,14 +33,14 @@ func (svc *Service) handleMeetings(request events.APIGatewayProxyRequest, parts 
 
 // ==================== List Meetings ====================
 
-func (svc *Service) listMeetings(userName string, queryParams map[string]string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) listMeetings(userName, teamID string, queryParams map[string]string) (events.APIGatewayProxyResponse, error) {
 	statusFilter := queryString(queryParams, "status")
 
 	result, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(svc.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: PrefixUser + userName},
+			":pk":     &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
 			":prefix": &types.AttributeValueMemberS{Value: SKMeetingPrefix},
 		},
 	})
@@ -76,7 +76,7 @@ func (svc *Service) listMeetings(userName string, queryParams map[string]string)
 
 // ==================== Create Meeting ====================
 
-func (svc *Service) createMeeting(userName, body string) (events.APIGatewayProxyResponse, error) {
+func (svc *Service) createMeeting(userName, teamID, body string) (events.APIGatewayProxyResponse, error) {
 	req, err := parseBody[CreateMeetingRequest](body)
 	if err != nil || req.Date == "" {
 		return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "date is required")
@@ -86,7 +86,7 @@ func (svc *Service) createMeeting(userName, body string) (events.APIGatewayProxy
 	meetingID := uuid.New().String()
 
 	rec := MeetingRecord{
-		PK:          PrefixUser + userName,
+		PK:          buildPK(userName, teamID),
 		SK:          SKMeetingPrefix + meetingID,
 		MeetingID:   meetingID,
 		UserName:    userName,
