@@ -3303,6 +3303,199 @@ paths:
       security:
         - UserPool: []
 
+  # --------------- Team Performance Review Endpoints (Manager View) ---------------
+
+  /v2/teams/{teamId}/performance/members:
+    get:
+      summary: List team members with review status
+      description: Returns all members of a team enriched with their performance review lifecycle state (rating, pending flags).
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{memberId}/goals:
+    get:
+      summary: Get member OKRs and KPIs (manager view)
+      description: Returns all OKR and KPI goal records for a specific team member as seen by their manager.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: memberId
+          in: path
+          required: true
+          type: string
+          description: The member's userName
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{memberId}/meetings:
+    get:
+      summary: Get member 1-on-1 meeting history (manager view)
+      description: Returns all 1-on-1 meeting records for a specific team member.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: memberId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{memberId}/appreciations:
+    get:
+      summary: Get appreciations received by a member (manager view)
+      description: Returns all appreciation records received by a specific team member.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: memberId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{memberId}/comments:
+    get:
+      summary: Get manager comments for a member
+      description: Returns all manager comments and feedback entries written for a specific team member.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: memberId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add a manager comment for a member
+      description: Creates a new manager comment (feedback, coaching, or general) for a specific team member.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: memberId
+          in: path
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/components/schemas/AddManagerCommentRequest'
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{memberId}/performance-summary:
+    get:
+      summary: Get full performance summary for a member (all-in-one)
+      description: Returns profile, OKRs, KPIs, meetings, appreciations, and manager comments for a member in a single call.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: memberId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   /v2/teams/{teamId}/members/directory:
     get:
       summary: Get team member directory
@@ -3398,6 +3591,66 @@ components:
           format: date-time
           description: ISO 8601 timestamp of last update
           example: "2026-01-15T10:00:00Z"
+    AddManagerCommentRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Comment body
+        type:
+          type: string
+          enum: [feedback, coaching, general]
+          description: Category of the comment
+          default: general
+
+    ManagerCommentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        author:
+          type: string
+        authorInitials:
+          type: string
+        date:
+          type: string
+          format: date
+        text:
+          type: string
+        type:
+          type: string
+          enum: [feedback, coaching, general]
+
+    TeamPerformanceMember:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Member userName
+        name:
+          type: string
+        initials:
+          type: string
+        role:
+          type: string
+        department:
+          type: string
+        avatarColor:
+          type: string
+        overallRating:
+          type: number
+          format: float
+        lastReviewDate:
+          type: string
+          format: date
+          nullable: true
+        isPendingReview:
+          type: boolean
+        hasUserUpdatedReviews:
+          type: boolean
+
     errorbody:
       type: object
       properties:

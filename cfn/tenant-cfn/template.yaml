@@ -2053,15 +2053,20 @@ Resources:
 
   # ================================================================================
   # ---- UserPerformanceHubTable DynamoDB Table ----
-  # Single-table design — all items keyed by PK = USER#{userName}
-  # SK patterns:
-  #   GOAL#{goalId}                                 → GoalRecord
-  #   GOAL#{goalId}#TASK#{taskId}                   → LinkedTaskRecord
-  #   GOAL#{goalId}#CMMNT#{commentId}               → GoalCommentRecord
-  #   MEETING#{meetingId}                           → MeetingRecord
-  #   APPR#{appreciationId}                         → AppreciationRecord
-  #   FBREQ#{requestId}                             → FeedbackRequestRecord
-  # ================================================================================
+  # Single-table design.
+  #
+  # User-scoped items — PK = USER#{userName}#TEAM#{teamID}
+  #   SK: GOAL#{goalId}                            → GoalRecord
+  #   SK: GOAL#{goalId}#CMMNT#{commentId}          → GoalCommentRecord
+  #   SK: MEETING#{meetingId}                      → MeetingRecord
+  #   SK: APPR#{appreciationId}                    → AppreciationRecord
+  #   SK: FBREQ#{requestId}                        → FeedbackRequestRecord
+  #   SK: TASK#{taskId}                            → LinkedTaskRecord
+  #   SK: MGRCMT#{commentId}                       → ManagerCommentRecord (written by manager, keyed on member)
+  #
+  # Team-scoped items — PK = TEAM#{teamID}
+  #   SK: REVIEW#MEMBER#{memberUserName}            → TeamMemberReviewRecord (review lifecycle state)
+  # ==================================================================================
 
   UserPerformanceHubTable:
     Type: AWS::DynamoDB::Table
@@ -2159,6 +2164,45 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt ManageUserPerformanceLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda: ManageTeamPerformance ----------
+  # Handles manager-facing team performance review APIs:
+  #   GET  /v2/teams/{teamId}/performance/members
+  #   GET  /v2/teams/{teamId}/members/{memberId}/goals
+  #   GET  /v2/teams/{teamId}/members/{memberId}/meetings
+  #   GET  /v2/teams/{teamId}/members/{memberId}/appreciations
+  #   GET  /v2/teams/{teamId}/members/{memberId}/comments
+  #   POST /v2/teams/{teamId}/members/{memberId}/comments
+  #   GET  /v2/teams/{teamId}/members/{memberId}/performance-summary
+
+  ManageTeamPerformanceLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages team performance review lifecycle: member list, goals, meetings, appreciations, manager comments"
+      Role: !GetAtt UserPerformanceLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/my-performance-hub/manage-team-performance/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          PERF_HUB_TABLE: !Ref UserPerformanceHubTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManageTeamPerformanceLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageTeamPerformanceLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 

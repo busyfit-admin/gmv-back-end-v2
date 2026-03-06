@@ -4,14 +4,23 @@ package common
 
 const (
 	PrefixUser = "USER#"
+	PrefixTeam = "TEAM#"
 
-	SKGoalPrefix         = "GOAL#"
-	SKMeetingPrefix      = "MEETING#"
-	SKAppreciationPrefix = "APPR#"
-	SKFeedbackReqPrefix  = "FBREQ#"
-	SKTaskPrefix         = "TASK#"
-	SKCommentInfix       = "#CMMNT#"
+	SKGoalPrefix           = "GOAL#"
+	SKMeetingPrefix        = "MEETING#"
+	SKAppreciationPrefix   = "APPR#"
+	SKFeedbackReqPrefix    = "FBREQ#"
+	SKTaskPrefix           = "TASK#"
+	SKCommentInfix         = "#CMMNT#"
+	SKManagerCommentPrefix = "MGRCMT#"
+	SKMemberReviewPrefix   = "REVIEW#MEMBER#"
 )
+
+// buildTeamPK constructs the DynamoDB partition key for team-scoped data.
+// Format: TEAM#{teamID}
+func buildTeamPK(teamID string) string {
+	return PrefixTeam + teamID
+}
 
 // buildPK constructs the DynamoDB partition key scoped per-user per-team.
 // Format: USER#{userName}#TEAM#{teamID}
@@ -210,6 +219,45 @@ type CreateMeetingRequest struct {
 type SendFeedbackRequestBody struct {
 	ToUsername string `json:"toUsername"`
 	Message    string `json:"message"`
+}
+
+// ==================== Team Performance (Manager View) Records ====================
+
+// ManagerCommentRecord — PK=USER#{memberUserName}#TEAM#{teamID} SK=MGRCMT#{commentId}
+type ManagerCommentRecord struct {
+	PK        string `dynamodbav:"PK"`
+	SK        string `dynamodbav:"SK"`
+	CommentID string `dynamodbav:"commentId"`
+	TeamID    string `dynamodbav:"teamId"`
+	MemberID  string `dynamodbav:"memberId"` // member's userName
+	Author    string `dynamodbav:"author"`
+	Initials  string `dynamodbav:"initials"`
+	Text      string `dynamodbav:"text"`
+	Type      string `dynamodbav:"type"` // feedback | coaching | general
+	Date      string `dynamodbav:"date"`
+	CreatedAt string `dynamodbav:"createdAt"`
+}
+
+// TeamMemberReviewRecord — PK=TEAM#{teamID} SK=REVIEW#MEMBER#{memberUserName}
+// Tracks per-member review lifecycle state visible to the manager.
+type TeamMemberReviewRecord struct {
+	PK                    string  `dynamodbav:"PK"`
+	SK                    string  `dynamodbav:"SK"`
+	TeamID                string  `dynamodbav:"teamId"`
+	MemberUserName        string  `dynamodbav:"memberUserName"`
+	OverallRating         float64 `dynamodbav:"overallRating"`
+	LastReviewDate        string  `dynamodbav:"lastReviewDate,omitempty"`
+	IsPendingReview       bool    `dynamodbav:"isPendingReview"`
+	HasUserUpdatedReviews bool    `dynamodbav:"hasUserUpdatedReviews"`
+	UpdatedAt             string  `dynamodbav:"updatedAt"`
+}
+
+// ==================== Team Performance Request Bodies ====================
+
+// AddManagerCommentRequest — for POST /v2/teams/{teamId}/members/{memberId}/comments
+type AddManagerCommentRequest struct {
+	Text string `json:"text"`
+	Type string `json:"type"` // feedback | coaching | general
 }
 
 // ==================== Response Envelope ====================

@@ -48,6 +48,12 @@ func (svc *Service) Handle(request events.APIGatewayProxyRequest) (events.APIGat
 		}
 	}
 
+	// /v2/teams/{teamId}/performance/members
+	// /v2/teams/{teamId}/members/{memberId}/{goals|meetings|appreciations|comments|performance-summary}
+	if len(parts) >= 5 && parts[1] == "teams" {
+		return svc.handleTeamPerformance(request, parts, userName, employee.FirstName+" "+employee.LastName)
+	}
+
 	return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Route not found")
 }
 
