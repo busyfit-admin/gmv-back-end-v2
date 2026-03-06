@@ -15,12 +15,12 @@ Dates are `YYYY-MM-DD`, timestamps are ISO 8601 (UTC).
 | # | Method | Endpoint | Purpose |
 |---|--------|----------|---------|
 | 1 | GET | `/v2/teams/{teamId}/performance/members` | List all team members with review status |
-| 2 | GET | `/v2/teams/{teamId}/members/{memberId}/goals` | Member OKRs & KPIs |
-| 3 | GET | `/v2/teams/{teamId}/members/{memberId}/meetings` | Member 1-on-1 meeting history |
-| 4 | GET | `/v2/teams/{teamId}/members/{memberId}/appreciations` | Appreciations received by member |
-| 5 | GET | `/v2/teams/{teamId}/members/{memberId}/comments` | Manager comments & feedback |
-| 6 | POST | `/v2/teams/{teamId}/members/{memberId}/comments` | Add a manager comment |
-| — | GET | `/v2/teams/{teamId}/members/{memberId}/performance-summary` | *(optional)* All-in-one detail |
+| 2 | GET | `/v2/teams/{teamId}/members/{username}/goals` | Member OKRs & KPIs |
+| 3 | GET | `/v2/teams/{teamId}/members/{username}/meetings` | Member 1-on-1 meeting history |
+| 4 | GET | `/v2/teams/{teamId}/members/{username}/appreciations` | Appreciations received by member |
+| 5 | GET | `/v2/teams/{teamId}/members/{username}/comments` | Manager comments & feedback |
+| 6 | POST | `/v2/teams/{teamId}/members/{username}/comments` | Add a manager comment |
+| — | GET | `/v2/teams/{teamId}/members/{username}/performance-summary` | *(optional)* All-in-one detail |
 
 ---
 
@@ -78,16 +78,16 @@ Returns all members of a team enriched with their performance review lifecycle s
 
 ## 2. Member Detail
 
-All detail endpoints below take the same path prefix: `/v2/teams/{teamId}/members/{memberId}/...`
+All detail endpoints below take the same path prefix: `/v2/teams/{teamId}/members/{username}/...`
 
 | Param | Description |
 |-------|-------------|
 | `teamId` | UUID of the team |
-| `memberId` | The member's `userName` |
+| `username` | The member's `userName` |
 
 ---
 
-### 2.1 GET `/v2/teams/{teamId}/members/{memberId}/goals`
+### 2.1 GET `/v2/teams/{teamId}/members/{username}/goals`
 Returns all goals for a member split into OKRs and KPIs.
 
 **Response `200`**
@@ -127,7 +127,7 @@ Returns all goals for a member split into OKRs and KPIs.
 
 ---
 
-### 2.2 GET `/v2/teams/{teamId}/members/{memberId}/meetings`
+### 2.2 GET `/v2/teams/{teamId}/members/{username}/meetings`
 Returns all 1-on-1 meeting records for a member (newest first).
 
 **Response `200`**
@@ -151,7 +151,7 @@ Returns all 1-on-1 meeting records for a member (newest first).
 
 ---
 
-### 2.3 GET `/v2/teams/{teamId}/members/{memberId}/appreciations`
+### 2.3 GET `/v2/teams/{teamId}/members/{username}/appreciations`
 Returns all appreciations received by a member (newest first).
 
 **Response `200`**
@@ -174,7 +174,7 @@ Returns all appreciations received by a member (newest first).
 
 ---
 
-### 2.4 GET `/v2/teams/{teamId}/members/{memberId}/comments`
+### 2.4 GET `/v2/teams/{teamId}/members/{username}/comments`
 Returns all manager comments written for a member (newest first).
 
 **Response `200`**
@@ -199,7 +199,7 @@ Returns all manager comments written for a member (newest first).
 
 ---
 
-### 2.5 POST `/v2/teams/{teamId}/members/{memberId}/comments`
+### 2.5 POST `/v2/teams/{teamId}/members/{username}/comments`
 Adds a manager comment for a team member. Author name and initials are resolved from the authenticated manager's employee record.
 
 **Request body**
@@ -230,7 +230,7 @@ Adds a manager comment for a team member. Author name and initials are resolved 
 
 ## 3. Performance Summary (All-in-One)
 
-### GET `/v2/teams/{teamId}/members/{memberId}/performance-summary`
+### GET `/v2/teams/{teamId}/members/{username}/performance-summary`
 Returns everything about a member in a single call — use this when latency matters more than granular caching.
 
 **Response `200`**

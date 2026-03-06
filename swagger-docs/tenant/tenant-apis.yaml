@@ -3328,7 +3328,7 @@ paths:
       security:
         - UserPool: []
 
-  /v2/teams/{teamId}/members/{memberId}/goals:
+  /v2/teams/{teamId}/members/{username}/goals:
     get:
       summary: Get member OKRs and KPIs (manager view)
       description: Returns all OKR and KPI goal records for a specific team member as seen by their manager.
@@ -3339,7 +3339,7 @@ paths:
           in: path
           required: true
           type: string
-        - name: memberId
+        - name: username
           in: path
           required: true
           type: string
@@ -3356,7 +3356,7 @@ paths:
       security:
         - UserPool: []
 
-  /v2/teams/{teamId}/members/{memberId}/meetings:
+  /v2/teams/{teamId}/members/{username}/meetings:
     get:
       summary: Get member 1-on-1 meeting history (manager view)
       description: Returns all 1-on-1 meeting records for a specific team member.
@@ -3367,7 +3367,7 @@ paths:
           in: path
           required: true
           type: string
-        - name: memberId
+        - name: username
           in: path
           required: true
           type: string
@@ -3383,7 +3383,7 @@ paths:
       security:
         - UserPool: []
 
-  /v2/teams/{teamId}/members/{memberId}/appreciations:
+  /v2/teams/{teamId}/members/{username}/appreciations:
     get:
       summary: Get appreciations received by a member (manager view)
       description: Returns all appreciation records received by a specific team member.
@@ -3394,7 +3394,7 @@ paths:
           in: path
           required: true
           type: string
-        - name: memberId
+        - name: username
           in: path
           required: true
           type: string
@@ -3410,7 +3410,7 @@ paths:
       security:
         - UserPool: []
 
-  /v2/teams/{teamId}/members/{memberId}/comments:
+  /v2/teams/{teamId}/members/{username}/comments:
     get:
       summary: Get manager comments for a member
       description: Returns all manager comments and feedback entries written for a specific team member.
@@ -3421,7 +3421,7 @@ paths:
           in: path
           required: true
           type: string
-        - name: memberId
+        - name: username
           in: path
           required: true
           type: string
@@ -3448,7 +3448,7 @@ paths:
           in: path
           required: true
           type: string
-        - name: memberId
+        - name: username
           in: path
           required: true
           type: string
@@ -3469,7 +3469,7 @@ paths:
       security:
         - UserPool: []
 
-  /v2/teams/{teamId}/members/{memberId}/performance-summary:
+  /v2/teams/{teamId}/members/{username}/performance-summary:
     get:
       summary: Get full performance summary for a member (all-in-one)
       description: Returns profile, OKRs, KPIs, meetings, appreciations, and manager comments for a member in a single call.
@@ -3480,7 +3480,7 @@ paths:
           in: path
           required: true
           type: string
-        - name: memberId
+        - name: username
           in: path
           required: true
           type: string
