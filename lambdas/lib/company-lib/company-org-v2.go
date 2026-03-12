@@ -1268,8 +1268,13 @@ func (svc *OrgServiceV2) GetAdminsOrganizations(userName string) ([]Organization
 	}
 
 	result, err := svc.dynamodbClient.Query(svc.ctx, queryInput)
-	if err != nil || result.Count == 0 {
-		return nil, fmt.Errorf("failed to query user organizations or the result is empty: %w", err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query user organizations: %w", err)
+	}
+
+	if result.Count == 0 {
+		svc.logger.Printf("No organizations found for user: ADMIN#%s", userName)
+		return []Organization{}, nil
 	}
 
 	var orgAdmins []OrgAdmin
