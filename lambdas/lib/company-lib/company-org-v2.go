@@ -56,9 +56,10 @@ const (
 type OrgAdminRole string
 
 const (
-	OrgAdminRoleOwner       OrgAdminRole = "OWNER"        // Full org control
-	OrgAdminRoleAdmin       OrgAdminRole = "ADMIN"        // Can manage org settings
-	OrgAdminRoleBillingOnly OrgAdminRole = "BILLING_ONLY" // Can only manage billing
+	OrgAdminRoleOwner           OrgAdminRole = "OWNER"            // Full org control
+	OrgAdminRoleAdmin           OrgAdminRole = "ADMIN"            // Can manage org settings
+	OrgAdminRolePerformanceOnly OrgAdminRole = "PERFORMANCE_ONLY" // Can only view performance metrics
+	OrgAdminRoleBillingOnly     OrgAdminRole = "BILLING_ONLY"     // Can only manage billing
 )
 
 // SubscriptionPlan represents available subscription plans
