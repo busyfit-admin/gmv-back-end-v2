@@ -161,7 +161,7 @@ func (svc *Service) listOrgUsers(orgId string, requestingUser string, request ev
 
 	// Helper to resolve name and profilePic from employee record
 	resolveEmployee := func(userName string) (name string, profilePic string, designation string) {
-		emp, err := svc.empSVC.GetEmployeeDataByUserName(userName)
+		emp, err := svc.empSVC.GetEmployeeDataByEmail(userName)
 		if err == nil && emp.DisplayName != "" {
 			name = emp.DisplayName
 		} else {
