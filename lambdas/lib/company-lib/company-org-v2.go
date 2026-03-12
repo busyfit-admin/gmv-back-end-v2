@@ -1345,27 +1345,35 @@ func (svc *OrgServiceV2) GetAdminOrganization(userIdentifier string) (*Organizat
 
 // getAdmin is a helper function to get an admin by organization and username
 func (svc *OrgServiceV2) getAdmin(organizationId, userName string) (*OrgAdmin, error) {
+
+	if !strings.HasPrefix(userName, "ADMIN#") {
+		userName = fmt.Sprintf("ADMIN#%s", userName)
+	}
+	if !strings.HasPrefix(organizationId, "ORG#") {
+		organizationId = fmt.Sprintf("ORG#%s", organizationId)
+	}
+
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String(svc.OrganizationTable),
 		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ORG#%s", organizationId)},
-			"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("ADMIN#%s", userName)},
+			"PK": &types.AttributeValueMemberS{Value: organizationId},
+			"SK": &types.AttributeValueMemberS{Value: userName},
 		},
 	}
 
 	result, err := svc.dynamodbClient.GetItem(svc.ctx, input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get admin: %w", err)
+		return nil, fmt.Errorf("failed to get admin: username %s, organizationId %s: %w", userName, organizationId, err)
 	}
 
 	if result.Item == nil {
-		return nil, fmt.Errorf("admin not found")
+		return nil, fmt.Errorf("admin not found: username %s, organizationId %s", userName, organizationId)
 	}
 
 	var admin OrgAdmin
 	err = attributevalue.UnmarshalMap(result.Item, &admin)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal admin: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal admin: username %s, organizationId %s: %w", userName, organizationId, err)
 	}
 
 	return &admin, nil
@@ -1391,7 +1399,7 @@ func (svc *OrgServiceV2) countActiveOwners(organizationId string) (int, error) {
 
 	result, err := svc.dynamodbClient.Query(svc.ctx, queryInput)
 	if err != nil {
-		return 0, fmt.Errorf("failed to count owners: %w", err)
+		return 0, fmt.Errorf("failed to count owners: organizationId %s: %w", organizationId, err)
 	}
 
 	return int(result.Count), nil
@@ -1412,7 +1420,7 @@ func (svc *OrgServiceV2) GetUserOrganizationMembership(userName string) (*OrgUse
 
 	result, err := svc.dynamodbClient.Query(svc.ctx, queryInput)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query user organization membership: %w", err)
+		return nil, fmt.Errorf("failed to query user organization membership: userName %s: %w", userName, err)
 	}
 
 	if len(result.Items) == 0 {
@@ -1426,7 +1434,7 @@ func (svc *OrgServiceV2) GetUserOrganizationMembership(userName string) (*OrgUse
 	var orgUser OrgUser
 	err = attributevalue.UnmarshalMap(result.Items[0], &orgUser)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal org user: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal org user: userName %s: %w", userName, err)
 	}
 
 	return &orgUser, nil
