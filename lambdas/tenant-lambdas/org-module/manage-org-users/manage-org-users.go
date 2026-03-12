@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -243,17 +244,20 @@ func (svc *Service) addOrgUser(orgId string, requestingUser string, request even
 
 	// Determine if we're adding an admin or regular user
 	if input.UserType == "admin" {
-		// Validate role is valid for admin
+		// Validate role is valid for admin (case-insensitive)
+		normalizedRole := strings.ToUpper(input.Role)
 		validAdminRoles := map[string]bool{
-			string(companylib.OrgAdminRoleOwner): true,
-			string(companylib.OrgAdminRoleAdmin): true,
+			string(companylib.OrgAdminRoleOwner):           true,
+			string(companylib.OrgAdminRoleAdmin):           true,
+			string(companylib.OrgAdminRoleBillingOnly):     true,
+			string(companylib.OrgAdminRolePerformanceOnly): true,
 		}
-		if !validAdminRoles[input.Role] {
-			return svc.errorResponse(http.StatusBadRequest, "Invalid admin role. Must be 'owner', 'admin', or 'manager'", nil)
+		if !validAdminRoles[normalizedRole] {
+			return svc.errorResponse(http.StatusBadRequest, "Invalid admin role. Must be 'OWNER', 'ADMIN', 'BILLING_ONLY', or 'PERFORMANCE_ONLY'", nil)
 		}
 
 		// Add as admin
-		role := companylib.OrgAdminRole(input.Role)
+		role := companylib.OrgAdminRole(normalizedRole)
 		err = svc.orgSVC.AddOrgAdmin(orgId, input.UserName, role, requestingUser)
 		if err != nil {
 			svc.logger.Printf("Failed to add org admin: %v", err)
