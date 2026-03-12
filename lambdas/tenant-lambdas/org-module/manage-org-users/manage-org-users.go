@@ -149,6 +149,9 @@ func (svc *Service) listOrgUsers(orgId string, requestingUser string, request ev
 	type UserInfo struct {
 		UserName    string `json:"userName"`
 		DisplayName string `json:"displayName"`
+		Name        string `json:"name"`
+		ProfilePic  string `json:"profilePic"`
+		Designation string `json:"designation,omitempty"`
 		Role        string `json:"role"`
 		JoinedAt    string `json:"joinedAt,omitempty"`
 		AddedAt     string `json:"addedAt,omitempty"`
@@ -156,13 +159,32 @@ func (svc *Service) listOrgUsers(orgId string, requestingUser string, request ev
 		UserType    string `json:"userType"` // "admin" or "user"
 	}
 
+	// Helper to resolve name and profilePic from employee record
+	resolveEmployee := func(userName string) (name string, profilePic string, designation string) {
+		emp, err := svc.empSVC.GetEmployeeDataByUserName(userName)
+		if err == nil && emp.DisplayName != "" {
+			name = emp.DisplayName
+		} else {
+			name = userName // fallback to email
+		}
+		if err == nil {
+			profilePic = emp.ProfilePic
+			designation = emp.Designation
+		}
+		return
+	}
+
 	allUsers := make([]UserInfo, 0)
 
 	// Add admins
 	for _, admin := range admins {
+		name, profilePic, designation := resolveEmployee(admin.UserName)
 		allUsers = append(allUsers, UserInfo{
 			UserName:    admin.UserName,
 			DisplayName: admin.DisplayName,
+			Name:        name,
+			ProfilePic:  profilePic,
+			Designation: designation,
 			Role:        string(admin.Role),
 			AddedAt:     admin.AddedAt,
 			IsActive:    admin.IsActive,
@@ -172,9 +194,13 @@ func (svc *Service) listOrgUsers(orgId string, requestingUser string, request ev
 
 	// Add regular users
 	for _, user := range users {
+		name, profilePic, designation := resolveEmployee(user.UserName)
 		allUsers = append(allUsers, UserInfo{
 			UserName:    user.UserName,
 			DisplayName: user.DisplayName,
+			Name:        name,
+			ProfilePic:  profilePic,
+			Designation: designation,
 			Role:        string(user.Role),
 			JoinedAt:    user.JoinedAt,
 			IsActive:    user.IsActive,
