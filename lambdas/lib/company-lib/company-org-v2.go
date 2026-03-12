@@ -1013,12 +1013,12 @@ func (svc *OrgServiceV2) AddOrgAdmin(organizationId string, newAdminUserName str
 			displayName = employee.DisplayName
 		}
 	}
-
+	// org id has "ORG#" prefix in PK, but we want to store it without the prefix in the OrganizationId field for easier querying and display
 	newAdmin := OrgAdmin{
-		PK:             fmt.Sprintf("ORG#%s", organizationId),
+		PK:             fmt.Sprintf("%s", organizationId),
 		SK:             fmt.Sprintf("ADMIN#%s", newAdminUserName),
 		GSI1PK:         fmt.Sprintf("ADMIN#%s", newAdminUserName),
-		GSI1SK:         fmt.Sprintf("ORG#%s", organizationId),
+		GSI1SK:         fmt.Sprintf("%s", organizationId),
 		OrganizationId: organizationId,
 		UserName:       newAdminUserName,
 		DisplayName:    displayName,
