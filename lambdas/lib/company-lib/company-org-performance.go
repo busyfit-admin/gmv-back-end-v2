@@ -1692,28 +1692,58 @@ func (svc *PerformanceService) GetTeamGoals(teamID string, orgID string, goalTyp
 		if filters["cycleId"] != "" && toString(base["cycleId"]) != filters["cycleId"] {
 			continue
 		}
-		detail := map[string]interface{}{
-			"id":           gID,
-			"type":         gType,
-			"name":         toString(base["name"]),
-			"description":  toString(base["description"]),
-			"owner":        toString(base["owner"]),
-			"status":       toString(base["status"]),
-			"cycleId":      toString(base["cycleId"]),
-			"quarterId":    base["quarterId"],
-			"currentValue": base["currentValue"],
-			"targetValue":  base["targetValue"],
-			"unit":         toString(base["unitOfMeasure"]),
-			"deadline":     toString(base["endDate"]),
-			"createdAt":    base["createdAt"],
-			"updatedAt":    base["updatedAt"],
-		}
-		current := toFloat(base["currentValue"])
-		target := toFloat(base["targetValue"])
-		if target > 0 {
-			detail["progress"] = (current / target) * 100
+		var detail map[string]interface{}
+		if strings.EqualFold(gType, "okr") {
+			// OKRs store their fields under different keys:
+			//   name        → objective
+			//   owner       → objectiveOwner
+			//   deadline    → timeBound (descriptive string, e.g. "Half-Yearly")
+			//   currentValue/targetValue/unit are per key-result, not at OKR level
+			detail = map[string]interface{}{
+				"id":              gID,
+				"type":            gType,
+				"name":            toString(base["objective"]),
+				"objective":       toString(base["objective"]),
+				"owner":           toString(base["objectiveOwner"]),
+				"status":          toString(base["status"]),
+				"cycleId":         toString(base["cycleId"]),
+				"quarterId":       base["quarterId"],
+				"timeBound":       toString(base["timeBound"]),
+				"deadline":        toString(base["timeBound"]),
+				"confidenceScore": base["confidenceScore"],
+				"keyResults":      base["keyResults"],
+				"currentValue":    nil,
+				"targetValue":     nil,
+				"unit":            "",
+				"progress":        0.0,
+				"createdAt":       base["createdAt"],
+				"updatedAt":       base["updatedAt"],
+			}
 		} else {
-			detail["progress"] = 0.0
+			// KPIs store fields under standard keys
+			detail = map[string]interface{}{
+				"id":           gID,
+				"type":         gType,
+				"name":         toString(base["name"]),
+				"description":  toString(base["description"]),
+				"owner":        toString(base["owner"]),
+				"status":       toString(base["status"]),
+				"cycleId":      toString(base["cycleId"]),
+				"quarterId":    base["quarterId"],
+				"currentValue": base["currentValue"],
+				"targetValue":  base["targetValue"],
+				"unit":         toString(base["unitOfMeasure"]),
+				"deadline":     toString(base["endDate"]),
+				"createdAt":    base["createdAt"],
+				"updatedAt":    base["updatedAt"],
+			}
+			current := toFloat(base["currentValue"])
+			target := toFloat(base["targetValue"])
+			if target > 0 {
+				detail["progress"] = (current / target) * 100
+			} else {
+				detail["progress"] = 0.0
+			}
 		}
 		goals = append(goals, detail)
 	}

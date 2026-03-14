@@ -60,44 +60,69 @@ This is the reverse of the goal→team tagging flow (`POST /v2/goals/{goalId}/te
 
 ### Response `200`
 
+KPIs and OKRs are returned in the same `goals` array but use **different field sets** because they are stored differently in DynamoDB.
+
+#### KPI item
+
 ```json
 {
-  "goals": [
+  "id": "kpi-uuid",
+  "type": "kpi",
+  "name": "Support Tickets Resolved",
+  "description": "Number of support tickets resolved per month",
+  "owner": "jane.smith@company.com",
+  "status": "active",
+  "cycleId": "cycle-uuid",
+  "quarterId": "quarter-uuid",
+  "currentValue": 42,
+  "targetValue": 100,
+  "unit": "tickets",
+  "deadline": "2026-03-31",
+  "progress": 42.0,
+  "createdAt": "2026-01-10T08:00:00Z",
+  "updatedAt": "2026-03-01T12:00:00Z"
+}
+```
+
+#### OKR item
+
+```json
+{
+  "id": "okr-uuid",
+  "type": "okr",
+  "name": "Strengthen product foundation and improve user onboarding.",
+  "objective": "Strengthen product foundation and improve user onboarding.",
+  "owner": "Vishal",
+  "status": "FINALIZED",
+  "cycleId": "cycle-uuid",
+  "quarterId": "quarter-uuid",
+  "timeBound": "Half-Yearly",
+  "deadline": "Half-Yearly",
+  "confidenceScore": 70,
+  "keyResults": [
     {
-      "id": "kpi-uuid-here",
-      "type": "kpi",
-      "name": "Support Tickets Resolved",
-      "description": "Number of support tickets resolved per month",
-      "owner": "jane.smith@company.com",
-      "status": "active",
-      "cycleId": "cycle-uuid-here",
-      "quarterId": "q1-2026",
-      "currentValue": 42,
-      "targetValue": 100,
-      "unit": "tickets",
-      "deadline": "2026-03-31",
-      "progress": 42.0,
-      "createdAt": "2026-01-10T08:00:00Z",
-      "updatedAt": "2026-03-01T12:00:00Z"
-    },
-    {
-      "id": "okr-uuid-here",
-      "type": "okr",
-      "name": "Grow User Retention",
-      "description": "Increase 30-day retention to 80%",
-      "owner": "team.lead@company.com",
-      "status": "on-track",
-      "cycleId": "cycle-uuid-here",
-      "quarterId": "q1-2026",
-      "currentValue": 72,
-      "targetValue": 80,
-      "unit": "%",
-      "deadline": "2026-03-31",
-      "progress": 90.0,
-      "createdAt": "2026-01-10T08:00:00Z",
-      "updatedAt": "2026-03-10T09:00:00Z"
+      "description": "Reduce customer onboarding time from 7 days → 3 days",
+      "target": "7 days",
+      "currentValue": 0,
+      "unit": "Count",
+      "weight": 20,
+      "owner": ""
     }
   ],
+  "currentValue": null,
+  "targetValue": null,
+  "unit": "",
+  "progress": 0,
+  "createdAt": "2026-03-11T02:21:59Z",
+  "updatedAt": "2026-03-11T02:21:59Z"
+}
+```
+
+> **Note:** For OKRs, `progress` is always `0` at the OKR level — progress lives on individual key results. `currentValue`/`targetValue`/`unit` are also `null`/empty at the OKR level for the same reason.
+
+```json
+{
+  "goals": [ ...see above... ],
   "total": 12,
   "page": 1,
   "pageSize": 20,
@@ -119,23 +144,27 @@ This is the reverse of the goal→team tagging flow (`POST /v2/goals/{goalId}/te
 
 #### Goal Object Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Unique goal ID |
-| `type` | `string` | `"kpi"` or `"okr"` |
-| `name` | `string` | Goal title |
-| `description` | `string` | Goal description |
-| `owner` | `string` | `userName` of the goal owner |
-| `status` | `string` | Current status (e.g. `active`, `completed`, `on-track`, `at-risk`) |
-| `cycleId` | `string` | Performance cycle this goal belongs to |
-| `quarterId` | `string\|null` | Quarter identifier, if set |
-| `currentValue` | `number\|null` | Current measured value |
-| `targetValue` | `number\|null` | Target value to reach |
-| `unit` | `string` | Unit of measurement (e.g. `%`, `tickets`, `$`) |
-| `deadline` | `string` | Target end date (`YYYY-MM-DD`) |
-| `progress` | `number` | Percentage towards target (`0–100`). `0` when `targetValue` is 0. |
-| `createdAt` | `string` | ISO 8601 creation timestamp |
-| `updatedAt` | `string` | ISO 8601 last update timestamp |
+| Field | Type | Present on | Description |
+|-------|------|------------|-------------|
+| `id` | `string` | both | Unique goal ID |
+| `type` | `string` | both | `"kpi"` or `"okr"` |
+| `name` | `string` | both | Display name. For OKRs this mirrors `objective`. |
+| `objective` | `string` | OKR only | The raw objective text stored in DynamoDB |
+| `description` | `string` | KPI only | KPI description |
+| `owner` | `string` | both | For KPIs: `owner` field. For OKRs: `objectiveOwner` field. |
+| `status` | `string` | both | e.g. `active`, `completed`, `FINALIZED`, `on-track` |
+| `cycleId` | `string` | both | Performance cycle this goal belongs to |
+| `quarterId` | `string\|null` | both | Quarter identifier, if set |
+| `deadline` | `string` | both | KPI: `endDate` (`YYYY-MM-DD`). OKR: `timeBound` (e.g. `"Half-Yearly"`). |
+| `timeBound` | `string` | OKR only | Raw time-bound descriptor (e.g. `"Half-Yearly"`, `"Monthly"`) |
+| `currentValue` | `number\|null` | KPI only | Current measured value. `null` for OKRs. |
+| `targetValue` | `number\|null` | KPI only | Target value. `null` for OKRs. |
+| `unit` | `string` | KPI only | Unit of measurement. Empty for OKRs. |
+| `progress` | `number` | KPI only | `(currentValue / targetValue) × 100`. Always `0` for OKRs. |
+| `confidenceScore` | `number` | OKR only | Confidence score (0–100) |
+| `keyResults` | `array` | OKR only | Inline key result objects (each has `description`, `target`, `currentValue`, `unit`, `weight`, `owner`) |
+| `createdAt` | `string` | both | ISO 8601 creation timestamp |
+| `updatedAt` | `string` | both | ISO 8601 last update timestamp |
 
 ---
 
