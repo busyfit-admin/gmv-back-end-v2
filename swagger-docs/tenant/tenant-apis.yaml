@@ -2263,6 +2263,114 @@ paths:
       security:
         - UserPool: []
 
+  /v2/teams/{teamId}/goals:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List team goals (OKRs & KPIs)
+      description: >
+        Returns a paginated list of all OKRs and KPIs that have been tagged to
+        the specified team. Caller must be an organisation admin. Pass the
+        `Organization-Id` header to identify the org. Use the `type` query
+        parameter to filter by `kpi` or `okr`; omit it to return both.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique ID of the team
+        - name: Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Organisation identifier
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [kpi, okr]
+          description: Filter by goal type
+        - name: cycleId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by performance cycle ID
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by goal status (e.g. active, completed)
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        "200":
+          description: Paginated list of team goals
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  pageSize:
+                    type: integer
+                  totalPages:
+                    type: integer
+        "403":
+          description: Access denied – caller is not an org admin
+        "500":
+          description: Internal server error
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   /v2/goals/{goalId}/sub-items:
     options:
       summary: CORS preflight request

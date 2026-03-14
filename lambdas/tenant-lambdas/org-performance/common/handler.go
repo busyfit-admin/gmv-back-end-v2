@@ -782,6 +782,27 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		}
 	}
 
+	// GET /v2/teams/{teamId}/goals — list all OKRs & KPIs tagged to a team.
+	// Requires the Organization-Id header; caller must be an org admin.
+	// Query params: type ("kpi"|"okr"), cycleId, status, page, pageSize, sortBy, order.
+	if len(parts) == 4 && parts[1] == "teams" && parts[3] == "goals" && request.HTTPMethod == "GET" {
+		teamID := parts[2]
+		orgID := svc.getOrgIDFromHeaders(request)
+		if err := svc.ensureOrgAdmin(orgID, userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		goalType := request.QueryStringParameters["type"]
+		filters := map[string]string{
+			"cycleId": request.QueryStringParameters["cycleId"],
+			"status":  request.QueryStringParameters["status"],
+		}
+		res, err := svc.perfSVC.GetTeamGoals(teamID, orgID, goalType, filters, getListOptions(request.QueryStringParameters))
+		if err != nil {
+			return svc.errorResponse(http.StatusInternalServerError, "Failed to list team goals", err)
+		}
+		return svc.successResponse(http.StatusOK, res)
+	}
+
 	if len(parts) == 5 && parts[1] == "goals" && parts[3] == "tasks" {
 		goalID := parts[2]
 		taskID := parts[4]
@@ -850,6 +871,10 @@ func isPathHandledByGroup(parts []string, routeGroup string) bool {
 	case RouteGroupOKRs:
 		return resource == "okrs" || resource == "key-results"
 	case RouteGroupGoals:
+		if resource == "teams" {
+			// /v2/teams/{teamId}/goals
+			return len(parts) == 4 && parts[3] == "goals"
+		}
 		return resource == "goals" || resource == "sub-items" || resource == "ladder-up"
 	default:
 		return false

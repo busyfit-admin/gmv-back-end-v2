@@ -794,6 +794,28 @@ func (svc *Service) Handler(request events.APIGatewayProxyRequest) (events.APIGa
 		}
 	}
 
+	// GET /v2/teams/{teamId}/goals - list all OKRs & KPIs tagged to a team
+	if len(parts) == 4 && parts[1] == "teams" && parts[3] == "goals" && request.HTTPMethod == "GET" {
+		teamID := parts[2]
+		orgID := svc.getOrgIDFromHeaders(request)
+		if orgID == "" {
+			return svc.errorResponse(http.StatusBadRequest, "Organization-Id header is required", nil)
+		}
+		if err := svc.ensureOrgAdmin(orgID, userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		filters := map[string]string{
+			"cycleId": request.QueryStringParameters["cycleId"],
+			"status":  request.QueryStringParameters["status"],
+		}
+		goalType := request.QueryStringParameters["type"] // "kpi" or "okr"
+		res, err := svc.perfSVC.GetTeamGoals(teamID, orgID, goalType, filters, getListOptions(request.QueryStringParameters))
+		if err != nil {
+			return svc.errorResponse(http.StatusInternalServerError, "Failed to list team goals", err)
+		}
+		return svc.successResponse(http.StatusOK, res)
+	}
+
 	return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
 }
 
