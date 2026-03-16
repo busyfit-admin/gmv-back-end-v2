@@ -34,12 +34,21 @@ List all goals for the authenticated user.
         "dueDate": "2026-06-30",
         "status": "on-track",
         "description": "string",
+        "orgGoalId": "org-level-goal-uuid-or-empty",
         "createdDate": "2026-03-01",
         "linkedTasks": [
-          { "id": "uuid", "title": "string", "done": false }
+          { "id": "TASK-101", "title": "string", "done": false }
         ],
         "comments": [
-          { "id": "uuid", "author": "Jane Doe", "initials": "JD", "text": "string", "date": "2026-03-01" }
+          {
+            "id": "uuid",
+            "author": "Jane Doe",
+            "authorUserName": "jane.doe@company.com",
+            "initials": "JD",
+            "role": "member",
+            "text": "string",
+            "date": "2026-03-01"
+          }
         ]
       }
     ]
@@ -59,7 +68,8 @@ Create a new goal.
   "type": "individual",       // required — individual | growth | kpi | okr
   "dueDate": "2026-06-30",    // required — YYYY-MM-DD
   "description": "string",    // optional
-  "status": "on-track"        // optional — defaults to "on-track"
+  "status": "on-track",       // optional — defaults to "on-track"
+  "orgGoalId": "org-goal-uuid" // optional — links this goal to an org-level goal
 }
 ```
 
@@ -68,16 +78,25 @@ Create a new goal.
 ---
 
 ### PATCH `/v2/users/me/goals/{goalId}`
-Update progress, status, or bulk-upsert linked tasks.
+Update progress, status, dueDate, orgGoalId, or bulk-upsert linked tasks.
 
 **Request body** (all fields optional)
 ```json
 {
   "progress": 60,
   "status": "ahead",
+  "dueDate": "2026-07-31",
+  "orgGoalId": "org-goal-uuid",
   "linkedTasks": [
     { "id": "existing-uuid-or-empty", "title": "string", "done": false }
   ]
+}
+```
+
+`orgGoalId` semantics:
+- **field absent**: existing org goal link unchanged
+- **`"orgGoalId": ""`** (empty string): **unlinks** from the org goal
+- **`"orgGoalId": "uuid"`**: links / relinks to that org goal
 }
 ```
 Omit `id` in a `linkedTask` entry to create a new task; supply it to update an existing one.
@@ -102,7 +121,7 @@ Add a task linked to a specific goal. The task is stored as a top-level item wit
 ---
 
 ### POST `/v2/users/me/goals/{goalId}/comments`
-Add a comment to a goal. Author name and initials are resolved from the authenticated user.
+Add a comment to a goal. The comment is stored with `role: "member"` and the caller's display name and username.
 
 **Request body**
 ```json
@@ -113,7 +132,42 @@ Add a comment to a goal. Author name and initials are resolved from the authenti
 ```json
 {
   "data": {
-    "comment": { "id": "uuid", "author": "Jane Doe", "initials": "JD", "text": "string", "date": "2026-03-01" }
+    "comment": {
+      "id": "uuid",
+      "author": "Jane Doe",
+      "authorUserName": "jane.doe@company.com",
+      "initials": "JD",
+      "role": "member",
+      "text": "string",
+      "date": "2026-03-01"
+    }
+  }
+}
+```
+
+---
+
+### POST `/v2/teams/{teamId}/members/{username}/goals/{goalId}/comments` *(manager)*
+Allows a manager to add a review comment on a specific member's goal. The comment is stored with `role: "manager"` on the **member's** goal partition — it will appear alongside the member's own comments when the goal is fetched.
+
+**Request body**
+```json
+{ "text": "string" }   // required
+```
+
+**Response `201`**
+```json
+{
+  "data": {
+    "comment": {
+      "id": "uuid",
+      "author": "Manager Name",
+      "authorUserName": "manager@company.com",
+      "initials": "MN",
+      "role": "manager",
+      "text": "string",
+      "date": "2026-03-01"
+    }
   }
 }
 ```

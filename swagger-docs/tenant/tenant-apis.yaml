@@ -3144,7 +3144,7 @@ paths:
         - UserPool: []
     post:
       summary: Create a new goal
-      description: Creates a goal for the current user.
+      description: "Creates an individual goal. Required fields: title, type, dueDate. Optional: description, status (default: on-track), orgGoalId (link to an org-level goal UUID)."
       consumes:
         - application/json
       produces:
@@ -3163,8 +3163,8 @@ paths:
 
   /v2/users/me/goals/{goalId}:
     patch:
-      summary: Update goal progress or status
-      description: Updates the progress percentage and/or status of an existing goal, and upserts linked tasks.
+      summary: Update goal progress, status, dueDate, or orgGoalId
+      description: "Updates any combination of: progress (0-100), status, dueDate (YYYY-MM-DD), orgGoalId (link/unlink org goal — send empty string to unlink), linkedTasks (upsert array)."
       consumes:
         - application/json
       produces:
@@ -3468,6 +3468,40 @@ paths:
         responses:
           default:
             statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{username}/goals/{goalId}/comments:
+    post:
+      summary: Manager adds a review comment on a member's individual goal
+      description: "Stores a comment with role=manager on the member's goal. Comment appears alongside member-authored comments when the goal is fetched."
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: username
+          in: path
+          required: true
+          type: string
+          description: The member's userName
+        - name: goalId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
       security:
         - UserPool: []
 

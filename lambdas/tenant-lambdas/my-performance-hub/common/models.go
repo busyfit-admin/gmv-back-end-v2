@@ -91,7 +91,8 @@ const (
 
 // ==================== DDB Records ====================
 
-// GoalRecord — PK=USER#{userName} SK=GOAL#{goalId}
+// GoalRecord — PK=USER#{userName}#TEAM#{teamId} SK=GOAL#{goalId}
+// OrgGoalID is an optional reference to an org-level goal (from OrgPerformanceTable).
 type GoalRecord struct {
 	PK          string `dynamodbav:"PK"`
 	SK          string `dynamodbav:"SK"`
@@ -103,6 +104,7 @@ type GoalRecord struct {
 	DueDate     string `dynamodbav:"dueDate"`
 	Status      string `dynamodbav:"status"`
 	Description string `dynamodbav:"description,omitempty"`
+	OrgGoalID   string `dynamodbav:"orgGoalId,omitempty"`
 	CreatedAt   string `dynamodbav:"createdAt"`
 	UpdatedAt   string `dynamodbav:"updatedAt"`
 }
@@ -130,18 +132,22 @@ type LinkedTaskRecord struct {
 	UpdatedAt   string   `dynamodbav:"updatedAt,omitempty"`
 }
 
-// GoalCommentRecord — PK=USER#{userName} SK=GOAL#{goalId}#CMMNT#{commentId}
+// GoalCommentRecord — PK=USER#{userName}#TEAM#{teamId} SK=GOAL#{goalId}#CMMNT#{commentId}
+// Role distinguishes who wrote the comment: "member" (the goal owner) or "manager" (reviewer).
+// AuthorUserName is the actual commenter's username; UserName is the goal owner's username.
 type GoalCommentRecord struct {
-	PK        string `dynamodbav:"PK"`
-	SK        string `dynamodbav:"SK"`
-	CommentID string `dynamodbav:"commentId"`
-	GoalID    string `dynamodbav:"goalId"`
-	UserName  string `dynamodbav:"userName"`
-	Author    string `dynamodbav:"author"`
-	Initials  string `dynamodbav:"initials"`
-	Text      string `dynamodbav:"text"`
-	Date      string `dynamodbav:"date"`
-	CreatedAt string `dynamodbav:"createdAt"`
+	PK             string `dynamodbav:"PK"`
+	SK             string `dynamodbav:"SK"`
+	CommentID      string `dynamodbav:"commentId"`
+	GoalID         string `dynamodbav:"goalId"`
+	UserName       string `dynamodbav:"userName"`
+	AuthorUserName string `dynamodbav:"authorUserName"`
+	Author         string `dynamodbav:"author"`
+	Initials       string `dynamodbav:"initials"`
+	Role           string `dynamodbav:"role"`
+	Text           string `dynamodbav:"text"`
+	Date           string `dynamodbav:"date"`
+	CreatedAt      string `dynamodbav:"createdAt"`
 }
 
 // MeetingRecord — PK=USER#{userName} SK=MEETING#{meetingId}
@@ -197,12 +203,15 @@ type CreateGoalRequest struct {
 	DueDate     string `json:"dueDate"`
 	Description string `json:"description,omitempty"`
 	Status      string `json:"status,omitempty"`
+	OrgGoalID   string `json:"orgGoalId,omitempty"`
 }
 
 type UpdateGoalRequest struct {
 	Progress    *int         `json:"progress,omitempty"`
 	LinkedTasks []LinkedTask `json:"linkedTasks,omitempty"`
 	Status      string       `json:"status,omitempty"`
+	DueDate     string       `json:"dueDate,omitempty"`
+	OrgGoalID   *string      `json:"orgGoalId"`
 }
 
 type LinkedTask struct {

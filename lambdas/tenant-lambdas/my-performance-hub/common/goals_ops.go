@@ -3,9 +3,9 @@ package common
 // ==================== Routes ====================
 //
 // GET   /v2/users/me/goals                               — list goals
-// POST  /v2/users/me/goals                               — create goal
-// PATCH /v2/users/me/goals/{goalId}                      — update progress / status
-// POST  /v2/users/me/goals/{goalId}/comments             — add comment
+// POST  /v2/users/me/goals                               — create goal (dueDate, orgGoalId supported)
+// PATCH /v2/users/me/goals/{goalId}                      — update progress / status / dueDate / orgGoalId
+// POST  /v2/users/me/goals/{goalId}/comments             — add comment (role: member)
 // POST  /v2/users/me/goals/{goalId}/tasks                — add linked task (sets goalId attribute)
 
 import (
@@ -145,6 +145,7 @@ func (svc *Service) createGoal(userName, teamID, body string) (events.APIGateway
 		DueDate:     req.DueDate,
 		Status:      status,
 		Description: req.Description,
+		OrgGoalID:   req.OrgGoalID,
 		CreatedAt:   today,
 		UpdatedAt:   now,
 	}
@@ -184,6 +185,12 @@ func (svc *Service) updateGoal(userName, teamID, goalID, body string) (events.AP
 	}
 	if req.Status != "" {
 		rec.Status = req.Status
+	}
+	if req.DueDate != "" {
+		rec.DueDate = req.DueDate
+	}
+	if req.OrgGoalID != nil {
+		rec.OrgGoalID = *req.OrgGoalID
 	}
 	rec.UpdatedAt = now
 
@@ -228,11 +235,23 @@ func (svc *Service) updateGoal(userName, teamID, goalID, body string) (events.AP
 
 // ==================== Add Comment ====================
 
+// addGoalComment writes a member-authored comment on a goal.
+// Called from the user's own goals route; role is always "member".
 func (svc *Service) addGoalComment(userName, teamID, displayName, goalID, body string) (events.APIGatewayProxyResponse, error) {
 	if _, err := svc.fetchGoal(userName, teamID, goalID); err != nil {
 		return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Goal not found")
 	}
+	return svc.writeGoalComment(buildPK(userName, teamID), goalID, userName, userName, displayName, "member", body)
+}
 
+// writeGoalComment is the shared implementation for both member and manager comment creation.
+// goalOwnerPK  — DynamoDB PK of the goal's owner partition
+// goalID       — UUID of the goal
+// goalOwner    — userName of the goal owner (stored as UserName on the record)
+// authorUN     — userName of the person writing the comment
+// authorName   — display name of the comment author
+// role         — "member" or "manager"
+func (svc *Service) writeGoalComment(goalOwnerPK, goalID, goalOwner, authorUN, authorName, role, body string) (events.APIGatewayProxyResponse, error) {
 	req, err := parseBody[AddGoalCommentRequest](body)
 	if err != nil || req.Text == "" {
 		return svc.errResp(http.StatusBadRequest, "VALIDATION_ERROR", "text is required")
@@ -243,16 +262,18 @@ func (svc *Service) addGoalComment(userName, teamID, displayName, goalID, body s
 	commentID := uuid.New().String()
 
 	rec := GoalCommentRecord{
-		PK:        buildPK(userName, teamID),
-		SK:        SKGoalPrefix + goalID + SKCommentInfix + commentID,
-		CommentID: commentID,
-		GoalID:    goalID,
-		UserName:  userName,
-		Author:    displayName,
-		Initials:  initials(displayName),
-		Text:      req.Text,
-		Date:      today,
-		CreatedAt: now,
+		PK:             goalOwnerPK,
+		SK:             SKGoalPrefix + goalID + SKCommentInfix + commentID,
+		CommentID:      commentID,
+		GoalID:         goalID,
+		UserName:       goalOwner,
+		AuthorUserName: authorUN,
+		Author:         authorName,
+		Initials:       initials(authorName),
+		Role:           role,
+		Text:           req.Text,
+		Date:           today,
+		CreatedAt:      now,
 	}
 	item, _ := attributevalue.MarshalMap(rec)
 	if _, err := svc.ddb.PutItem(svc.ctx, &dynamodb.PutItemInput{
@@ -264,11 +285,13 @@ func (svc *Service) addGoalComment(userName, teamID, displayName, goalID, body s
 
 	return svc.createdResp(map[string]interface{}{
 		"comment": map[string]interface{}{
-			"id":       commentID,
-			"author":   displayName,
-			"initials": initials(displayName),
-			"text":     req.Text,
-			"date":     today,
+			"id":             commentID,
+			"author":         authorName,
+			"authorUserName": authorUN,
+			"initials":       initials(authorName),
+			"role":           role,
+			"text":           req.Text,
+			"date":           today,
 		},
 	})
 }
@@ -377,22 +400,18 @@ func (svc *Service) fetchGoalComments(userName, teamID, goalID string) ([]GoalCo
 func buildGoalResponse(g GoalRecord, tasks []LinkedTaskRecord, comments []GoalCommentRecord) map[string]interface{} {
 	taskList := make([]map[string]interface{}, 0, len(tasks))
 	for _, t := range tasks {
-		taskList = append(taskList, map[string]interface{}{
-			"id":        t.TaskID,
-			"title":     t.Title,
-			"done":      t.Done,
-			"goalId":    t.GoalID,
-			"createdAt": t.CreatedAt,
-		})
+		taskList = append(taskList, buildTaskResponse(t))
 	}
 	commentList := make([]map[string]interface{}, 0, len(comments))
 	for _, c := range comments {
 		commentList = append(commentList, map[string]interface{}{
-			"id":       c.CommentID,
-			"author":   c.Author,
-			"initials": c.Initials,
-			"text":     c.Text,
-			"date":     c.Date,
+			"id":             c.CommentID,
+			"author":         c.Author,
+			"authorUserName": c.AuthorUserName,
+			"initials":       c.Initials,
+			"role":           c.Role,
+			"text":           c.Text,
+			"date":           c.Date,
 		})
 	}
 	return map[string]interface{}{
@@ -404,6 +423,7 @@ func buildGoalResponse(g GoalRecord, tasks []LinkedTaskRecord, comments []GoalCo
 		"status":      g.Status,
 		"createdDate": g.CreatedAt,
 		"description": g.Description,
+		"orgGoalId":   g.OrgGoalID,
 		"linkedTasks": taskList,
 		"comments":    commentList,
 	}

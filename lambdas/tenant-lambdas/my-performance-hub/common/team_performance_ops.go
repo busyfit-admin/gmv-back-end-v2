@@ -28,8 +28,9 @@ import (
 //
 // Accepted path shapes (parts[0] == "v2", parts[1] == "teams"):
 //
-//	[v2, teams, {teamId}, performance, members]              — GET list members
-//	[v2, teams, {teamId}, members, {memberId}, goals]
+//	[v2, teams, {teamId}, performance, members]                              — GET list members
+//	[v2, teams, {teamId}, members, {memberId}, goals]                        — GET member goals (manager view)
+//	[v2, teams, {teamId}, members, {memberId}, goals, {goalId}, comments]    — POST manager comment on a goal
 //	[v2, teams, {teamId}, members, {memberId}, meetings]
 //	[v2, teams, {teamId}, members, {memberId}, appreciations]
 //	[v2, teams, {teamId}, members, {memberId}, comments]
@@ -41,6 +42,16 @@ func (svc *Service) handleTeamPerformance(request events.APIGatewayProxyRequest,
 	if len(parts) == 5 && parts[3] == "performance" && parts[4] == "members" {
 		if request.HTTPMethod == "GET" {
 			return svc.getTeamPerformanceMembers(teamID, managerUserName)
+		}
+		return svc.errResp(http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed")
+	}
+
+	// /v2/teams/{teamId}/members/{memberId}/goals/{goalId}/comments  (8 parts)
+	if len(parts) == 8 && parts[3] == "members" && parts[5] == "goals" && parts[7] == "comments" {
+		memberID := parts[4]
+		goalID := parts[6]
+		if request.HTTPMethod == "POST" {
+			return svc.addManagerGoalComment(teamID, memberID, goalID, managerUserName, managerDisplayName, request.Body)
 		}
 		return svc.errResp(http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed")
 	}
@@ -357,6 +368,35 @@ func (svc *Service) addManagerComment(teamID, memberID, managerUserName, manager
 // ==================== 2.5 Performance Summary (all-in-one) ====================
 //
 // GET /v2/teams/{teamId}/members/{memberId}/performance-summary
+
+// ==================== 2.4b Manager Goal Comment ====================
+//
+// POST /v2/teams/{teamId}/members/{memberId}/goals/{goalId}/comments
+// Adds a comment with role="manager" directly on a member's individual goal.
+// The comment is stored on the member's own partition and appears alongside
+// member-authored comments when the goal is fetched.
+func (svc *Service) addManagerGoalComment(teamID, memberID, goalID, managerUserName, managerDisplayName, body string) (events.APIGatewayProxyResponse, error) {
+	if err := svc.assertTeamMember(teamID, managerUserName); err != nil {
+		return *err, nil
+	}
+
+	// Verify the goal exists on the member's partition
+	memberPK := buildPK(memberID, teamID)
+	result, err := svc.ddb.GetItem(svc.ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(svc.perfHubTable),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: memberPK},
+			"SK": &types.AttributeValueMemberS{Value: SKGoalPrefix + goalID},
+		},
+	})
+	if err != nil || result.Item == nil {
+		return svc.errResp(http.StatusNotFound, "NOT_FOUND", "Goal not found for this member")
+	}
+
+	return svc.writeGoalComment(memberPK, goalID, memberID, managerUserName, managerDisplayName, "manager", body)
+}
+
+
 
 func (svc *Service) getMemberPerformanceSummary(teamID, memberID, managerUserName string) (events.APIGatewayProxyResponse, error) {
 	if err := svc.assertTeamMember(teamID, managerUserName); err != nil {
