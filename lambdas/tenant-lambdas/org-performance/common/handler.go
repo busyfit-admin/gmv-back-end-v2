@@ -895,6 +895,9 @@ type userTaskItem struct {
 // fetchTasksForGoal queries the base table for all TASK# items on the given PK that
 // belong to the specified goalID. Returns a slice ready for JSON serialisation.
 func (svc *Service) fetchTasksForGoal(pk, goalID string) ([]map[string]interface{}, error) {
+	svc.logger.Printf("[fetchTasksForGoal] querying table=%s PK=%q SK_prefix=TASK# filter goalId=%q",
+		svc.perfHubTable, pk, goalID)
+
 	out, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(svc.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
@@ -906,15 +909,22 @@ func (svc *Service) fetchTasksForGoal(pk, goalID string) ([]map[string]interface
 		},
 	})
 	if err != nil {
+		svc.logger.Printf("[fetchTasksForGoal] ERROR PK=%q goalId=%q: %v", pk, goalID, err)
 		return nil, err
 	}
+
+	svc.logger.Printf("[fetchTasksForGoal] PK=%q goalId=%q — DDB returned %d raw items (scanned %d)",
+		pk, goalID, len(out.Items), out.ScannedCount)
 
 	tasks := make([]map[string]interface{}, 0, len(out.Items))
 	for _, item := range out.Items {
 		var t userTaskItem
 		if err := attributevalue.UnmarshalMap(item, &t); err != nil {
+			svc.logger.Printf("[fetchTasksForGoal] warn: failed to unmarshal task item SK=%q: %v", t.SK, err)
 			continue
 		}
+		svc.logger.Printf("[fetchTasksForGoal] task SK=%q taskId=%q title=%q status=%q done=%v",
+			t.SK, t.TaskID, t.Title, t.Status, t.Done)
 		taskEntry := map[string]interface{}{
 			"id":       t.TaskID,
 			"taskId":   t.TaskID,
@@ -941,6 +951,7 @@ func (svc *Service) fetchTasksForGoal(pk, goalID string) ([]map[string]interface
 		}
 		tasks = append(tasks, taskEntry)
 	}
+	svc.logger.Printf("[fetchTasksForGoal] PK=%q goalId=%q — returning %d tasks", pk, goalID, len(tasks))
 	return tasks, nil
 }
 
@@ -994,11 +1005,13 @@ func (svc *Service) listUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map
 			teamID = g.PK[idx+6:]
 		}
 		// Fetch tasks linked to this goal
+		svc.logger.Printf("[listUserGoalsForOrgGoal] fetching tasks for goal goalId=%q PK=%q", g.GoalID, g.PK)
 		tasks, err := svc.fetchTasksForGoal(g.PK, g.GoalID)
 		if err != nil {
-			svc.logger.Printf("warn: failed to fetch tasks for goal %s: %v", g.GoalID, err)
+			svc.logger.Printf("[listUserGoalsForOrgGoal] warn: failed to fetch tasks for goal goalId=%q PK=%q: %v", g.GoalID, g.PK, err)
 			tasks = []map[string]interface{}{}
 		}
+		svc.logger.Printf("[listUserGoalsForOrgGoal] goal goalId=%q userName=%q — %d linked task(s)", g.GoalID, g.UserName, len(tasks))
 		// Build summary counts
 		summary["total"]++
 		switch strings.ToLower(g.Status) {
