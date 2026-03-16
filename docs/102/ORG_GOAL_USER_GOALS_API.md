@@ -73,7 +73,29 @@ Returns all user-level individual goals that have been linked to this org-level 
         "progress": 65,
         "status": "on-track",
         "dueDate": "2026-06-30",
-        "updatedAt": "2026-03-15T10:00:00Z"
+        "updatedAt": "2026-03-15T10:00:00Z",
+        "linkedTasks": [
+          {
+            "id": "TASK-101",
+            "taskNumber": 101,
+            "title": "Run NPS survey for Q1 cohort",
+            "status": "done",
+            "done": true,
+            "priority": "high",
+            "dueDate": "2026-03-31",
+            "updatedAt": "2026-03-14T09:00:00Z"
+          },
+          {
+            "id": "TASK-104",
+            "taskNumber": 104,
+            "title": "Analyse detractor feedback",
+            "status": "in-progress",
+            "done": false,
+            "priority": "medium",
+            "dueDate": "2026-04-15",
+            "updatedAt": "2026-03-15T10:00:00Z"
+          }
+        ]
       },
       {
         "goalId": "uuid",
@@ -84,7 +106,8 @@ Returns all user-level individual goals that have been linked to this org-level 
         "progress": 20,
         "status": "at-risk",
         "dueDate": "2026-06-30",
-        "updatedAt": "2026-03-10T08:30:00Z"
+        "updatedAt": "2026-03-10T08:30:00Z",
+        "linkedTasks": []
       }
     ],
     "summary": {
@@ -113,6 +136,23 @@ Returns all user-level individual goals that have been linked to this org-level 
 | `progress` | `integer` | 0–100 |
 | `status` | `string` | Current status (see values below) |
 | `dueDate` | `string` | Due date `YYYY-MM-DD` |
+| `updatedAt` | `string` | ISO 8601 timestamp of last update |
+| `linkedTasks` | `array` | Tasks linked to this goal (always present; empty array if none) |
+
+#### `linkedTasks[]` item
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Human-readable task ID (e.g. `TASK-101`) |
+| `taskNumber` | `integer` | Numeric part of the task ID |
+| `title` | `string` | Task title |
+| `status` | `string` | `todo` · `in-progress` · `done` · `closed` |
+| `done` | `boolean` | Shorthand for whether the task is complete |
+| `priority` | `string` | `low` · `medium` · `high` · `urgent` |
+| `dueDate` | `string` | Task due date `YYYY-MM-DD` |
+| `description` | `string` | Optional task description (omitted if empty) |
+| `timeHours` | `number` | Estimated effort in hours (omitted if 0) |
+| `timeDays` | `number` | Estimated effort in days (omitted if 0) |
 | `updatedAt` | `string` | ISO 8601 timestamp of last update |
 
 #### `summary` object

@@ -875,9 +875,78 @@ type userGoalItem struct {
 	UpdatedAt string `dynamodbav:"updatedAt"`
 }
 
+// userTaskItem is a minimal projection of a LinkedTaskRecord from UserPerformanceHubTable.
+type userTaskItem struct {
+	SK          string  `dynamodbav:"SK"`
+	TaskID      string  `dynamodbav:"taskId"`
+	TaskNumber  int     `dynamodbav:"taskNumber"`
+	GoalID      string  `dynamodbav:"goalId"`
+	Title       string  `dynamodbav:"title"`
+	Description string  `dynamodbav:"description"`
+	Priority    string  `dynamodbav:"priority"`
+	Status      string  `dynamodbav:"status"`
+	Done        bool    `dynamodbav:"done"`
+	DueDate     string  `dynamodbav:"dueDate"`
+	TimeHours   float64 `dynamodbav:"timeHours"`
+	TimeDays    float64 `dynamodbav:"timeDays"`
+	UpdatedAt   string  `dynamodbav:"updatedAt"`
+}
+
+// fetchTasksForGoal queries the base table for all TASK# items on the given PK that
+// belong to the specified goalID. Returns a slice ready for JSON serialisation.
+func (svc *Service) fetchTasksForGoal(pk, goalID string) ([]map[string]interface{}, error) {
+	out, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(svc.perfHubTable),
+		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
+		FilterExpression:       aws.String("goalId = :goalId"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk":     &types.AttributeValueMemberS{Value: pk},
+			":prefix": &types.AttributeValueMemberS{Value: "TASK#"},
+			":goalId": &types.AttributeValueMemberS{Value: goalID},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := make([]map[string]interface{}, 0, len(out.Items))
+	for _, item := range out.Items {
+		var t userTaskItem
+		if err := attributevalue.UnmarshalMap(item, &t); err != nil {
+			continue
+		}
+		taskEntry := map[string]interface{}{
+			"id":       t.TaskID,
+			"taskId":   t.TaskID,
+			"title":    t.Title,
+			"status":   t.Status,
+			"done":     t.Done,
+			"priority": t.Priority,
+			"dueDate":  t.DueDate,
+		}
+		if t.TaskNumber > 0 {
+			taskEntry["taskNumber"] = t.TaskNumber
+		}
+		if t.Description != "" {
+			taskEntry["description"] = t.Description
+		}
+		if t.TimeHours > 0 {
+			taskEntry["timeHours"] = t.TimeHours
+		}
+		if t.TimeDays > 0 {
+			taskEntry["timeDays"] = t.TimeDays
+		}
+		if t.UpdatedAt != "" {
+			taskEntry["updatedAt"] = t.UpdatedAt
+		}
+		tasks = append(tasks, taskEntry)
+	}
+	return tasks, nil
+}
+
 // listUserGoalsForOrgGoal queries the OrgGoalIdIndex GSI on UserPerformanceHubTable
 // to find all user-level goals linked to the given org goal ID.
-// It returns the full list plus a rolled-up status summary.
+// It returns the full list (including linked tasks per goal) plus a rolled-up status summary.
 func (svc *Service) listUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[string]interface{}, error) {
 	if svc.perfHubTable == "" {
 		return nil, fmt.Errorf("PERF_HUB_TABLE is not configured")
@@ -924,6 +993,12 @@ func (svc *Service) listUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map
 		if idx := strings.LastIndex(g.PK, "#TEAM#"); idx != -1 {
 			teamID = g.PK[idx+6:]
 		}
+		// Fetch tasks linked to this goal
+		tasks, err := svc.fetchTasksForGoal(g.PK, g.GoalID)
+		if err != nil {
+			svc.logger.Printf("warn: failed to fetch tasks for goal %s: %v", g.GoalID, err)
+			tasks = []map[string]interface{}{}
+		}
 		// Build summary counts
 		summary["total"]++
 		switch strings.ToLower(g.Status) {
@@ -939,15 +1014,16 @@ func (svc *Service) listUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map
 			summary["completed"]++
 		}
 		goals = append(goals, map[string]interface{}{
-			"goalId":    g.GoalID,
-			"userName":  g.UserName,
-			"teamId":    teamID,
-			"title":     g.Title,
-			"type":      g.Type,
-			"progress":  g.Progress,
-			"status":    g.Status,
-			"dueDate":   g.DueDate,
-			"updatedAt": g.UpdatedAt,
+			"goalId":      g.GoalID,
+			"userName":    g.UserName,
+			"teamId":      teamID,
+			"title":       g.Title,
+			"type":        g.Type,
+			"progress":    g.Progress,
+			"status":      g.Status,
+			"dueDate":     g.DueDate,
+			"updatedAt":   g.UpdatedAt,
+			"linkedTasks": tasks,
 		})
 	}
 
