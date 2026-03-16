@@ -396,8 +396,6 @@ func (svc *Service) addManagerGoalComment(teamID, memberID, goalID, managerUserN
 	return svc.writeGoalComment(memberPK, goalID, memberID, managerUserName, managerDisplayName, "manager", body)
 }
 
-
-
 func (svc *Service) getMemberPerformanceSummary(teamID, memberID, managerUserName string) (events.APIGatewayProxyResponse, error) {
 	if err := svc.assertTeamMember(teamID, managerUserName); err != nil {
 		return *err, nil

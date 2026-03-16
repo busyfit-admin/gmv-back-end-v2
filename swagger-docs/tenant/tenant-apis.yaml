@@ -2412,6 +2412,51 @@ paths:
       security:
         - UserPool: []
 
+  /v2/goals/{goalId}/user-goals:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List user goals linked to an org goal
+      description: >
+        Returns all user-level individual goals that have been linked to this
+        org-level goal (OKR or KPI) via the orgGoalId field.
+        Includes a rolled-up summary of goal counts by status (on-track, ahead, at-risk, behind, completed).
+        Caller must be an org admin.
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: UUID of the org-level goal (OKR or KPI).
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [on-track, ahead, at-risk, behind, completed]
+          description: Filter results to user goals with this status only.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   /v2/sub-items/{subItemId}:
     options:
       summary: CORS preflight request

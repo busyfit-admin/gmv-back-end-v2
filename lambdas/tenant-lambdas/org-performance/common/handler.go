@@ -12,8 +12,11 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
 	"github.com/aws/aws-xray-sdk-go/xray"
@@ -22,11 +25,13 @@ import (
 )
 
 type Service struct {
-	ctx     context.Context
-	logger  *log.Logger
-	orgSVC  *companylib.OrgServiceV2
-	empSVC  *companylib.EmployeeService
-	perfSVC *companylib.PerformanceService
+	ctx          context.Context
+	logger       *log.Logger
+	orgSVC       *companylib.OrgServiceV2
+	empSVC       *companylib.EmployeeService
+	perfSVC      *companylib.PerformanceService
+	ddb          *dynamodb.Client
+	perfHubTable string
 }
 
 const (
@@ -68,11 +73,13 @@ func NewService() (*Service, error) {
 	perfSvc.OrganizationTable = os.Getenv("ORGANIZATION_TABLE")
 
 	svc := &Service{
-		ctx:     ctx,
-		logger:  logger,
-		orgSVC:  orgSvc,
-		empSVC:  empSvc,
-		perfSVC: perfSvc,
+		ctx:          ctx,
+		logger:       logger,
+		orgSVC:       orgSvc,
+		empSVC:       empSvc,
+		perfSVC:      perfSvc,
+		ddb:          ddbclient,
+		perfHubTable: os.Getenv("PERF_HUB_TABLE"),
 	}
 
 	return svc, nil
@@ -831,7 +838,124 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		}
 	}
 
+	// GET /v2/goals/{goalId}/user-goals — list all user-level individual goals linked to this org goal (OKR/KPI).
+	// Returns each goal's progress/status and a rolled-up summary count per status.
+	if len(parts) == 4 && parts[1] == "goals" && parts[3] == "user-goals" && request.HTTPMethod == "GET" {
+		goalID := parts[2]
+		base, err := svc.perfSVC.GetGoalDetails(goalID, false, false, false, false, false, userName)
+		if err != nil {
+			return svc.errorResponse(http.StatusNotFound, "Goal not found", err)
+		}
+		if err := svc.ensureOrgAdmin(toString(base["organizationId"]), userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		statusFilter := request.QueryStringParameters["status"]
+		res, err := svc.listUserGoalsForOrgGoal(goalID, statusFilter)
+		if err != nil {
+			return svc.errorResponse(http.StatusInternalServerError, "Failed to list user goals", err)
+		}
+		return svc.successResponse(http.StatusOK, res)
+	}
+
 	return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
+}
+
+// userGoalItem is a minimal projection of a GoalRecord from UserPerformanceHubTable.
+type userGoalItem struct {
+	PK        string `dynamodbav:"PK"`
+	SK        string `dynamodbav:"SK"`
+	GoalID    string `dynamodbav:"goalId"`
+	OrgGoalID string `dynamodbav:"orgGoalId"`
+	UserName  string `dynamodbav:"userName"`
+	Title     string `dynamodbav:"title"`
+	Type      string `dynamodbav:"type"`
+	Progress  int    `dynamodbav:"progress"`
+	Status    string `dynamodbav:"status"`
+	DueDate   string `dynamodbav:"dueDate"`
+	UpdatedAt string `dynamodbav:"updatedAt"`
+}
+
+// listUserGoalsForOrgGoal queries the OrgGoalIdIndex GSI on UserPerformanceHubTable
+// to find all user-level goals linked to the given org goal ID.
+// It returns the full list plus a rolled-up status summary.
+func (svc *Service) listUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[string]interface{}, error) {
+	if svc.perfHubTable == "" {
+		return nil, fmt.Errorf("PERF_HUB_TABLE is not configured")
+	}
+
+	out, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(svc.perfHubTable),
+		IndexName:              aws.String("OrgGoalIdIndex"),
+		KeyConditionExpression: aws.String("orgGoalId = :orgGoalId"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":orgGoalId": &types.AttributeValueMemberS{Value: orgGoalID},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("GSI query failed: %w", err)
+	}
+
+	summary := map[string]int{
+		"total":     0,
+		"onTrack":   0,
+		"ahead":     0,
+		"atRisk":    0,
+		"behind":    0,
+		"completed": 0,
+	}
+
+	goals := make([]map[string]interface{}, 0, len(out.Items))
+	for _, item := range out.Items {
+		var g userGoalItem
+		if err := attributevalue.UnmarshalMap(item, &g); err != nil {
+			svc.logger.Printf("warn: failed to unmarshal user goal item: %v", err)
+			continue
+		}
+		// Only include items that are goal records (SK starts with GOAL# but not a comment)
+		if !strings.HasPrefix(g.SK, "GOAL#") || strings.Contains(g.SK, "#CMMNT#") {
+			continue
+		}
+		// Optional status filter
+		if statusFilter != "" && !strings.EqualFold(g.Status, statusFilter) {
+			continue
+		}
+		// Parse teamId from PK: USER#{userName}#TEAM#{teamId}
+		teamID := ""
+		if idx := strings.LastIndex(g.PK, "#TEAM#"); idx != -1 {
+			teamID = g.PK[idx+6:]
+		}
+		// Build summary counts
+		summary["total"]++
+		switch strings.ToLower(g.Status) {
+		case "on-track":
+			summary["onTrack"]++
+		case "ahead":
+			summary["ahead"]++
+		case "at-risk":
+			summary["atRisk"]++
+		case "behind":
+			summary["behind"]++
+		case "completed":
+			summary["completed"]++
+		}
+		goals = append(goals, map[string]interface{}{
+			"goalId":    g.GoalID,
+			"userName":  g.UserName,
+			"teamId":    teamID,
+			"title":     g.Title,
+			"type":      g.Type,
+			"progress":  g.Progress,
+			"status":    g.Status,
+			"dueDate":   g.DueDate,
+			"updatedAt": g.UpdatedAt,
+		})
+	}
+
+	return map[string]interface{}{
+		"orgGoalId": orgGoalID,
+		"userGoals": goals,
+		"summary":   summary,
+	}, nil
 }
 
 func splitPath(path string) []string {
