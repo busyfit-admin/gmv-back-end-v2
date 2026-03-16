@@ -3249,11 +3249,16 @@ paths:
           required: false
           type: string
           description: Filter by linked goal UUID, or "none" for unlinked tasks
+        - name: status
+          in: query
+          required: false
+          type: string
+          description: "Filter by task status: todo | in-progress | done | closed"
         - name: done
           in: query
           required: false
           type: string
-          description: Filter by completion status (true or false)
+          description: "Backward-compat boolean filter (true = done/closed, false = todo/in-progress)"
       x-amazon-apigateway-integration:
         type: AWS_PROXY
         httpMethod: POST
@@ -3267,6 +3272,7 @@ paths:
         - UserPool: []
     post:
       summary: Create a standalone task (optionally linked to a goal)
+      description: "Task ID is auto-assigned as TASK-101, TASK-102, … (team-scoped, starts at 101). Fields: title (required), description, priority (low|medium|high|urgent), status (todo|in-progress|done|closed, default: todo), tags (string[]), timeHours, timeDays, dueDate (YYYY-MM-DD), goalId."
       consumes:
         - application/json
       produces:
@@ -3290,7 +3296,8 @@ paths:
 
   /v2/users/me/tasks/{taskId}:
     patch:
-      summary: Update a task — toggle done, rename, or relink/unlink from a goal
+      summary: Update task fields — status, title, priority, tags, time, dueDate, or goalId
+      description: "taskId is the TASK-101 style identifier. status and done are synced: sending status derives done automatically. Send tags: [] to clear tags. Send goalId: '' to unlink from a goal."
       consumes:
         - application/json
       produces:

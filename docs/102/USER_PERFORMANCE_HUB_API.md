@@ -122,7 +122,28 @@ Add a comment to a goal. Author name and initials are resolved from the authenti
 
 ## Tasks
 
-Tasks are **top-level items** stored as `SK = TASK#{taskId}` on the user+team partition. A task may optionally carry a `goalId` attribute to link it to a goal. Use the endpoints below to list all tasks, create standalone tasks, or relink tasks between goals.
+Tasks are **top-level items** stored as `SK = TASK#{taskId}` on the user+team partition. Each task carries a human-readable `id` in the format `TASK-101`, `TASK-102`, … — a team-scoped sequence that starts at **101** and increments atomically. A task may optionally carry a `goalId` attribute to link it to a goal.
+
+### Task fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Human-readable ID: `TASK-101`, `TASK-102`, … (team-scoped) |
+| `taskNumber` | `integer` | Numeric part of the ID (101, 102, …) |
+| `title` | `string` | Short task title (**required** on create) |
+| `description` | `string` | Optional longer description |
+| `status` | `string` | `todo` · `in-progress` · `done` · `closed` (default: `todo`) |
+| `done` | `boolean` | Derived from status — `true` when status is `done` or `closed` |
+| `priority` | `string` | `low` · `medium` · `high` · `urgent` |
+| `tags` | `string[]` | Arbitrary label array |
+| `timeHours` | `number` | Time logged in hours |
+| `timeDays` | `number` | Time logged in days |
+| `dueDate` | `string` | Due date (`YYYY-MM-DD`) |
+| `goalId` | `string` | UUID of linked goal, or empty if unlinked |
+| `createdAt` | `string` | ISO 8601 UTC |
+| `updatedAt` | `string` | ISO 8601 UTC |
+
+---
 
 ### GET `/v2/users/me/tasks`
 List all tasks for the authenticated user within a team.
@@ -132,14 +153,30 @@ List all tasks for the authenticated user within a team.
 |-------|----------|-------------|
 | `teamId` | ✅ | Team scope |
 | `goalId` | optional | Filter by goal UUID; use `none` for tasks with no goal linked |
-| `done` | optional | `true` or `false` |
+| `status` | optional | Filter by status: `todo`, `in-progress`, `done`, `closed` |
+| `done` | optional | Backward-compat boolean filter (`true` = done/closed, `false` = todo/in-progress) |
 
 **Response `200`**
 ```json
 {
   "data": {
     "tasks": [
-      { "id": "uuid", "title": "string", "done": false, "goalId": "uuid-or-empty", "createdAt": "RFC3339" }
+      {
+        "id": "TASK-101",
+        "taskNumber": 101,
+        "title": "Write unit tests",
+        "description": "Cover happy path and error cases",
+        "status": "in-progress",
+        "done": false,
+        "priority": "high",
+        "tags": ["backend", "q1"],
+        "timeHours": 2.5,
+        "timeDays": 0,
+        "dueDate": "2026-03-31",
+        "goalId": "goal-uuid-or-empty",
+        "createdAt": "2026-03-16T10:00:00Z",
+        "updatedAt": "2026-03-16T10:00:00Z"
+      }
     ]
   }
 }
@@ -154,38 +191,84 @@ Create a standalone task. Optionally link it to a goal by including `goalId` in 
 
 **Request body**
 ```json
-{ "title": "string", "goalId": "uuid" }   // goalId is optional
+{
+  "title": "string",           // required
+  "description": "string",     // optional
+  "priority": "high",          // optional: low | medium | high | urgent
+  "status": "todo",            // optional: todo | in-progress | done | closed (default: todo)
+  "tags": ["backend", "q1"],   // optional
+  "timeHours": 0,              // optional
+  "timeDays": 0,               // optional
+  "dueDate": "2026-03-31",     // optional (YYYY-MM-DD)
+  "goalId": "uuid"             // optional
+}
 ```
 
 **Response `201`**
 ```json
-{ "data": { "task": { "id": "uuid", "title": "string", "done": false, "goalId": "uuid-or-empty", "createdAt": "RFC3339" } } }
+{
+  "data": {
+    "task": {
+      "id": "TASK-101",
+      "taskNumber": 101,
+      "title": "string",
+      "description": "string",
+      "status": "todo",
+      "done": false,
+      "priority": "high",
+      "tags": ["backend"],
+      "timeHours": 0,
+      "timeDays": 0,
+      "dueDate": "2026-03-31",
+      "goalId": "uuid-or-empty",
+      "createdAt": "RFC3339",
+      "updatedAt": "RFC3339"
+    }
+  }
+}
 ```
 
 ---
 
 ### PATCH `/v2/users/me/tasks/{taskId}`
-Update a task's completion state, title, or goal linkage.
+Update any combination of task fields. Only include the fields you want to change.
+
+> `taskId` is the `TASK-101` style identifier returned on create.
 
 **Query params**: `teamId` (required)
 
-**Request body** (all fields optional — send only what to change)
+**Request body** (all fields optional — include only what to change)
 ```json
 {
-  "done": true,
   "title": "Updated title",
+  "description": "Updated description",
+  "status": "in-progress",
+  "priority": "urgent",
+  "tags": ["backend", "hotfix"],
+  "timeHours": 4.5,
+  "timeDays": 0.5,
+  "dueDate": "2026-04-01",
   "goalId": "new-goal-uuid"
 }
 ```
 
-`goalId` semantics:
+**`status` / `done` semantics:**
+- Send `status` (preferred) — `done` is automatically derived (`true` when status is `done` or `closed`)
+- Send `done: true` (backward-compat) — status is set to `done`; `done: false` sets status to `todo`
+
+**`goalId` semantics:**
 - **field absent**: existing goal linkage unchanged
 - **`"goalId": ""`** (empty string): **unlinks** the task from any goal
 - **`"goalId": "uuid"`**: relinks the task to the specified goal (goal must exist)
 
+**`tags` semantics:**
+- **field absent**: existing tags unchanged
+- **`"tags": []`**: clears all tags
+- **`"tags": ["a","b"]`**: replaces tags entirely
+
 **Response `200`**
 ```json
-{ "data": { "task": { "id": "uuid", "teamId": "uuid", "updated": true } } }
+{ "data": { "task": { "id": "TASK-101", "teamId": "uuid", "updated": true } } }
 ```
 
 ---

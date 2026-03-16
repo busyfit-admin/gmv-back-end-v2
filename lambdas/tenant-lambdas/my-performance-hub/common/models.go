@@ -49,6 +49,26 @@ const (
 	GoalStatusBehind    GoalStatus = "behind"
 )
 
+// ==================== Task Status & Priority ====================
+
+type TaskStatus string
+
+const (
+	TaskStatusTodo       TaskStatus = "todo"
+	TaskStatusInProgress TaskStatus = "in-progress"
+	TaskStatusDone       TaskStatus = "done"
+	TaskStatusClosed     TaskStatus = "closed"
+)
+
+type TaskPriority string
+
+const (
+	TaskPriorityLow    TaskPriority = "low"
+	TaskPriorityMedium TaskPriority = "medium"
+	TaskPriorityHigh   TaskPriority = "high"
+	TaskPriorityUrgent TaskPriority = "urgent"
+)
+
 // ==================== Meeting Status ====================
 
 type MeetingStatus string
@@ -88,16 +108,26 @@ type GoalRecord struct {
 }
 
 // LinkedTaskRecord — PK=USER#{userName}#TEAM#{teamId} SK=TASK#{taskId}
+// TaskID is a human-readable team-scoped reference in the format TASK-{N}, starting at TASK-101.
 // GoalID is optional — empty string means the task is not linked to any goal.
 type LinkedTaskRecord struct {
-	PK        string `dynamodbav:"PK"`
-	SK        string `dynamodbav:"SK"`
-	TaskID    string `dynamodbav:"taskId"`
-	GoalID    string `dynamodbav:"goalId,omitempty"`
-	UserName  string `dynamodbav:"userName"`
-	Title     string `dynamodbav:"title"`
-	Done      bool   `dynamodbav:"done"`
-	CreatedAt string `dynamodbav:"createdAt"`
+	PK          string   `dynamodbav:"PK"`
+	SK          string   `dynamodbav:"SK"`
+	TaskID      string   `dynamodbav:"taskId"`
+	TaskNumber  int      `dynamodbav:"taskNumber"`
+	GoalID      string   `dynamodbav:"goalId,omitempty"`
+	UserName    string   `dynamodbav:"userName"`
+	Title       string   `dynamodbav:"title"`
+	Description string   `dynamodbav:"description,omitempty"`
+	Priority    string   `dynamodbav:"priority,omitempty"`
+	Status      string   `dynamodbav:"status"`
+	Done        bool     `dynamodbav:"done"`
+	Tags        []string `dynamodbav:"tags,omitempty"`
+	TimeHours   float64  `dynamodbav:"timeHours,omitempty"`
+	TimeDays    float64  `dynamodbav:"timeDays,omitempty"`
+	DueDate     string   `dynamodbav:"dueDate,omitempty"`
+	CreatedAt   string   `dynamodbav:"createdAt"`
+	UpdatedAt   string   `dynamodbav:"updatedAt,omitempty"`
 }
 
 // GoalCommentRecord — PK=USER#{userName} SK=GOAL#{goalId}#CMMNT#{commentId}
@@ -191,16 +221,31 @@ type AddLinkedTaskRequest struct {
 
 // CreateTaskRequest — for POST /v2/users/me/tasks (standalone or linked)
 type CreateTaskRequest struct {
-	Title  string `json:"title"`
-	GoalID string `json:"goalId,omitempty"`
+	Title       string   `json:"title"`
+	GoalID      string   `json:"goalId,omitempty"`
+	Description string   `json:"description,omitempty"`
+	Priority    string   `json:"priority,omitempty"`
+	Status      string   `json:"status,omitempty"`
+	Tags        []string `json:"tags,omitempty"`
+	TimeHours   float64  `json:"timeHours,omitempty"`
+	TimeDays    float64  `json:"timeDays,omitempty"`
+	DueDate     string   `json:"dueDate,omitempty"`
 }
 
 // UpdateTaskRequest — for PATCH /v2/users/me/tasks/{taskId}
-// GoalID: nil = don't change; pointer to "" = unlink from goal; pointer to UUID = relink
+// GoalID: nil = don't change; pointer to "" = unlink from goal; pointer to UUID = relink.
+// Tags: nil = don't change; pointer to [] = clear tags; pointer to ["a","b"] = replace tags.
 type UpdateTaskRequest struct {
-	Done   *bool   `json:"done,omitempty"`
-	Title  string  `json:"title,omitempty"`
-	GoalID *string `json:"goalId"`
+	Done        *bool     `json:"done,omitempty"`
+	Title       string    `json:"title,omitempty"`
+	GoalID      *string   `json:"goalId"`
+	Description string    `json:"description,omitempty"`
+	Priority    string    `json:"priority,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	Tags        *[]string `json:"tags,omitempty"`
+	TimeHours   *float64  `json:"timeHours,omitempty"`
+	TimeDays    *float64  `json:"timeDays,omitempty"`
+	DueDate     string    `json:"dueDate,omitempty"`
 }
 
 type ToggleTaskRequest struct {
