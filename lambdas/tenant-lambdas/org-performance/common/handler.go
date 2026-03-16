@@ -12,8 +12,11 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
 	"github.com/aws/aws-xray-sdk-go/xray"
@@ -22,11 +25,13 @@ import (
 )
 
 type Service struct {
-	ctx     context.Context
-	logger  *log.Logger
-	orgSVC  *companylib.OrgServiceV2
-	empSVC  *companylib.EmployeeService
-	perfSVC *companylib.PerformanceService
+	ctx          context.Context
+	logger       *log.Logger
+	orgSVC       *companylib.OrgServiceV2
+	empSVC       *companylib.EmployeeService
+	perfSVC      *companylib.PerformanceService
+	ddb          *dynamodb.Client
+	perfHubTable string
 }
 
 const (
@@ -68,11 +73,13 @@ func NewService() (*Service, error) {
 	perfSvc.OrganizationTable = os.Getenv("ORGANIZATION_TABLE")
 
 	svc := &Service{
-		ctx:     ctx,
-		logger:  logger,
-		orgSVC:  orgSvc,
-		empSVC:  empSvc,
-		perfSVC: perfSvc,
+		ctx:          ctx,
+		logger:       logger,
+		orgSVC:       orgSvc,
+		empSVC:       empSvc,
+		perfSVC:      perfSvc,
+		ddb:          ddbclient,
+		perfHubTable: os.Getenv("PERF_HUB_TABLE"),
 	}
 
 	return svc, nil
@@ -782,6 +789,27 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		}
 	}
 
+	// GET /v2/teams/{teamId}/goals — list all OKRs & KPIs tagged to a team.
+	// Requires the Organization-Id header; caller must be an org admin.
+	// Query params: type ("kpi"|"okr"), cycleId, status, page, pageSize, sortBy, order.
+	if len(parts) == 4 && parts[1] == "teams" && parts[3] == "goals" && request.HTTPMethod == "GET" {
+		teamID := parts[2]
+		orgID := svc.getOrgIDFromHeaders(request)
+		if err := svc.ensureOrgAdmin(orgID, userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		goalType := request.QueryStringParameters["type"]
+		filters := map[string]string{
+			"cycleId": request.QueryStringParameters["cycleId"],
+			"status":  request.QueryStringParameters["status"],
+		}
+		res, err := svc.perfSVC.GetTeamGoals(teamID, orgID, goalType, filters, getListOptions(request.QueryStringParameters))
+		if err != nil {
+			return svc.errorResponse(http.StatusInternalServerError, "Failed to list team goals", err)
+		}
+		return svc.successResponse(http.StatusOK, res)
+	}
+
 	if len(parts) == 5 && parts[1] == "goals" && parts[3] == "tasks" {
 		goalID := parts[2]
 		taskID := parts[4]
@@ -810,7 +838,213 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		}
 	}
 
+	// GET /v2/goals/{goalId}/user-goals — list all user-level individual goals linked to this org goal (OKR/KPI).
+	// Returns each goal's progress/status and a rolled-up summary count per status.
+	if len(parts) == 4 && parts[1] == "goals" && parts[3] == "user-goals" && request.HTTPMethod == "GET" {
+		goalID := parts[2]
+		base, err := svc.perfSVC.GetGoalDetails(goalID, false, false, false, false, false, userName)
+		if err != nil {
+			return svc.errorResponse(http.StatusNotFound, "Goal not found", err)
+		}
+		if err := svc.ensureOrgAdmin(toString(base["organizationId"]), userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		statusFilter := request.QueryStringParameters["status"]
+		res, err := svc.listUserGoalsForOrgGoal(goalID, statusFilter)
+		if err != nil {
+			return svc.errorResponse(http.StatusInternalServerError, "Failed to list user goals", err)
+		}
+		return svc.successResponse(http.StatusOK, res)
+	}
+
 	return svc.errorResponse(http.StatusMethodNotAllowed, "Method not allowed", nil)
+}
+
+// userGoalItem is a minimal projection of a GoalRecord from UserPerformanceHubTable.
+type userGoalItem struct {
+	PK        string `dynamodbav:"PK"`
+	SK        string `dynamodbav:"SK"`
+	GoalID    string `dynamodbav:"goalId"`
+	OrgGoalID string `dynamodbav:"orgGoalId"`
+	UserName  string `dynamodbav:"userName"`
+	Title     string `dynamodbav:"title"`
+	Type      string `dynamodbav:"type"`
+	Progress  int    `dynamodbav:"progress"`
+	Status    string `dynamodbav:"status"`
+	DueDate   string `dynamodbav:"dueDate"`
+	UpdatedAt string `dynamodbav:"updatedAt"`
+}
+
+// userTaskItem is a minimal projection of a LinkedTaskRecord from UserPerformanceHubTable.
+type userTaskItem struct {
+	SK          string  `dynamodbav:"SK"`
+	TaskID      string  `dynamodbav:"taskId"`
+	TaskNumber  int     `dynamodbav:"taskNumber"`
+	GoalID      string  `dynamodbav:"goalId"`
+	Title       string  `dynamodbav:"title"`
+	Description string  `dynamodbav:"description"`
+	Priority    string  `dynamodbav:"priority"`
+	Status      string  `dynamodbav:"status"`
+	Done        bool    `dynamodbav:"done"`
+	DueDate     string  `dynamodbav:"dueDate"`
+	TimeHours   float64 `dynamodbav:"timeHours"`
+	TimeDays    float64 `dynamodbav:"timeDays"`
+	UpdatedAt   string  `dynamodbav:"updatedAt"`
+}
+
+// fetchTasksForGoal queries the base table for all TASK# items on the given PK that
+// belong to the specified goalID. Returns a slice ready for JSON serialisation.
+func (svc *Service) fetchTasksForGoal(pk, goalID string) ([]map[string]interface{}, error) {
+	svc.logger.Printf("[fetchTasksForGoal] querying table=%s PK=%q SK_prefix=TASK# filter goalId=%q",
+		svc.perfHubTable, pk, goalID)
+
+	out, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(svc.perfHubTable),
+		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
+		FilterExpression:       aws.String("goalId = :goalId"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk":     &types.AttributeValueMemberS{Value: pk},
+			":prefix": &types.AttributeValueMemberS{Value: "TASK#"},
+			":goalId": &types.AttributeValueMemberS{Value: goalID},
+		},
+	})
+	if err != nil {
+		svc.logger.Printf("[fetchTasksForGoal] ERROR PK=%q goalId=%q: %v", pk, goalID, err)
+		return nil, err
+	}
+
+	svc.logger.Printf("[fetchTasksForGoal] PK=%q goalId=%q — DDB returned %d raw items (scanned %d)",
+		pk, goalID, len(out.Items), out.ScannedCount)
+
+	tasks := make([]map[string]interface{}, 0, len(out.Items))
+	for _, item := range out.Items {
+		var t userTaskItem
+		if err := attributevalue.UnmarshalMap(item, &t); err != nil {
+			svc.logger.Printf("[fetchTasksForGoal] warn: failed to unmarshal task item SK=%q: %v", t.SK, err)
+			continue
+		}
+		svc.logger.Printf("[fetchTasksForGoal] task SK=%q taskId=%q title=%q status=%q done=%v",
+			t.SK, t.TaskID, t.Title, t.Status, t.Done)
+		taskEntry := map[string]interface{}{
+			"id":       t.TaskID,
+			"taskId":   t.TaskID,
+			"title":    t.Title,
+			"status":   t.Status,
+			"done":     t.Done,
+			"priority": t.Priority,
+			"dueDate":  t.DueDate,
+		}
+		if t.TaskNumber > 0 {
+			taskEntry["taskNumber"] = t.TaskNumber
+		}
+		if t.Description != "" {
+			taskEntry["description"] = t.Description
+		}
+		if t.TimeHours > 0 {
+			taskEntry["timeHours"] = t.TimeHours
+		}
+		if t.TimeDays > 0 {
+			taskEntry["timeDays"] = t.TimeDays
+		}
+		if t.UpdatedAt != "" {
+			taskEntry["updatedAt"] = t.UpdatedAt
+		}
+		tasks = append(tasks, taskEntry)
+	}
+	svc.logger.Printf("[fetchTasksForGoal] PK=%q goalId=%q — returning %d tasks", pk, goalID, len(tasks))
+	return tasks, nil
+}
+
+// listUserGoalsForOrgGoal queries the OrgGoalIdIndex GSI on UserPerformanceHubTable
+// to find all user-level goals linked to the given org goal ID.
+// It returns the full list (including linked tasks per goal) plus a rolled-up status summary.
+func (svc *Service) listUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[string]interface{}, error) {
+	if svc.perfHubTable == "" {
+		return nil, fmt.Errorf("PERF_HUB_TABLE is not configured")
+	}
+
+	out, err := svc.ddb.Query(svc.ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(svc.perfHubTable),
+		IndexName:              aws.String("OrgGoalIdIndex"),
+		KeyConditionExpression: aws.String("orgGoalId = :orgGoalId"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":orgGoalId": &types.AttributeValueMemberS{Value: orgGoalID},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("GSI query failed: %w", err)
+	}
+
+	summary := map[string]int{
+		"total":     0,
+		"onTrack":   0,
+		"ahead":     0,
+		"atRisk":    0,
+		"behind":    0,
+		"completed": 0,
+	}
+
+	goals := make([]map[string]interface{}, 0, len(out.Items))
+	for _, item := range out.Items {
+		var g userGoalItem
+		if err := attributevalue.UnmarshalMap(item, &g); err != nil {
+			svc.logger.Printf("warn: failed to unmarshal user goal item: %v", err)
+			continue
+		}
+		// Only include items that are goal records (SK starts with GOAL# but not a comment)
+		if !strings.HasPrefix(g.SK, "GOAL#") || strings.Contains(g.SK, "#CMMNT#") {
+			continue
+		}
+		// Optional status filter
+		if statusFilter != "" && !strings.EqualFold(g.Status, statusFilter) {
+			continue
+		}
+		// Parse teamId from PK: USER#{userName}#TEAM#{teamId}
+		teamID := ""
+		if idx := strings.LastIndex(g.PK, "#TEAM#"); idx != -1 {
+			teamID = g.PK[idx+6:]
+		}
+		// Fetch tasks linked to this goal
+		svc.logger.Printf("[listUserGoalsForOrgGoal] fetching tasks for goal goalId=%q PK=%q", g.GoalID, g.PK)
+		tasks, err := svc.fetchTasksForGoal(g.PK, g.GoalID)
+		if err != nil {
+			svc.logger.Printf("[listUserGoalsForOrgGoal] warn: failed to fetch tasks for goal goalId=%q PK=%q: %v", g.GoalID, g.PK, err)
+			tasks = []map[string]interface{}{}
+		}
+		svc.logger.Printf("[listUserGoalsForOrgGoal] goal goalId=%q userName=%q — %d linked task(s)", g.GoalID, g.UserName, len(tasks))
+		// Build summary counts
+		summary["total"]++
+		switch strings.ToLower(g.Status) {
+		case "on-track":
+			summary["onTrack"]++
+		case "ahead":
+			summary["ahead"]++
+		case "at-risk":
+			summary["atRisk"]++
+		case "behind":
+			summary["behind"]++
+		case "completed":
+			summary["completed"]++
+		}
+		goals = append(goals, map[string]interface{}{
+			"goalId":      g.GoalID,
+			"userName":    g.UserName,
+			"teamId":      teamID,
+			"title":       g.Title,
+			"type":        g.Type,
+			"progress":    g.Progress,
+			"status":      g.Status,
+			"dueDate":     g.DueDate,
+			"updatedAt":   g.UpdatedAt,
+			"linkedTasks": tasks,
+		})
+	}
+
+	return map[string]interface{}{
+		"orgGoalId": orgGoalID,
+		"userGoals": goals,
+		"summary":   summary,
+	}, nil
 }
 
 func splitPath(path string) []string {
@@ -850,6 +1084,10 @@ func isPathHandledByGroup(parts []string, routeGroup string) bool {
 	case RouteGroupOKRs:
 		return resource == "okrs" || resource == "key-results"
 	case RouteGroupGoals:
+		if resource == "teams" {
+			// /v2/teams/{teamId}/goals
+			return len(parts) == 4 && parts[3] == "goals"
+		}
 		return resource == "goals" || resource == "sub-items" || resource == "ladder-up"
 	default:
 		return false

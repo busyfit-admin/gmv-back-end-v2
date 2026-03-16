@@ -2263,6 +2263,114 @@ paths:
       security:
         - UserPool: []
 
+  /v2/teams/{teamId}/goals:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List team goals (OKRs & KPIs)
+      description: >
+        Returns a paginated list of all OKRs and KPIs that have been tagged to
+        the specified team. Caller must be an organisation admin. Pass the
+        `Organization-Id` header to identify the org. Use the `type` query
+        parameter to filter by `kpi` or `okr`; omit it to return both.
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique ID of the team
+        - name: Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Organisation identifier
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [kpi, okr]
+          description: Filter by goal type
+        - name: cycleId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by performance cycle ID
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by goal status (e.g. active, completed)
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        "200":
+          description: Paginated list of team goals
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  pageSize:
+                    type: integer
+                  totalPages:
+                    type: integer
+        "403":
+          description: Access denied – caller is not an org admin
+        "500":
+          description: Internal server error
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   /v2/goals/{goalId}/sub-items:
     options:
       summary: CORS preflight request
@@ -2301,6 +2409,51 @@ paths:
         responses:
           default:
             statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/goals/{goalId}/user-goals:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List user goals linked to an org goal
+      description: >
+        Returns all user-level individual goals that have been linked to this
+        org-level goal (OKR or KPI) via the orgGoalId field.
+        Includes a rolled-up summary of goal counts by status (on-track, ahead, at-risk, behind, completed).
+        Caller must be an org admin.
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: UUID of the org-level goal (OKR or KPI).
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [on-track, ahead, at-risk, behind, completed]
+          description: Filter results to user goals with this status only.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceGoalsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
       security:
         - UserPool: []
 
@@ -3006,6 +3159,560 @@ paths:
       security:
         - UserPool: []
 
+  # ---- User Performance Hub ----
+
+  /v2/users/me/goals:
+    get:
+      summary: List goals for the current user
+      description: Returns all goals stored for the authenticated user, optionally filtered by type or status.
+      produces:
+        - application/json
+      parameters:
+        - name: type
+          in: query
+          required: false
+          type: string
+        - name: status
+          in: query
+          required: false
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create a new goal
+      description: "Creates an individual goal. Required fields: title, type, dueDate. Optional: description, status (default: on-track), orgGoalId (link to an org-level goal UUID)."
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/users/me/goals/{goalId}:
+    patch:
+      summary: Update goal progress, status, dueDate, or orgGoalId
+      description: "Updates any combination of: progress (0-100), status, dueDate (YYYY-MM-DD), orgGoalId (link/unlink org goal — send empty string to unlink), linkedTasks (upsert array)."
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/users/me/goals/{goalId}/comments:
+    post:
+      summary: Add a comment to a goal
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/users/me/goals/{goalId}/tasks:
+    post:
+      summary: Add a linked task to a goal
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/users/me/tasks:
+    get:
+      summary: List all tasks for the current user in a team
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: query
+          required: true
+          type: string
+        - name: goalId
+          in: query
+          required: false
+          type: string
+          description: Filter by linked goal UUID, or "none" for unlinked tasks
+        - name: status
+          in: query
+          required: false
+          type: string
+          description: "Filter by task status: todo | in-progress | done | closed"
+        - name: done
+          in: query
+          required: false
+          type: string
+          description: "Backward-compat boolean filter (true = done/closed, false = todo/in-progress)"
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create a standalone task (optionally linked to a goal)
+      description: "Task ID is auto-assigned as TASK-101, TASK-102, … (team-scoped, starts at 101). Fields: title (required), description, priority (low|medium|high|urgent), status (todo|in-progress|done|closed, default: todo), tags (string[]), timeHours, timeDays, dueDate (YYYY-MM-DD), goalId."
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: query
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/users/me/tasks/{taskId}:
+    patch:
+      summary: Update task fields — status, title, priority, tags, time, dueDate, or goalId
+      description: "taskId is the TASK-101 style identifier. status and done are synced: sending status derives done automatically. Send tags: [] to clear tags. Send goalId: '' to unlink from a goal."
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: query
+          required: true
+          type: string
+        - name: taskId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/users/me/meetings:
+    get:
+      summary: List 1-on-1 meetings for the current user
+      produces:
+        - application/json
+      parameters:
+        - name: status
+          in: query
+          required: false
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Create a 1-on-1 meeting record
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/users/me/appreciations:
+    get:
+      summary: List appreciations received by the current user
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/users/me/feedback-requests:
+    get:
+      summary: List feedback requests sent by the current user
+      produces:
+        - application/json
+      parameters:
+        - name: status
+          in: query
+          required: false
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Send a feedback request to another user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  # --------------- Team Performance Review Endpoints (Manager View) ---------------
+
+  /v2/teams/{teamId}/performance/members:
+    get:
+      summary: List team members with review status
+      description: Returns all members of a team enriched with their performance review lifecycle state (rating, pending flags).
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{username}/goals:
+    get:
+      summary: Get member OKRs and KPIs (manager view)
+      description: Returns all OKR and KPI goal records for a specific team member as seen by their manager.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: username
+          in: path
+          required: true
+          type: string
+          description: The member's userName
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{username}/goals/{goalId}/comments:
+    post:
+      summary: Manager adds a review comment on a member's individual goal
+      description: "Stores a comment with role=manager on the member's goal. Comment appears alongside member-authored comments when the goal is fetched."
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: username
+          in: path
+          required: true
+          type: string
+          description: The member's userName
+        - name: goalId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{username}/meetings:
+    get:
+      summary: Get member 1-on-1 meeting history (manager view)
+      description: Returns all 1-on-1 meeting records for a specific team member.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: username
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{username}/appreciations:
+    get:
+      summary: Get appreciations received by a member (manager view)
+      description: Returns all appreciation records received by a specific team member.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: username
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{username}/comments:
+    get:
+      summary: Get manager comments for a member
+      description: Returns all manager comments and feedback entries written for a specific team member.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: username
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add a manager comment for a member
+      description: Creates a new manager comment (feedback, coaching, or general) for a specific team member.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: username
+          in: path
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/components/schemas/AddManagerCommentRequest'
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/{username}/performance-summary:
+    get:
+      summary: Get full performance summary for a member (all-in-one)
+      description: Returns profile, OKRs, KPIs, meetings, appreciations, and manager comments for a member in a single call.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+        - name: username
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageTeamPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
+  /v2/teams/{teamId}/members/directory:
+    get:
+      summary: Get team member directory
+      description: Returns basic profile info for all members of a team. Caller must be a member of the team.
+      produces:
+        - application/json
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserPerformanceLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
 components:
   schemas:
     Tenantrequestbody:
@@ -3078,6 +3785,66 @@ components:
           format: date-time
           description: ISO 8601 timestamp of last update
           example: "2026-01-15T10:00:00Z"
+    AddManagerCommentRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Comment body
+        type:
+          type: string
+          enum: [feedback, coaching, general]
+          description: Category of the comment
+          default: general
+
+    ManagerCommentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        author:
+          type: string
+        authorInitials:
+          type: string
+        date:
+          type: string
+          format: date
+        text:
+          type: string
+        type:
+          type: string
+          enum: [feedback, coaching, general]
+
+    TeamPerformanceMember:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Member userName
+        name:
+          type: string
+        initials:
+          type: string
+        role:
+          type: string
+        department:
+          type: string
+        avatarColor:
+          type: string
+        overallRating:
+          type: number
+          format: float
+        lastReviewDate:
+          type: string
+          format: date
+          nullable: true
+        isPendingReview:
+          type: boolean
+        hasUserUpdatedReviews:
+          type: boolean
+
     errorbody:
       type: object
       properties:

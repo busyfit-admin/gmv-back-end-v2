@@ -1801,7 +1801,7 @@ Resources:
   ManagePerformanceGoalsLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Description: "Lambda to manage org performance goals, ladder-up, and tasks"
+      Description: "Lambda to manage org performance goals, ladder-up, tasks, and user-goal alignment"
       Role: !GetAtt OrganizationLambdaRole.Arn
       Handler: bootstrap
       Runtime: provided.al2
@@ -1817,6 +1817,7 @@ Resources:
           ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
           EMPLOYEE_TABLE: !Ref EmployeeDataTable
           EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          PERF_HUB_TABLE: !Ref UserPerformanceHubTable
 
   ManagePerformanceGoalsLambdaInvokePermissions:
     Type: AWS::Lambda::Permission
@@ -1880,6 +1881,12 @@ Resources:
                   - !Sub ${EmployeeDataTable.Arn}/index/*
                   - !GetAtt TenantTeamsTableV2.Arn
                   - !Sub ${TenantTeamsTableV2.Arn}/index/*
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt UserPerformanceHubTable.Arn
+                  - !Sub ${UserPerformanceHubTable.Arn}/index/OrgGoalIdIndex
               - Effect: Allow
                 Action:
                   - dynamodb:TransactWriteItems
@@ -2050,6 +2057,170 @@ Resources:
                 Action:
                   - apigateway:*
                 Resource: "*"
+
+  # ================================================================================
+  # ---- UserPerformanceHubTable DynamoDB Table ----
+  # Single-table design.
+  #
+  # User-scoped items — PK = USER#{userName}#TEAM#{teamID}
+  #   SK: GOAL#{goalId}                            → GoalRecord
+  #   SK: GOAL#{goalId}#CMMNT#{commentId}          → GoalCommentRecord
+  #   SK: MEETING#{meetingId}                      → MeetingRecord
+  #   SK: APPR#{appreciationId}                    → AppreciationRecord
+  #   SK: FBREQ#{requestId}                        → FeedbackRequestRecord
+  #   SK: TASK#{taskId}                            → LinkedTaskRecord
+  #   SK: MGRCMT#{commentId}                       → ManagerCommentRecord (written by manager, keyed on member)
+  #
+  # Team-scoped items — PK = TEAM#{teamID}
+  #   SK: REVIEW#MEMBER#{memberUserName}            → TeamMemberReviewRecord (review lifecycle state)
+  # ==================================================================================
+
+  UserPerformanceHubTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub UserPerformanceHubTable-${Environment}
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: orgGoalId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: OrgGoalIdIndex
+          KeySchema:
+            - AttributeName: orgGoalId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: "PAY_PER_REQUEST"
+
+  # ---------- IAM Role: UserPerformanceLambdaRole ----------
+
+  UserPerformanceLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub UserPerformance-Lambda-Role-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/UserPerformance/"
+      Policies:
+        - PolicyName: UserPerformanceLambdaExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !GetAtt UserPerformanceHubTable.Arn
+                  - !Sub ${UserPerformanceHubTable.Arn}/index/*
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt TenantTeamsTableV2.Arn
+                  - !Sub ${TenantTeamsTableV2.Arn}/index/*
+                  - !GetAtt EmployeeDataTable.Arn
+                  - !Sub ${EmployeeDataTable.Arn}/index/*
+
+  # ---------- Lambda: ManageUserPerformance ----------
+
+  ManageUserPerformanceLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages user performance hub: goals, meetings, appreciations, feedback requests, team member directory"
+      Role: !GetAtt UserPerformanceLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/my-performance-hub/manage-user-performance/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          PERF_HUB_TABLE: !Ref UserPerformanceHubTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManageUserPerformanceLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageUserPerformanceLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
+  # ---------- Lambda: ManageTeamPerformance ----------
+  # Handles manager-facing team performance review APIs:
+  #   GET  /v2/teams/{teamId}/performance/members
+  #   GET  /v2/teams/{teamId}/members/{memberId}/goals
+  #   GET  /v2/teams/{teamId}/members/{memberId}/meetings
+  #   GET  /v2/teams/{teamId}/members/{memberId}/appreciations
+  #   GET  /v2/teams/{teamId}/members/{memberId}/comments
+  #   POST /v2/teams/{teamId}/members/{memberId}/comments
+  #   GET  /v2/teams/{teamId}/members/{memberId}/performance-summary
+
+  ManageTeamPerformanceLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Manages team performance review lifecycle: member list, goals, meetings, appreciations, manager comments"
+      Role: !GetAtt UserPerformanceLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/tenant-lambdas/my-performance-hub/manage-team-performance/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          PERF_HUB_TABLE: !Ref UserPerformanceHubTable
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+
+  ManageTeamPerformanceLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ManageTeamPerformanceLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
 Outputs:
   TenantProfilePoolId:

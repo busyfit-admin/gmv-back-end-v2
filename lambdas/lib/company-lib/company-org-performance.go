@@ -1623,6 +1623,144 @@ func (svc *PerformanceService) RemoveGoalTeam(goalID string, teamID string) erro
 	return svc.deleteRecord(record)
 }
 
+// GetTeamGoals returns all OKRs and KPIs that have been tagged to a given team.
+//
+// It performs a reverse lookup: scans all GOAL_TEAM link records under the org
+// partition and collects those whose Data["teamId"] matches the given teamID.
+// For each matched goalId it calls findGoalBase to retrieve the full goal record,
+// then assembles a denormalised detail map that includes computed progress.
+//
+// Parameters:
+//   - teamID    – the team whose tagged goals are to be listed (required)
+//   - orgID     – the organisation that owns the performance table partition (required)
+//   - goalType  – optional filter: "kpi" or "okr" (empty string = return both)
+//   - filters   – optional key/value pairs for additional filtering:
+//     "status"  – e.g. "active", "completed"
+//     "cycleId" – restrict results to a specific performance cycle
+//   - options   – pagination / sorting options (Page, PageSize, SortBy, Order)
+//
+// Returns a paginated envelope:
+//
+//	{
+//	  "goals":      []map  – array of goal detail objects
+//	  "total":      int    – total goals matched (before pagination)
+//	  "page":       int
+//	  "pageSize":   int
+//	  "totalPages": int
+//	}
+func (svc *PerformanceService) GetTeamGoals(teamID string, orgID string, goalType string, filters map[string]string, options ListQueryOptions) (map[string]interface{}, error) {
+	// Query all GOAL_TEAM link records for this org
+	records, err := svc.queryByOrgPrefix(orgID, perfSKPrefix+"GOAL#")
+	if err != nil {
+		return nil, err
+	}
+
+	// Collect unique goalIDs whose link record matches this team
+	seen := map[string]bool{}
+	goalIDs := []string{}
+	for _, r := range records {
+		if r.EntityType != perfEntityGoalTeam {
+			continue
+		}
+		if toString(r.Data["teamId"]) != teamID {
+			continue
+		}
+		gID := toString(r.Data["goalId"])
+		if gID == "" || seen[gID] {
+			continue
+		}
+		seen[gID] = true
+		goalIDs = append(goalIDs, gID)
+	}
+
+	// Fetch and build the goal detail for each matched goalID
+	goals := make([]map[string]interface{}, 0, len(goalIDs))
+	for _, gID := range goalIDs {
+		base, _, gType, err := svc.findGoalBase(gID)
+		if err != nil || base == nil {
+			continue
+		}
+		// Optional type filter: "kpi" or "okr"
+		if goalType != "" && !strings.EqualFold(gType, goalType) {
+			continue
+		}
+		// Optional status filter
+		if filters["status"] != "" && !strings.EqualFold(toString(base["status"]), filters["status"]) {
+			continue
+		}
+		// Optional cycleId filter
+		if filters["cycleId"] != "" && toString(base["cycleId"]) != filters["cycleId"] {
+			continue
+		}
+		var detail map[string]interface{}
+		if strings.EqualFold(gType, "okr") {
+			// OKRs store their fields under different keys:
+			//   name        → objective
+			//   owner       → objectiveOwner
+			//   deadline    → timeBound (descriptive string, e.g. "Half-Yearly")
+			//   currentValue/targetValue/unit are per key-result, not at OKR level
+			detail = map[string]interface{}{
+				"id":              gID,
+				"type":            gType,
+				"name":            toString(base["objective"]),
+				"objective":       toString(base["objective"]),
+				"owner":           toString(base["objectiveOwner"]),
+				"status":          toString(base["status"]),
+				"cycleId":         toString(base["cycleId"]),
+				"quarterId":       base["quarterId"],
+				"timeBound":       toString(base["timeBound"]),
+				"deadline":        toString(base["timeBound"]),
+				"confidenceScore": base["confidenceScore"],
+				"keyResults":      base["keyResults"],
+				"currentValue":    nil,
+				"targetValue":     nil,
+				"unit":            "",
+				"progress":        0.0,
+				"createdAt":       base["createdAt"],
+				"updatedAt":       base["updatedAt"],
+			}
+		} else {
+			// KPIs store fields under standard keys
+			detail = map[string]interface{}{
+				"id":           gID,
+				"type":         gType,
+				"name":         toString(base["name"]),
+				"description":  toString(base["description"]),
+				"owner":        toString(base["owner"]),
+				"status":       toString(base["status"]),
+				"cycleId":      toString(base["cycleId"]),
+				"quarterId":    base["quarterId"],
+				"currentValue": base["currentValue"],
+				"targetValue":  base["targetValue"],
+				"unit":         toString(base["unitOfMeasure"]),
+				"deadline":     toString(base["endDate"]),
+				"createdAt":    base["createdAt"],
+				"updatedAt":    base["updatedAt"],
+			}
+			current := toFloat(base["currentValue"])
+			target := toFloat(base["targetValue"])
+			if target > 0 {
+				detail["progress"] = (current / target) * 100
+			} else {
+				detail["progress"] = 0.0
+			}
+		}
+		goals = append(goals, detail)
+	}
+
+	paginated, err := svc.paginate(goals, options)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]interface{}{
+		"goals":      paginated["items"],
+		"total":      paginated["total"],
+		"page":       paginated["page"],
+		"pageSize":   paginated["pageSize"],
+		"totalPages": paginated["totalPages"],
+	}, nil
+}
+
 func (svc *PerformanceService) GetGoalSubItems(goalID string) (map[string]interface{}, error) {
 	_, baseRec, _, err := svc.findGoalBase(goalID)
 	if err != nil {

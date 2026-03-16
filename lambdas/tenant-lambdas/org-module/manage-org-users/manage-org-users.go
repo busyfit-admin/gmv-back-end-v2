@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -148,6 +149,9 @@ func (svc *Service) listOrgUsers(orgId string, requestingUser string, request ev
 	type UserInfo struct {
 		UserName    string `json:"userName"`
 		DisplayName string `json:"displayName"`
+		Name        string `json:"name"`
+		ProfilePic  string `json:"profilePic"`
+		Designation string `json:"designation,omitempty"`
 		Role        string `json:"role"`
 		JoinedAt    string `json:"joinedAt,omitempty"`
 		AddedAt     string `json:"addedAt,omitempty"`
@@ -155,13 +159,32 @@ func (svc *Service) listOrgUsers(orgId string, requestingUser string, request ev
 		UserType    string `json:"userType"` // "admin" or "user"
 	}
 
+	// Helper to resolve name and profilePic from employee record
+	resolveEmployee := func(userName string) (name string, profilePic string, designation string) {
+		emp, err := svc.empSVC.GetEmployeeDataByEmail(userName)
+		if err == nil && emp.DisplayName != "" {
+			name = emp.DisplayName
+		} else {
+			name = userName // fallback to email
+		}
+		if err == nil {
+			profilePic = emp.ProfilePic
+			designation = emp.Designation
+		}
+		return
+	}
+
 	allUsers := make([]UserInfo, 0)
 
 	// Add admins
 	for _, admin := range admins {
+		name, profilePic, designation := resolveEmployee(admin.UserName)
 		allUsers = append(allUsers, UserInfo{
 			UserName:    admin.UserName,
 			DisplayName: admin.DisplayName,
+			Name:        name,
+			ProfilePic:  profilePic,
+			Designation: designation,
 			Role:        string(admin.Role),
 			AddedAt:     admin.AddedAt,
 			IsActive:    admin.IsActive,
@@ -171,9 +194,13 @@ func (svc *Service) listOrgUsers(orgId string, requestingUser string, request ev
 
 	// Add regular users
 	for _, user := range users {
+		name, profilePic, designation := resolveEmployee(user.UserName)
 		allUsers = append(allUsers, UserInfo{
 			UserName:    user.UserName,
 			DisplayName: user.DisplayName,
+			Name:        name,
+			ProfilePic:  profilePic,
+			Designation: designation,
 			Role:        string(user.Role),
 			JoinedAt:    user.JoinedAt,
 			IsActive:    user.IsActive,
@@ -243,17 +270,20 @@ func (svc *Service) addOrgUser(orgId string, requestingUser string, request even
 
 	// Determine if we're adding an admin or regular user
 	if input.UserType == "admin" {
-		// Validate role is valid for admin
+		// Validate role is valid for admin (case-insensitive)
+		normalizedRole := strings.ToUpper(input.Role)
 		validAdminRoles := map[string]bool{
-			string(companylib.OrgAdminRoleOwner): true,
-			string(companylib.OrgAdminRoleAdmin): true,
+			string(companylib.OrgAdminRoleOwner):           true,
+			string(companylib.OrgAdminRoleAdmin):           true,
+			string(companylib.OrgAdminRoleBillingOnly):     true,
+			string(companylib.OrgAdminRolePerformanceOnly): true,
 		}
-		if !validAdminRoles[input.Role] {
-			return svc.errorResponse(http.StatusBadRequest, "Invalid admin role. Must be 'owner', 'admin', or 'manager'", nil)
+		if !validAdminRoles[normalizedRole] {
+			return svc.errorResponse(http.StatusBadRequest, "Invalid admin role. Must be 'OWNER', 'ADMIN', 'BILLING_ONLY', or 'PERFORMANCE_ONLY'", nil)
 		}
 
 		// Add as admin
-		role := companylib.OrgAdminRole(input.Role)
+		role := companylib.OrgAdminRole(normalizedRole)
 		err = svc.orgSVC.AddOrgAdmin(orgId, input.UserName, role, requestingUser)
 		if err != nil {
 			svc.logger.Printf("Failed to add org admin: %v", err)
