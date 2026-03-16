@@ -1885,6 +1885,7 @@ Resources:
                 Action:
                   - dynamodb:Query
                 Resource:
+                  - !GetAtt UserPerformanceHubTable.Arn
                   - !Sub ${UserPerformanceHubTable.Arn}/index/OrgGoalIdIndex
               - Effect: Allow
                 Action:
