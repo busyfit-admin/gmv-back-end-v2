@@ -3716,6 +3716,17 @@ paths:
   # ---------- AI Chat APIs ----------
 
   /v2/ai/chat:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AIChatHandlerLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
     post:
       summary: AI performance management chat
       description: >

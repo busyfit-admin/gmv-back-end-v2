@@ -22,9 +22,22 @@ const maxToolIterations = 5
 // historyLimit is how many past messages (user+assistant pairs) to load per request.
 const historyLimit = 20
 
+// corsHeaders are included on every response so browsers honour the reply.
+var corsHeaders = map[string]string{
+	"Content-Type":                 "application/json",
+	"Access-Control-Allow-Origin":  "*",
+	"Access-Control-Allow-Headers": "X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Requested-With,X-Auth-Token,Referer,User-Agent,Origin,Content-Type,Authorization,Accept,Access-Control-Allow-Methods,Access-Control-Allow-Origin,Access-Control-Allow-Headers,Organization-Id",
+	"Access-Control-Allow-Methods": "POST,OPTIONS",
+}
+
 // Handle is the Lambda entry point. It parses the HTTP request, runs the
 // Bedrock converse loop, persists the conversation turn, and returns a response.
 func (svc *Service) Handle(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Handle CORS preflight immediately — no auth required.
+	if request.HTTPMethod == "OPTIONS" {
+		return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: corsHeaders}, nil
+	}
+
 	ctx, seg := xray.BeginSegment(ctx, "ai-chat")
 	defer seg.Close(nil)
 
@@ -99,7 +112,7 @@ func (svc *Service) Handle(ctx context.Context, request events.APIGatewayProxyRe
 	body, _ := json.Marshal(resp)
 	return events.APIGatewayProxyResponse{
 		StatusCode: http.StatusOK,
-		Headers:    map[string]string{"Content-Type": "application/json"},
+		Headers:    corsHeaders,
 		Body:       string(body),
 	}, nil
 }
@@ -246,7 +259,7 @@ func errResponse(statusCode int, message string) (events.APIGatewayProxyResponse
 	body, _ := json.Marshal(map[string]string{"error": message})
 	return events.APIGatewayProxyResponse{
 		StatusCode: statusCode,
-		Headers:    map[string]string{"Content-Type": "application/json"},
+		Headers:    corsHeaders,
 		Body:       string(body),
 	}, nil
 }
