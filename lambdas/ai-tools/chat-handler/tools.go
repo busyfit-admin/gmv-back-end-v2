@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	bedrockdoc "github.com/aws/aws-sdk-go-v2/service/bedrockruntime/document"
@@ -784,40 +785,82 @@ func execGetGoalTaggedTeams(goCtx context.Context, in map[string]interface{}, sv
 	return svc.GetGoalTaggedTeams(getStr(in, "goalId"))
 }
 
+// resolveTeamIDs returns the effective team IDs for a user-scoped query.
+// If teamID is already known it returns it as a single-element slice.
+// Otherwise it fetches all teams the user belongs to so callers can
+// aggregate data across every team without requiring the frontend to
+// supply a teamId in the chat context.
+func resolveTeamIDs(svc *ctrl.Service, logger *log.Logger, userName, teamID, cognitoID string) []string {
+	if teamID != "" {
+		return []string{teamID}
+	}
+	teams, err := svc.GetUserTeams(userName, cognitoID)
+	if err != nil || len(teams) == 0 {
+		logger.Printf("resolve_teams: no teams found for user=%q cognitoId=%q err=%v", userName, cognitoID, err)
+		return []string{""}
+	}
+	ids := make([]string, len(teams))
+	for i, t := range teams {
+		ids[i] = t.TeamId
+	}
+	logger.Printf("resolve_teams: auto-resolved %d teams for user=%q: %v", len(ids), userName, ids)
+	return ids
+}
+
 func execGetMyGoals(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetMyGoals(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		ctrl.GoalFilters{Type: getStr(in, "type"), Status: getStr(in, "status")},
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	filters := ctrl.GoalFilters{Type: getStr(in, "type"), Status: getStr(in, "status")}
+	if len(teamIDs) == 1 {
+		return svc.GetMyGoals(goCtx, userName, teamIDs[0], filters)
+	}
+	var all []ctrl.GoalRecord
+	for _, tid := range teamIDs {
+		goals, err := svc.GetMyGoals(goCtx, userName, tid, filters)
+		if err == nil {
+			all = append(all, goals...)
+		}
+	}
+	return all, nil
 }
 
 func execGetMyGoal(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetMyGoal(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		getStr(in, "goalId"),
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	goalID := getStr(in, "goalId")
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	for _, tid := range teamIDs {
+		g, err := svc.GetMyGoal(goCtx, userName, tid, goalID)
+		if err == nil && g != nil {
+			return g, nil
+		}
+	}
+	return nil, nil
 }
 
 func execGetGoalLinkedTasks(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetGoalLinkedTasks(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		getStr(in, "goalId"),
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	goalID := getStr(in, "goalId")
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	for _, tid := range teamIDs {
+		tasks, err := svc.GetGoalLinkedTasks(goCtx, userName, tid, goalID)
+		if err == nil && len(tasks) > 0 {
+			return tasks, nil
+		}
+	}
+	return []ctrl.LinkedTaskRecord{}, nil
 }
 
 func execGetGoalComments(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetGoalComments(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		getStr(in, "goalId"),
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	goalID := getStr(in, "goalId")
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	for _, tid := range teamIDs {
+		comments, err := svc.GetGoalComments(goCtx, userName, tid, goalID)
+		if err == nil && len(comments) > 0 {
+			return comments, nil
+		}
+	}
+	return []ctrl.GoalCommentRecord{}, nil
 }
 
 func execGetAllTasks(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
@@ -827,60 +870,96 @@ func execGetAllTasks(goCtx context.Context, in map[string]interface{}, svc *ctrl
 			done = &b
 		}
 	}
-	return svc.GetAllTasks(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		ctrl.TaskFilters{
-			GoalID: getStr(in, "goalId"),
-			Status: getStr(in, "status"),
-			Done:   done,
-		},
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	filters := ctrl.TaskFilters{GoalID: getStr(in, "goalId"), Status: getStr(in, "status"), Done: done}
+	if len(teamIDs) == 1 {
+		return svc.GetAllTasks(goCtx, userName, teamIDs[0], filters)
+	}
+	var all []ctrl.LinkedTaskRecord
+	for _, tid := range teamIDs {
+		tasks, err := svc.GetAllTasks(goCtx, userName, tid, filters)
+		if err == nil {
+			all = append(all, tasks...)
+		}
+	}
+	return all, nil
 }
 
 func execGetTask(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetTask(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		getStr(in, "taskId"),
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	taskID := getStr(in, "taskId")
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	for _, tid := range teamIDs {
+		t, err := svc.GetTask(goCtx, userName, tid, taskID)
+		if err == nil && t != nil {
+			return t, nil
+		}
+	}
+	return nil, nil
 }
 
 func execGetMyMeetings(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetMyMeetings(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		getStr(in, "status"),
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	status := getStr(in, "status")
+	if len(teamIDs) == 1 {
+		return svc.GetMyMeetings(goCtx, userName, teamIDs[0], status)
+	}
+	var all []ctrl.MeetingRecord
+	for _, tid := range teamIDs {
+		m, err := svc.GetMyMeetings(goCtx, userName, tid, status)
+		if err == nil {
+			all = append(all, m...)
+		}
+	}
+	return all, nil
 }
 
 func execGetMeeting(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetMeeting(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		getStr(in, "meetingId"),
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	meetingID := getStr(in, "meetingId")
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	for _, tid := range teamIDs {
+		m, err := svc.GetMeeting(goCtx, userName, tid, meetingID)
+		if err == nil && m != nil {
+			return m, nil
+		}
+	}
+	return nil, nil
 }
 
 func execGetMyAppreciations(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetMyAppreciations(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	if len(teamIDs) == 1 {
+		return svc.GetMyAppreciations(goCtx, userName, teamIDs[0])
+	}
+	var all []ctrl.AppreciationRecord
+	for _, tid := range teamIDs {
+		a, err := svc.GetMyAppreciations(goCtx, userName, tid)
+		if err == nil {
+			all = append(all, a...)
+		}
+	}
+	return all, nil
 }
 
 func execGetMyFeedbackRequests(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
-	return svc.GetMyFeedbackRequests(
-		goCtx,
-		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
-		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
-		getStr(in, "status"),
-	)
+	userName := withDefault(getStr(in, "userName"), chatCtx.CallerUserName)
+	teamIDs := resolveTeamIDs(svc, chatCtx.Logger, userName, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID), chatCtx.CallerCognitoID)
+	status := getStr(in, "status")
+	if len(teamIDs) == 1 {
+		return svc.GetMyFeedbackRequests(goCtx, userName, teamIDs[0], status)
+	}
+	var all []ctrl.FeedbackRequestRecord
+	for _, tid := range teamIDs {
+		f, err := svc.GetMyFeedbackRequests(goCtx, userName, tid, status)
+		if err == nil {
+			all = append(all, f...)
+		}
+	}
+	return all, nil
 }
 
 func execGetTeamPerformanceMembers(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
