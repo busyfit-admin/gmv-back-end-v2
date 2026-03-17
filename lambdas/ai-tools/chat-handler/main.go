@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -11,7 +13,7 @@ func main() {
 		panic("ai-chat: failed to initialise service: " + err.Error())
 	}
 
-	lambda.Start(func(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-		return svc.Handle(request)
+	lambda.Start(func(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+		return svc.Handle(ctx, request)
 	})
 }

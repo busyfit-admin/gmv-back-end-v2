@@ -23,8 +23,7 @@ const historyLimit = 20
 
 // Handle is the Lambda entry point. It parses the HTTP request, runs the
 // Bedrock converse loop, persists the conversation turn, and returns a response.
-func (svc *Service) Handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	ctx := context.Background()
+func (svc *Service) Handle(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	// --- 1. Parse request ---
 	var req ChatRequest
