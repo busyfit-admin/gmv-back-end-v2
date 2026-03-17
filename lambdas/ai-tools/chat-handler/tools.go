@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -12,7 +13,7 @@ import (
 )
 
 // toolExecutorFn is the signature every tool executor must satisfy.
-type toolExecutorFn func(input map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error)
+type toolExecutorFn func(goCtx context.Context, input map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error)
 
 // toolRegistry maps Bedrock tool names to their Go executor functions.
 var toolRegistry = map[string]toolExecutorFn{
@@ -81,7 +82,7 @@ var toolRegistry = map[string]toolExecutorFn{
 
 // executeToolCall dispatches a tool call from Bedrock to the correct executor and
 // returns a JSON-encoded string suitable for use as a Bedrock ToolResultBlock text.
-func executeToolCall(toolName string, inputDoc bedrockdoc.Interface, svc *ctrl.Service, chatCtx ChatContext) (string, error) {
+func executeToolCall(goCtx context.Context, toolName string, inputDoc bedrockdoc.Interface, svc *ctrl.Service, chatCtx ChatContext) (string, error) {
 	executor, ok := toolRegistry[toolName]
 	if !ok {
 		return fmt.Sprintf(`{"error":"unknown tool: %s"}`, toolName), nil
@@ -90,7 +91,7 @@ func executeToolCall(toolName string, inputDoc bedrockdoc.Interface, svc *ctrl.S
 	if err := inputDoc.UnmarshalSmithyDocument(&input); err != nil {
 		return fmt.Sprintf(`{"error":"failed to parse tool input: %v"}`, err), nil
 	}
-	result, err := executor(input, svc, chatCtx)
+	result, err := executor(goCtx, input, svc, chatCtx)
 	if err != nil {
 		return jsonStr(map[string]interface{}{"error": err.Error()}), nil
 	}
@@ -594,71 +595,71 @@ func withDefault(s, fallback string) string {
 
 // ==================== Tool executors ====================
 
-func execGetEmployeeInformation(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetEmployeeInformation(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetEmployeeBasicData(getStr(in, "userName"))
 }
 
-func execGetAllEmployees(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetAllEmployees(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetAllEmployees()
 }
 
-func execFindEmployeeByEmail(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execFindEmployeeByEmail(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.FindEmployeeByEmail(getStr(in, "email"))
 }
 
-func execGetAllEmployeeGroups(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetAllEmployeeGroups(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetAllEmployeeGroups()
 }
 
-func execGetTeamInformation(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetTeamInformation(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.TeamInformation(getStr(in, "teamId"))
 }
 
-func execGetAllOrgTeams(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetAllOrgTeams(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetAllOrgTeams(getStr(in, "orgId"))
 }
 
-func execGetTeamMembers(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetTeamMembers(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetTeamMembers(getStr(in, "teamId"))
 }
 
-func execGetTeamMemberDirectory(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetTeamMemberDirectory(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetTeamMemberDirectory(getStr(in, "teamId"))
 }
 
-func execGetUserTeams(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetUserTeams(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetUserTeams(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "cognitoId"), ctx.CallerCognitoID),
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "cognitoId"), chatCtx.CallerCognitoID),
 	)
 }
 
-func execIsTeamAdmin(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execIsTeamAdmin(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.IsTeamAdmin(getStr(in, "teamId"), getStr(in, "userName"))
 }
 
-func execGetOrgInfo(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
-	return svc.GetOrgInfo(withDefault(getStr(in, "orgId"), ctx.CallerOrgID))
+func execGetOrgInfo(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
+	return svc.GetOrgInfo(withDefault(getStr(in, "orgId"), chatCtx.CallerOrgID))
 }
 
-func execGetOrgAdmins(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
-	return svc.GetOrgAdmins(withDefault(getStr(in, "orgId"), ctx.CallerOrgID), ctx.CallerUserName)
+func execGetOrgAdmins(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
+	return svc.GetOrgAdmins(withDefault(getStr(in, "orgId"), chatCtx.CallerOrgID), chatCtx.CallerUserName)
 }
 
-func execGetOrgUsers(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
-	return svc.GetOrgUsers(withDefault(getStr(in, "orgId"), ctx.CallerOrgID))
+func execGetOrgUsers(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
+	return svc.GetOrgUsers(withDefault(getStr(in, "orgId"), chatCtx.CallerOrgID))
 }
 
-func execIsOrgAdmin(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execIsOrgAdmin(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.IsOrgAdmin(
-		withDefault(getStr(in, "orgId"), ctx.CallerOrgID),
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
+		withDefault(getStr(in, "orgId"), chatCtx.CallerOrgID),
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
 	)
 }
 
-func execGetPerformanceCycles(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetPerformanceCycles(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetPerformanceCycles(
-		withDefault(getStr(in, "orgId"), ctx.CallerOrgID),
+		withDefault(getStr(in, "orgId"), chatCtx.CallerOrgID),
 		ctrl.PerformanceCycleFilters{Status: getStr(in, "status")},
 		getBool(in, "includeQuarters"),
 		getBool(in, "includeKPIs"),
@@ -666,7 +667,7 @@ func execGetPerformanceCycles(in map[string]interface{}, svc *ctrl.Service, ctx 
 	)
 }
 
-func execGetPerformanceCycleDetails(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetPerformanceCycleDetails(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetPerformanceCycleDetails(
 		getStr(in, "cycleId"),
 		getBool(in, "includeQuarters"),
@@ -676,15 +677,15 @@ func execGetPerformanceCycleDetails(in map[string]interface{}, svc *ctrl.Service
 	)
 }
 
-func execGetCycleAnalytics(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetCycleAnalytics(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetCycleAnalytics(getStr(in, "cycleId"))
 }
 
-func execGetAllQuarters(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetAllQuarters(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetAllQuarters(getStr(in, "cycleId"))
 }
 
-func execGetQuarterDetails(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetQuarterDetails(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetQuarterDetails(
 		getStr(in, "quarterId"),
 		getBool(in, "includeKPIs"),
@@ -694,17 +695,17 @@ func execGetQuarterDetails(in map[string]interface{}, svc *ctrl.Service, ctx Cha
 	)
 }
 
-func execGetQuarterAnalytics(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetQuarterAnalytics(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetQuarterAnalytics(getStr(in, "quarterId"))
 }
 
-func execGetQuarterMeetingNotes(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetQuarterMeetingNotes(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetQuarterMeetingNotes(getStr(in, "quarterId"), "", "")
 }
 
-func execGetAllKPIs(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetAllKPIs(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetAllKPIs(
-		withDefault(getStr(in, "orgId"), ctx.CallerOrgID),
+		withDefault(getStr(in, "orgId"), chatCtx.CallerOrgID),
 		ctrl.KPIFilters{
 			Status:  getStr(in, "status"),
 			CycleID: getStr(in, "cycleId"),
@@ -713,7 +714,7 @@ func execGetAllKPIs(in map[string]interface{}, svc *ctrl.Service, ctx ChatContex
 	)
 }
 
-func execGetKPIDetail(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetKPIDetail(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetKPIDetail(
 		getStr(in, "kpiId"),
 		getBool(in, "includeSubKPIs"),
@@ -721,9 +722,9 @@ func execGetKPIDetail(in map[string]interface{}, svc *ctrl.Service, ctx ChatCont
 	)
 }
 
-func execGetAllOKRs(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetAllOKRs(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetAllOKRs(
-		withDefault(getStr(in, "orgId"), ctx.CallerOrgID),
+		withDefault(getStr(in, "orgId"), chatCtx.CallerOrgID),
 		ctrl.OKRFilters{
 			Status:  getStr(in, "status"),
 			CycleID: getStr(in, "cycleId"),
@@ -732,7 +733,7 @@ func execGetAllOKRs(in map[string]interface{}, svc *ctrl.Service, ctx ChatContex
 	)
 }
 
-func execGetOKRDetail(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetOKRDetail(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetOKRDetail(
 		getStr(in, "okrId"),
 		getBool(in, "includeKeyResults"),
@@ -740,82 +741,86 @@ func execGetOKRDetail(in map[string]interface{}, svc *ctrl.Service, ctx ChatCont
 	)
 }
 
-func execGetOrgGoalDetail(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetOrgGoalDetail(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetOrgGoalDetail(
 		getStr(in, "goalId"),
 		getBool(in, "includeValueHistory"),
 		getBool(in, "includeTaggedTeams"),
 		getBool(in, "includeSubItems"),
 		getBool(in, "includeLadderUp"),
-		ctx.CallerUserName,
+		chatCtx.CallerUserName,
 	)
 }
 
-func execGetTeamOrgGoals(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetTeamOrgGoals(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetTeamOrgGoals(
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
-		withDefault(getStr(in, "orgId"), ctx.CallerOrgID),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
+		withDefault(getStr(in, "orgId"), chatCtx.CallerOrgID),
 		getStr(in, "goalType"),
 	)
 }
 
-func execGetOrgGoalSubItems(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetOrgGoalSubItems(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetOrgGoalSubItems(getStr(in, "goalId"))
 }
 
-func execGetUserGoalsForOrgGoal(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
-	return svc.GetUserGoalsForOrgGoal(getStr(in, "orgGoalId"), getStr(in, "statusFilter"))
+func execGetUserGoalsForOrgGoal(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
+	return svc.GetUserGoalsForOrgGoal(goCtx, getStr(in, "orgGoalId"), getStr(in, "statusFilter"))
 }
 
-func execGetGoalLadderUp(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetGoalLadderUp(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetGoalLadderUp(getStr(in, "goalId"), getStr(in, "status"))
 }
 
-func execGetGoalValueHistory(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetGoalValueHistory(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetGoalValueHistory(getStr(in, "goalId"), getStr(in, "startDate"), getStr(in, "endDate"))
 }
 
-func execGetGoalTasks(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetGoalTasks(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetOrgGoalTasks(getStr(in, "goalId"), getStr(in, "userName"), getStr(in, "status"))
 }
 
-func execGetGoalTaggedTeams(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetGoalTaggedTeams(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetGoalTaggedTeams(getStr(in, "goalId"))
 }
 
-func execGetMyGoals(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMyGoals(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMyGoals(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		ctrl.GoalFilters{Type: getStr(in, "type"), Status: getStr(in, "status")},
 	)
 }
 
-func execGetMyGoal(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMyGoal(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMyGoal(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		getStr(in, "goalId"),
 	)
 }
 
-func execGetGoalLinkedTasks(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetGoalLinkedTasks(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetGoalLinkedTasks(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		getStr(in, "goalId"),
 	)
 }
 
-func execGetGoalComments(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetGoalComments(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetGoalComments(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		getStr(in, "goalId"),
 	)
 }
 
-func execGetAllTasks(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetAllTasks(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	done := (*bool)(nil)
 	if v, ok := in["done"]; ok {
 		if b, ok := v.(bool); ok {
@@ -823,8 +828,9 @@ func execGetAllTasks(in map[string]interface{}, svc *ctrl.Service, ctx ChatConte
 		}
 	}
 	return svc.GetAllTasks(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		ctrl.TaskFilters{
 			GoalID: getStr(in, "goalId"),
 			Status: getStr(in, "status"),
@@ -833,88 +839,99 @@ func execGetAllTasks(in map[string]interface{}, svc *ctrl.Service, ctx ChatConte
 	)
 }
 
-func execGetTask(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetTask(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetTask(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		getStr(in, "taskId"),
 	)
 }
 
-func execGetMyMeetings(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMyMeetings(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMyMeetings(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		getStr(in, "status"),
 	)
 }
 
-func execGetMeeting(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMeeting(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMeeting(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		getStr(in, "meetingId"),
 	)
 }
 
-func execGetMyAppreciations(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMyAppreciations(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMyAppreciations(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 	)
 }
 
-func execGetMyFeedbackRequests(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMyFeedbackRequests(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMyFeedbackRequests(
-		withDefault(getStr(in, "userName"), ctx.CallerUserName),
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
+		goCtx,
+		withDefault(getStr(in, "userName"), chatCtx.CallerUserName),
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
 		getStr(in, "status"),
 	)
 }
 
-func execGetTeamPerformanceMembers(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
-	return svc.GetTeamPerformanceMembers(withDefault(getStr(in, "teamId"), ctx.CallerTeamID))
+func execGetTeamPerformanceMembers(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
+	return svc.GetTeamPerformanceMembers(goCtx, withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID))
 }
 
-func execGetMemberGoals(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMemberGoals(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMemberGoals(
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
-		withDefault(getStr(in, "memberId"), ctx.TargetUserID),
+		goCtx,
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
+		withDefault(getStr(in, "memberId"), chatCtx.TargetUserID),
 	)
 }
 
-func execGetMemberTasks(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMemberTasks(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMemberTasks(
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
-		withDefault(getStr(in, "memberId"), ctx.TargetUserID),
+		goCtx,
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
+		withDefault(getStr(in, "memberId"), chatCtx.TargetUserID),
 		ctrl.TaskFilters{Status: getStr(in, "status")},
 	)
 }
 
-func execGetMemberMeetings(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMemberMeetings(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMemberMeetings(
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
-		withDefault(getStr(in, "memberId"), ctx.TargetUserID),
+		goCtx,
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
+		withDefault(getStr(in, "memberId"), chatCtx.TargetUserID),
 	)
 }
 
-func execGetMemberAppreciations(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMemberAppreciations(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMemberAppreciations(
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
-		withDefault(getStr(in, "memberId"), ctx.TargetUserID),
+		goCtx,
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
+		withDefault(getStr(in, "memberId"), chatCtx.TargetUserID),
 	)
 }
 
-func execGetMemberManagerComments(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMemberManagerComments(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMemberManagerComments(
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
-		withDefault(getStr(in, "memberId"), ctx.TargetUserID),
+		goCtx,
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
+		withDefault(getStr(in, "memberId"), chatCtx.TargetUserID),
 	)
 }
 
-func execGetMemberPerformanceSummary(in map[string]interface{}, svc *ctrl.Service, ctx ChatContext) (interface{}, error) {
+func execGetMemberPerformanceSummary(goCtx context.Context, in map[string]interface{}, svc *ctrl.Service, chatCtx ChatContext) (interface{}, error) {
 	return svc.GetMemberPerformanceSummary(
-		withDefault(getStr(in, "teamId"), ctx.CallerTeamID),
-		withDefault(getStr(in, "memberId"), ctx.TargetUserID),
+		goCtx,
+		withDefault(getStr(in, "teamId"), chatCtx.CallerTeamID),
+		withDefault(getStr(in, "memberId"), chatCtx.TargetUserID),
 	)
 }

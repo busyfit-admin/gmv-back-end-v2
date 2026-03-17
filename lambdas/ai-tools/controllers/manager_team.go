@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"sort"
 	"strings"
 
@@ -14,13 +15,13 @@ import (
 
 // GetTeamPerformanceMembers returns all members of a team enriched with their
 // review lifecycle state (overall rating, pending review flag, etc.).
-func (s *Service) GetTeamPerformanceMembers(teamID string) ([]TeamMemberWithReview, error) {
+func (s *Service) GetTeamPerformanceMembers(ctx context.Context, teamID string) ([]TeamMemberWithReview, error) {
 	members, err := s.teamsSVC.GetTeamMembers(teamID)
 	if err != nil {
 		return nil, err
 	}
 
-	reviewMap, _ := s.fetchTeamReviewMap(teamID) // non-fatal if missing
+	reviewMap, _ := s.fetchTeamReviewMap(ctx, teamID) // non-fatal if missing
 
 	out := make([]TeamMemberWithReview, 0, len(members))
 	for _, m := range members {
@@ -41,8 +42,8 @@ func (s *Service) GetTeamPerformanceMembers(teamID string) ([]TeamMemberWithRevi
 }
 
 // GetMemberGoals returns all goals for a team member split into OKRs and KPIs.
-func (s *Service) GetMemberGoals(teamID, memberID string) (MemberGoalsResult, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetMemberGoals(ctx context.Context, teamID, memberID string) (MemberGoalsResult, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -82,13 +83,13 @@ func (s *Service) GetMemberGoals(teamID, memberID string) (MemberGoalsResult, er
 }
 
 // GetMemberTasks returns all tasks for a team member, optionally filtered.
-func (s *Service) GetMemberTasks(teamID, memberID string, filters TaskFilters) ([]LinkedTaskRecord, error) {
-	return s.GetAllTasks(memberID, teamID, filters)
+func (s *Service) GetMemberTasks(ctx context.Context, teamID, memberID string, filters TaskFilters) ([]LinkedTaskRecord, error) {
+	return s.GetAllTasks(ctx, memberID, teamID, filters)
 }
 
 // GetMemberMeetings returns all 1-on-1 meetings for a team member, newest first.
-func (s *Service) GetMemberMeetings(teamID, memberID string) ([]MeetingRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetMemberMeetings(ctx context.Context, teamID, memberID string) ([]MeetingRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -106,8 +107,8 @@ func (s *Service) GetMemberMeetings(teamID, memberID string) ([]MeetingRecord, e
 }
 
 // GetMemberAppreciations returns all appreciations received by a team member, newest first.
-func (s *Service) GetMemberAppreciations(teamID, memberID string) ([]AppreciationRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetMemberAppreciations(ctx context.Context, teamID, memberID string) ([]AppreciationRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -125,8 +126,8 @@ func (s *Service) GetMemberAppreciations(teamID, memberID string) ([]Appreciatio
 }
 
 // GetMemberManagerComments returns all manager-authored comments for a team member, newest first.
-func (s *Service) GetMemberManagerComments(teamID, memberID string) ([]ManagerCommentRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetMemberManagerComments(ctx context.Context, teamID, memberID string) ([]ManagerCommentRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -145,7 +146,7 @@ func (s *Service) GetMemberManagerComments(teamID, memberID string) ([]ManagerCo
 
 // GetMemberPerformanceSummary returns a full performance snapshot for a team member:
 // profile info, OKRs, KPIs, meetings, appreciations, and manager comments.
-func (s *Service) GetMemberPerformanceSummary(teamID, memberID string) (MemberPerformanceSummary, error) {
+func (s *Service) GetMemberPerformanceSummary(ctx context.Context, teamID, memberID string) (MemberPerformanceSummary, error) {
 	summary := MemberPerformanceSummary{MemberUserName: memberID}
 
 	// Enrich profile from team member record
@@ -155,26 +156,26 @@ func (s *Service) GetMemberPerformanceSummary(teamID, memberID string) (MemberPe
 	}
 
 	// Review record
-	if rev, err := s.fetchMemberReviewRecord(teamID, memberID); err == nil && rev != nil {
+	if rev, err := s.fetchMemberReviewRecord(ctx, teamID, memberID); err == nil && rev != nil {
 		summary.OverallRating = rev.OverallRating
 		summary.LastReviewDate = rev.LastReviewDate
 		summary.IsPendingReview = rev.IsPendingReview
 	}
 
 	// Goals
-	goals, _ := s.GetMemberGoals(teamID, memberID)
+	goals, _ := s.GetMemberGoals(ctx, teamID, memberID)
 	summary.Goals = goals
 
 	// Meetings (newest first)
-	meetings, _ := s.GetMemberMeetings(teamID, memberID)
+	meetings, _ := s.GetMemberMeetings(ctx, teamID, memberID)
 	summary.Meetings = meetings
 
 	// Appreciations
-	appreciations, _ := s.GetMemberAppreciations(teamID, memberID)
+	appreciations, _ := s.GetMemberAppreciations(ctx, teamID, memberID)
 	summary.Appreciations = appreciations
 
 	// Manager comments
-	comments, _ := s.GetMemberManagerComments(teamID, memberID)
+	comments, _ := s.GetMemberManagerComments(ctx, teamID, memberID)
 	summary.Comments = comments
 
 	return summary, nil
@@ -183,8 +184,8 @@ func (s *Service) GetMemberPerformanceSummary(teamID, memberID string) (MemberPe
 // ==================== Internal DDB helpers ====================
 
 // fetchTeamReviewMap loads all TeamMemberReviewRecord rows for a team keyed by memberUserName.
-func (s *Service) fetchTeamReviewMap(teamID string) (map[string]TeamMemberReviewRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) fetchTeamReviewMap(ctx context.Context, teamID string) (map[string]TeamMemberReviewRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -207,8 +208,8 @@ func (s *Service) fetchTeamReviewMap(teamID string) (map[string]TeamMemberReview
 }
 
 // fetchMemberReviewRecord loads the single review record for one member in a team.
-func (s *Service) fetchMemberReviewRecord(teamID, memberUserName string) (*TeamMemberReviewRecord, error) {
-	result, err := s.ddb.GetItem(s.ctx, &dynamodb.GetItemInput{
+func (s *Service) fetchMemberReviewRecord(ctx context.Context, teamID, memberUserName string) (*TeamMemberReviewRecord, error) {
+	result, err := s.ddb.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(s.perfHubTable),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: buildTeamPK(teamID)},

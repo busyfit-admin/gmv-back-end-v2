@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"sort"
 	"strings"
 
@@ -14,8 +15,8 @@ import (
 
 // GetMyAppreciations returns all appreciation records received by (userName, teamID),
 // sorted newest first.
-func (s *Service) GetMyAppreciations(userName, teamID string) ([]AppreciationRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetMyAppreciations(ctx context.Context, userName, teamID string) ([]AppreciationRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -35,8 +36,8 @@ func (s *Service) GetMyAppreciations(userName, teamID string) ([]AppreciationRec
 
 // GetMyFeedbackRequests returns all feedback requests sent by (userName, teamID).
 // statusFilter: "pending" | "completed" | "" (all).
-func (s *Service) GetMyFeedbackRequests(userName, teamID, statusFilter string) ([]FeedbackRequestRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetMyFeedbackRequests(ctx context.Context, userName, teamID, statusFilter string) ([]FeedbackRequestRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{

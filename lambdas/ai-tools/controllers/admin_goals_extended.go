@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -87,11 +88,11 @@ type linkedTaskProjection struct {
 }
 
 // fetchLinkedTasks queries TASK# items on PK whose goalId matches the given goalID.
-func (s *Service) fetchLinkedTasks(pk, goalID string) ([]map[string]interface{}, error) {
+func (s *Service) fetchLinkedTasks(ctx context.Context, pk, goalID string) ([]map[string]interface{}, error) {
 	if s.perfHubTable == "" {
 		return nil, fmt.Errorf("PERF_HUB_TABLE is not configured")
 	}
-	out, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+	out, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		FilterExpression:       aws.String("goalId = :goalId"),
@@ -136,11 +137,11 @@ func (s *Service) fetchLinkedTasks(pk, goalID string) ([]map[string]interface{},
 // return all user-level goals linked to the given org goal, together with each
 // goal's linked tasks and a rolled-up status summary.
 // statusFilter is optional; leave empty to return all statuses.
-func (s *Service) GetUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[string]interface{}, error) {
+func (s *Service) GetUserGoalsForOrgGoal(ctx context.Context, orgGoalID, statusFilter string) (map[string]interface{}, error) {
 	if s.perfHubTable == "" {
 		return nil, fmt.Errorf("PERF_HUB_TABLE is not configured")
 	}
-	out, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+	out, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		IndexName:              aws.String("OrgGoalIdIndex"),
 		KeyConditionExpression: aws.String("orgGoalId = :orgGoalId"),
@@ -175,7 +176,7 @@ func (s *Service) GetUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[st
 		if idx := strings.LastIndex(g.PK, "#TEAM#"); idx != -1 {
 			teamID = g.PK[idx+6:]
 		}
-		tasks, err := s.fetchLinkedTasks(g.PK, g.GoalID)
+		tasks, err := s.fetchLinkedTasks(ctx, g.PK, g.GoalID)
 		if err != nil {
 			s.logger.Printf("[GetUserGoalsForOrgGoal] warn: tasks for goal %q: %v", g.GoalID, err)
 			tasks = []map[string]interface{}{}

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"sort"
 	"strings"
 
@@ -14,8 +15,8 @@ import (
 
 // GetMyGoals returns all goals belonging to a user in a specific team.
 // Use GoalFilters to narrow results by type or status; zero-value means no filter.
-func (s *Service) GetMyGoals(userName, teamID string, filters GoalFilters) ([]GoalRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetMyGoals(ctx context.Context, userName, teamID string, filters GoalFilters) ([]GoalRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -56,8 +57,8 @@ func (s *Service) GetMyGoals(userName, teamID string, filters GoalFilters) ([]Go
 
 // GetMyGoal fetches a single goal by goalID for (userName, teamID).
 // Returns nil, nil when the goal does not exist.
-func (s *Service) GetMyGoal(userName, teamID, goalID string) (*GoalRecord, error) {
-	result, err := s.ddb.GetItem(s.ctx, &dynamodb.GetItemInput{
+func (s *Service) GetMyGoal(ctx context.Context, userName, teamID, goalID string) (*GoalRecord, error) {
+	result, err := s.ddb.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(s.perfHubTable),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
@@ -78,8 +79,8 @@ func (s *Service) GetMyGoal(userName, teamID, goalID string) (*GoalRecord, error
 }
 
 // GetGoalLinkedTasks returns all tasks that are linked to a specific goal.
-func (s *Service) GetGoalLinkedTasks(userName, teamID, goalID string) ([]LinkedTaskRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetGoalLinkedTasks(ctx context.Context, userName, teamID, goalID string) ([]LinkedTaskRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		FilterExpression:       aws.String("goalId = :goalId"),
@@ -99,8 +100,8 @@ func (s *Service) GetGoalLinkedTasks(userName, teamID, goalID string) ([]LinkedT
 }
 
 // GetGoalComments returns all comments on a specific goal, oldest first.
-func (s *Service) GetGoalComments(userName, teamID, goalID string) ([]GoalCommentRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetGoalComments(ctx context.Context, userName, teamID, goalID string) ([]GoalCommentRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{

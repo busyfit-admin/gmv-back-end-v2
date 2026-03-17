@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	bedrock "github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	bedrocktypes "github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/google/uuid"
 )
 
@@ -24,6 +25,8 @@ const historyLimit = 20
 // Handle is the Lambda entry point. It parses the HTTP request, runs the
 // Bedrock converse loop, persists the conversation turn, and returns a response.
 func (svc *Service) Handle(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	ctx, seg := xray.BeginSegment(ctx, "ai-chat")
+	defer seg.Close(nil)
 
 	// --- 1. Parse request ---
 	var req ChatRequest
@@ -161,7 +164,7 @@ func (svc *Service) converseWithTools(
 				toolsUsed = append(toolsUsed, toolName)
 				svc.logger.Printf("tool_use: %s", toolName)
 
-				resultText, execErr := executeToolCall(toolName, toolUse.Value.Input, svc.ctrlSVC, chatCtx)
+				resultText, execErr := executeToolCall(ctx, toolName, toolUse.Value.Input, svc.ctrlSVC, chatCtx)
 				if execErr != nil {
 					svc.logger.Printf("tool %s error: %v", toolName, execErr)
 					resultText = fmt.Sprintf(`{"error":"%v"}`, execErr)

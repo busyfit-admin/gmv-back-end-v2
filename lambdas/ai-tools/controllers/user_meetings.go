@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"sort"
 	"strings"
 
@@ -15,8 +16,8 @@ import (
 // GetMyMeetings returns all 1-on-1 meetings for (userName, teamID).
 // statusFilter: "scheduled" | "completed" | "" (all).
 // Results are sorted by Date ascending (chronological order).
-func (s *Service) GetMyMeetings(userName, teamID, statusFilter string) ([]MeetingRecord, error) {
-	result, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+func (s *Service) GetMyMeetings(ctx context.Context, userName, teamID, statusFilter string) ([]MeetingRecord, error) {
+	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -47,8 +48,8 @@ func (s *Service) GetMyMeetings(userName, teamID, statusFilter string) ([]Meetin
 
 // GetMeeting fetches a single meeting by meetingID for (userName, teamID).
 // Returns nil, nil when the meeting does not exist.
-func (s *Service) GetMeeting(userName, teamID, meetingID string) (*MeetingRecord, error) {
-	result, err := s.ddb.GetItem(s.ctx, &dynamodb.GetItemInput{
+func (s *Service) GetMeeting(ctx context.Context, userName, teamID, meetingID string) (*MeetingRecord, error) {
+	result, err := s.ddb.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(s.perfHubTable),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: buildPK(userName, teamID)},
