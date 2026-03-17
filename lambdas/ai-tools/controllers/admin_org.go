@@ -29,3 +29,13 @@ func (s *Service) IsOrgAdmin(orgId, userName string) (bool, error) {
 func (s *Service) GetAdminOrganizations(userName string) ([]companylib.Organization, error) {
 	return s.orgSVC.GetAdminsOrganizations(userName)
 }
+
+// GetUserOrgID returns the organisation ID that the given user belongs to.
+// Returns an empty string (and no error) when no membership record is found.
+func (s *Service) GetUserOrgID(userName string) string {
+	membership, err := s.orgSVC.GetUserOrganizationMembership(userName)
+	if err != nil || membership == nil {
+		return ""
+	}
+	return membership.OrganizationId
+}

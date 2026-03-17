@@ -42,6 +42,9 @@ func (svc *Service) Handle(ctx context.Context, request events.APIGatewayProxyRe
 	ctx, seg := xray.BeginSegment(ctx, "ai-chat")
 	defer seg.Close(nil)
 
+	// Propagate the request context (with X-Ray segment) into all sub-services.
+	svc.ctrlSVC.PropagateContext(ctx)
+
 	// --- 1. Parse request ---
 	var req ChatRequest
 	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
@@ -76,6 +79,15 @@ func (svc *Service) Handle(ctx context.Context, request events.APIGatewayProxyRe
 		CallerOrgID:       req.Context.OrgID,
 		TargetUserID:      req.Context.TargetUserID,
 		Logger:            svc.logger,
+	}
+
+	// Auto-resolve orgId from the user's org membership when the frontend
+	// doesn't include it in the request context.
+	if chatCtx.CallerOrgID == "" && chatCtx.CallerUserName != "" {
+		if orgID := svc.ctrlSVC.GetUserOrgID(chatCtx.CallerUserName); orgID != "" {
+			chatCtx.CallerOrgID = orgID
+			svc.logger.Printf("resolved orgId=%q for user=%q", orgID, chatCtx.CallerUserName)
+		}
 	}
 
 	svc.logger.Printf("request: chatId=%q newChat=%v user=%q(%q) teamId=%q orgId=%q targetUser=%q msgLen=%d",

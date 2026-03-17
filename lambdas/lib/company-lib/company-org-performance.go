@@ -2008,3 +2008,10 @@ func (svc *PerformanceService) DeleteGoalTask(goalID string, taskID string, user
 	}
 	return svc.deleteRecord(rec)
 }
+
+// SetContext replaces the internal context used for DynamoDB calls.
+// Call this at the start of each request to propagate the request-scoped context
+// (e.g. for X-Ray tracing) into the service.
+func (svc *PerformanceService) SetContext(ctx context.Context) {
+	svc.ctx = ctx
+}

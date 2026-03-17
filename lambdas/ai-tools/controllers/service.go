@@ -85,3 +85,14 @@ func NewService() (*Service, error) {
 		perfHubTable: os.Getenv("PERF_HUB_TABLE"),
 	}, nil
 }
+
+// PropagateContext updates the internal context on every sub-service so that
+// AWS SDK calls (including X-Ray subsegments) use the request-scoped context.
+// Call this once at the top of each Lambda invocation.
+func (s *Service) PropagateContext(ctx context.Context) {
+	s.ctx = ctx
+	s.empSVC.SetContext(ctx)
+	s.teamsSVC.SetContext(ctx)
+	s.orgSVC.SetContext(ctx)
+	s.perfSVC.SetContext(ctx)
+}

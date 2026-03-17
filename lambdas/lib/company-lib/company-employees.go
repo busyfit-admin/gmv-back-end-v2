@@ -989,3 +989,10 @@ func (svc *EmployeeService) UpdateTenantTeams(employeeData EmployeeDynamodbData)
 	}
 	return nil
 }
+
+// SetContext replaces the internal context used for DynamoDB calls.
+// Call this at the start of each request to propagate the request-scoped context
+// (e.g. for X-Ray tracing) into the service.
+func (svc *EmployeeService) SetContext(ctx context.Context) {
+	svc.ctx = ctx
+}
