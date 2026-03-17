@@ -2222,6 +2222,122 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
 
+  # ---------- AI Chat Handler ----------
+
+  AIChatHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub AIChatHistoryTable-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: chatId
+          AttributeType: S
+        - AttributeName: msgKey
+          AttributeType: S
+      KeySchema:
+        - AttributeName: chatId
+          KeyType: HASH
+        - AttributeName: msgKey
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
+  AIChatHandlerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ai-chat-handler
+      Role: !GetAtt AIChatHandlerLambdaRole.Arn
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Timeout: 300
+      CodeUri: ../../lambdas/ai-tools/chat-handler/
+      Tracing: Active
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          AI_CHAT_HISTORY_TABLE: !Ref AIChatHistoryTable
+          BEDROCK_MODEL_ID: "amazon.nova-pro-v1:0"
+          EMPLOYEE_TABLE: !Ref EmployeeDataTable
+          EMPLOYEE_TABLE_COGNITO_ID_INDEX: !GetAtt DDBEmployeeDataTableCognitoIdIndex.Value
+          EMPLOYEE_TABLE_EMAIL_ID_INDEX: !GetAtt DDBEmployeeDataTableEmailIdIndex.Value
+          TEAMS_TABLE: !Ref TenantTeamsTableV2
+          ORGANIZATION_TABLE: !Ref OrgsTable
+          ORG_PERFORMANCE_TABLE: !Ref OrgPerformanceTable
+          PERF_HUB_TABLE: !Ref UserPerformanceHubTable
+
+  AIChatHandlerLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub AIChatHandler-Lambda-Role-${Environment}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/AIChatHandler/"
+      Policies:
+        - PolicyName: LambdaExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:TransactWriteItems
+                Resource:
+                  - !GetAtt AIChatHistoryTable.Arn
+                  - !Sub ${AIChatHistoryTable.Arn}/index/*
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchGetItem
+                Resource:
+                  - !GetAtt EmployeeDataTable.Arn
+                  - !Sub ${EmployeeDataTable.Arn}/index/*
+                  - !GetAtt TenantTeamsTableV2.Arn
+                  - !Sub ${TenantTeamsTableV2.Arn}/index/*
+                  - !GetAtt OrgsTable.Arn
+                  - !Sub ${OrgsTable.Arn}/index/*
+                  - !GetAtt OrgPerformanceTable.Arn
+                  - !Sub ${OrgPerformanceTable.Arn}/index/*
+                  - !GetAtt UserPerformanceHubTable.Arn
+                  - !Sub ${UserPerformanceHubTable.Arn}/index/*
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource: !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/*"
+
+  AIChatHandlerLambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AIChatHandlerLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TenantAPIGateway}/*
+
 Outputs:
   TenantProfilePoolId:
     Description: "Tenant User Pool ID"

@@ -3713,6 +3713,54 @@ paths:
       security:
         - UserPool: []
 
+  # ---------- AI Chat APIs ----------
+
+  /v2/ai/chat:
+    post:
+      summary: AI performance management chat
+      description: >
+        Send a message to the AI assistant and receive a natural-language response
+        grounded in real-time performance data. Supports multi-turn conversations
+        via the `chatId` field. Chat history is automatically stored with a 6-month TTL.
+        Accessible to all authenticated users (admins, performance-admins, members).
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: Organization-Id
+          in: header
+          required: true
+          type: string
+          description: The caller's organisation ID.
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/components/schemas/AIChatRequest'
+      responses:
+        "200":
+          description: Successful AI response
+          schema:
+            $ref: '#/components/schemas/AIChatResponse'
+        "400":
+          description: Bad request (missing message, invalid body)
+        "401":
+          description: Unauthorized — missing or invalid Cognito token
+        "500":
+          description: AI service error
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AIChatHandlerLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
 components:
   schemas:
     Tenantrequestbody:
@@ -4158,6 +4206,53 @@ components:
         message:
           type: string
           description: Human-readable error message
+
+    AIChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        chatId:
+          type: string
+          description: >
+            Existing chat session UUID. Omit or leave empty to start a new conversation.
+          example: "3f7a1c2d-8e5b-4f0a-9012-abc123def456"
+        message:
+          type: string
+          description: The user's natural-language message.
+          example: "What is the current progress on my team's Q3 goals?"
+        context:
+          type: object
+          description: Optional frontend context to scope AI queries.
+          properties:
+            teamId:
+              type: string
+              description: The team ID the request pertains to. Defaults to the caller's team.
+            orgId:
+              type: string
+              description: The organisation ID. Defaults to the caller's organisation.
+            targetUserId:
+              type: string
+              description: >
+                Optional target member username. Used by managers and admins to
+                view another member's data.
+
+    AIChatResponse:
+      type: object
+      properties:
+        chatId:
+          type: string
+          description: The chat session UUID (echoed back or newly generated).
+          example: "3f7a1c2d-8e5b-4f0a-9012-abc123def456"
+        response:
+          type: string
+          description: The AI assistant's natural-language response.
+        toolsUsed:
+          type: array
+          items:
+            type: string
+          description: Names of data-retrieval tools invoked during this turn.
+          example: ["get_team_performance_members", "get_member_goals"]
 
 securityDefinitions:
   UserPool:
