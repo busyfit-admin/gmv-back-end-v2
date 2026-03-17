@@ -1,6 +1,15 @@
 package controllers
 
-import companylib "github.com/busyfit-admin/saas-integrated-apis/lambdas/lib/company-lib"
+import (
+	"context"
+	"fmt"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	companylib "github.com/busyfit-admin/saas-integrated-apis/lambdas/lib/company-lib"
+)
 
 // ==================== Admin — Employee Functions ====================
 
@@ -25,8 +34,30 @@ func (s *Service) FindEmployeeByEmail(email string) (companylib.EmployeeDynamodb
 }
 
 // FindEmployeeByCognitoId looks up an employee by their Cognito sub/user ID.
-func (s *Service) FindEmployeeByCognitoId(cognitoId string) (companylib.EmployeeDynamodbData, error) {
-	return s.empSVC.GetEmployeeDataByCognitoId(cognitoId)
+// ctx must be the per-request context so that X-Ray subsegments attach correctly.
+func (s *Service) FindEmployeeByCognitoId(ctx context.Context, cognitoId string) (companylib.EmployeeDynamodbData, error) {
+	out, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(s.empSVC.EmployeeTable),
+		IndexName:              aws.String(s.empSVC.EmployeeTable_CognitoId_Index),
+		KeyConditionExpression: aws.String("CognitoId = :CognitoId"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":CognitoId": &types.AttributeValueMemberS{Value: cognitoId},
+		},
+	})
+	if err != nil {
+		return companylib.EmployeeDynamodbData{}, err
+	}
+	if out.Count == 0 {
+		return companylib.EmployeeDynamodbData{}, fmt.Errorf("no employee found for cognito-id: %s", cognitoId)
+	}
+	var emp companylib.EmployeeDynamodbData
+	if err := attributevalue.UnmarshalMap(out.Items[0], &emp); err != nil {
+		return companylib.EmployeeDynamodbData{}, err
+	}
+	if emp.ProfilePic == "" {
+		emp.ProfilePic = "default.jpg"
+	}
+	return emp, nil
 }
 
 // CheckEmployeeExists returns true if an employee with the given userName exists.

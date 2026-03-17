@@ -46,7 +46,7 @@ func (svc *Service) Handle(ctx context.Context, request events.APIGatewayProxyRe
 		return errResponse(http.StatusUnauthorized, "missing authentication")
 	}
 
-	emp, err := svc.ctrlSVC.FindEmployeeByCognitoId(cognitoID)
+	emp, err := svc.ctrlSVC.FindEmployeeByCognitoId(ctx, cognitoID)
 	if err != nil {
 		svc.logger.Printf("warn: could not resolve employee for cognitoId=%q: %v", cognitoID, err)
 	}
