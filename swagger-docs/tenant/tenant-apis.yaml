@@ -1854,6 +1854,33 @@ paths:
       security:
         - UserPool: []
 
+  /v2/kpis/{kpiId}/targets:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: Get KPI value history
+      description: Get KPI details including full value history (recorded values tracked against the KPI target).
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   /v2/okrs:
     options:
       summary: CORS preflight request
@@ -1947,6 +1974,33 @@ paths:
         responses:
           default:
             statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/okrs/{okrId}/key-results:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List key results for OKR
+      description: Returns all key results associated with the specified OKR.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
       security:
         - UserPool: []
 

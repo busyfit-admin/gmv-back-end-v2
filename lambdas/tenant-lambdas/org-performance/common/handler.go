@@ -382,6 +382,22 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		return svc.successResponse(http.StatusCreated, res)
 	}
 
+	if len(parts) == 4 && parts[1] == "kpis" && parts[3] == "targets" && request.HTTPMethod == "GET" {
+		kpiID := parts[2]
+		kpi, err := svc.perfSVC.GetKPIDetails(kpiID, false, false)
+		if err != nil {
+			return svc.errorResponse(http.StatusNotFound, "KPI not found", err)
+		}
+		if err := svc.ensureOrgAdmin(toString(kpi["organizationId"]), userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		res, err := svc.perfSVC.GetKPIDetails(kpiID, false, true)
+		if err != nil {
+			return svc.errorResponse(http.StatusNotFound, "KPI not found", err)
+		}
+		return svc.successResponse(http.StatusOK, res)
+	}
+
 	if len(parts) == 2 && parts[1] == "okrs" {
 		orgID := svc.getOrgIDFromHeaders(request)
 		if orgID == "" {
@@ -452,6 +468,22 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 			}
 			return events.APIGatewayProxyResponse{StatusCode: http.StatusNoContent, Headers: RESP_HEADERS, Body: ""}, nil
 		}
+	}
+
+	if len(parts) == 4 && parts[1] == "okrs" && parts[3] == "key-results" && request.HTTPMethod == "GET" {
+		okrID := parts[2]
+		okr, err := svc.perfSVC.GetOKRDetails(okrID, false, false)
+		if err != nil {
+			return svc.errorResponse(http.StatusNotFound, "OKR not found", err)
+		}
+		if err := svc.ensureOrgAdmin(toString(okr["organizationId"]), userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		res, err := svc.perfSVC.GetOKRDetails(okrID, true, false)
+		if err != nil {
+			return svc.errorResponse(http.StatusNotFound, "OKR not found", err)
+		}
+		return svc.successResponse(http.StatusOK, map[string]interface{}{"keyResults": res["keyResults"]})
 	}
 
 	if len(parts) == 3 && parts[1] == "key-results" && request.HTTPMethod == "PATCH" {
