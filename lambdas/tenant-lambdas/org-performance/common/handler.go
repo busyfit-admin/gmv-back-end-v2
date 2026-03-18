@@ -382,7 +382,7 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		return svc.successResponse(http.StatusCreated, res)
 	}
 
-	if len(parts) == 4 && parts[1] == "kpis" && parts[3] == "targets" && request.HTTPMethod == "GET" {
+	if len(parts) == 4 && parts[1] == "kpis" && parts[3] == "targets" {
 		kpiID := parts[2]
 		kpi, err := svc.perfSVC.GetKPIDetails(kpiID, false, false)
 		if err != nil {
@@ -391,11 +391,24 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		if err := svc.ensureOrgAdmin(toString(kpi["organizationId"]), userName); err != nil {
 			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
 		}
-		res, err := svc.perfSVC.GetKPIDetails(kpiID, false, true)
-		if err != nil {
-			return svc.errorResponse(http.StatusNotFound, "KPI not found", err)
+		switch request.HTTPMethod {
+		case "GET":
+			res, err := svc.perfSVC.GetKPIDetails(kpiID, false, true)
+			if err != nil {
+				return svc.errorResponse(http.StatusNotFound, "KPI not found", err)
+			}
+			return svc.successResponse(http.StatusOK, map[string]interface{}{"valueHistory": res["valueHistory"]})
+		case "POST":
+			input, err := parseBody(request.Body)
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			}
+			res, err := svc.perfSVC.AddKPIValue(kpiID, input, userName)
+			if err != nil {
+				return svc.errorResponse(http.StatusUnprocessableEntity, "Failed to add KPI value entry", err)
+			}
+			return svc.successResponse(http.StatusCreated, res)
 		}
-		return svc.successResponse(http.StatusOK, res)
 	}
 
 	if len(parts) == 2 && parts[1] == "okrs" {
@@ -470,7 +483,7 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		}
 	}
 
-	if len(parts) == 4 && parts[1] == "okrs" && parts[3] == "key-results" && request.HTTPMethod == "GET" {
+	if len(parts) == 4 && parts[1] == "okrs" && parts[3] == "key-results" {
 		okrID := parts[2]
 		okr, err := svc.perfSVC.GetOKRDetails(okrID, false, false)
 		if err != nil {
@@ -479,11 +492,24 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		if err := svc.ensureOrgAdmin(toString(okr["organizationId"]), userName); err != nil {
 			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
 		}
-		res, err := svc.perfSVC.GetOKRDetails(okrID, true, false)
-		if err != nil {
-			return svc.errorResponse(http.StatusNotFound, "OKR not found", err)
+		switch request.HTTPMethod {
+		case "GET":
+			res, err := svc.perfSVC.GetOKRDetails(okrID, true, false)
+			if err != nil {
+				return svc.errorResponse(http.StatusNotFound, "OKR not found", err)
+			}
+			return svc.successResponse(http.StatusOK, map[string]interface{}{"keyResults": res["keyResults"]})
+		case "POST":
+			input, err := parseBody(request.Body)
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			}
+			res, err := svc.perfSVC.AddKeyResult(okrID, input)
+			if err != nil {
+				return svc.errorResponse(http.StatusUnprocessableEntity, "Failed to create key result", err)
+			}
+			return svc.successResponse(http.StatusCreated, res)
 		}
-		return svc.successResponse(http.StatusOK, map[string]interface{}{"keyResults": res["keyResults"]})
 	}
 
 	if len(parts) == 3 && parts[1] == "key-results" && request.HTTPMethod == "PATCH" {

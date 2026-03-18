@@ -1880,6 +1880,20 @@ paths:
             statusCode: "200"
       security:
         - UserPool: []
+    post:
+      summary: Add KPI value entry
+      description: Record a new value against the KPI target and update the KPI current value.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
 
   /v2/okrs:
     options:
@@ -2001,6 +2015,20 @@ paths:
         responses:
           default:
             statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add key result to OKR
+      description: Create a new key result under the specified OKR.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
       security:
         - UserPool: []
 

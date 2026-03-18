@@ -1076,6 +1076,17 @@ func (svc *PerformanceService) ListOKRs(orgID string, filters map[string]string,
 	}, nil
 }
 
+func (svc *PerformanceService) AddKeyResult(okrID string, input map[string]interface{}) (map[string]interface{}, error) {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "OKR#" + okrID)
+	if err != nil {
+		return nil, err
+	}
+	if rec == nil {
+		return nil, fmt.Errorf("okr not found")
+	}
+	return svc.createKeyResult(*rec, input)
+}
+
 func (svc *PerformanceService) getKeyResultsForOKR(okrID string, orgID string, cycleID string) ([]map[string]interface{}, error) {
 	related, err := svc.queryByOrgPrefix(orgID, fmt.Sprintf("%sCYCLE#%s#OKR#%s#KR#", perfSKPrefix, cycleID, okrID))
 	if err != nil {
@@ -1556,6 +1567,9 @@ func (svc *PerformanceService) AddGoalValueEntry(goalID string, input map[string
 	if err := svc.putRecord(record); err != nil {
 		return nil, err
 	}
+	_, _ = svc.patchRecord(baseRec, map[string]interface{}{
+		"currentValue": input["value"],
+	})
 	return input, nil
 }
 
