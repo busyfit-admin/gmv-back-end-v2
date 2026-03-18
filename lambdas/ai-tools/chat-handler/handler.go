@@ -73,7 +73,7 @@ func (svc *Service) Handle(ctx context.Context, request events.APIGatewayProxyRe
 
 	chatCtx := ChatContext{
 		CallerCognitoID:   cognitoID,
-		CallerUserName:    emp.UserName,
+		CallerUserName:    emp.EmailID,
 		CallerDisplayName: emp.DisplayName,
 		CallerTeamID:      req.Context.TeamID,
 		CallerOrgID:       req.Context.OrgID,
