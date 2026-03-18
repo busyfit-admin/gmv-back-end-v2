@@ -16,6 +16,7 @@ import (
 // GetMyAppreciations returns all appreciation records received by (userName, teamID),
 // sorted newest first.
 func (s *Service) GetMyAppreciations(ctx context.Context, userName, teamID string) ([]AppreciationRecord, error) {
+	s.logger.Printf("ctrl: GetMyAppreciations input: userName=%q teamID=%q", userName, teamID)
 	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
@@ -25,18 +26,21 @@ func (s *Service) GetMyAppreciations(ctx context.Context, userName, teamID strin
 		},
 	})
 	if err != nil {
+		s.logger.Printf("ctrl: GetMyAppreciations output: err=%v", err)
 		return nil, err
 	}
 
 	var records []AppreciationRecord
 	attributevalue.UnmarshalListOfMaps(result.Items, &records)
 	sort.Slice(records, func(i, j int) bool { return records[i].CreatedAt > records[j].CreatedAt })
+	s.logger.Printf("ctrl: GetMyAppreciations output: count=%d", len(records))
 	return records, nil
 }
 
 // GetMyFeedbackRequests returns all feedback requests sent by (userName, teamID).
 // statusFilter: "pending" | "completed" | "" (all).
 func (s *Service) GetMyFeedbackRequests(ctx context.Context, userName, teamID, statusFilter string) ([]FeedbackRequestRecord, error) {
+	s.logger.Printf("ctrl: GetMyFeedbackRequests input: userName=%q teamID=%q statusFilter=%q", userName, teamID, statusFilter)
 	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
@@ -46,6 +50,7 @@ func (s *Service) GetMyFeedbackRequests(ctx context.Context, userName, teamID, s
 		},
 	})
 	if err != nil {
+		s.logger.Printf("ctrl: GetMyFeedbackRequests output: err=%v", err)
 		return nil, err
 	}
 
@@ -63,5 +68,6 @@ func (s *Service) GetMyFeedbackRequests(ctx context.Context, userName, teamID, s
 	}
 
 	sort.Slice(records, func(i, j int) bool { return records[i].CreatedAt > records[j].CreatedAt })
+	s.logger.Printf("ctrl: GetMyFeedbackRequests output: count=%d", len(records))
 	return records, nil
 }

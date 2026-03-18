@@ -16,8 +16,10 @@ import (
 // GetTeamPerformanceMembers returns all members of a team enriched with their
 // review lifecycle state (overall rating, pending review flag, etc.).
 func (s *Service) GetTeamPerformanceMembers(ctx context.Context, teamID string) ([]TeamMemberWithReview, error) {
+	s.logger.Printf("ctrl: GetTeamPerformanceMembers input: teamID=%q", teamID)
 	members, err := s.teamsSVC.GetTeamMembers(teamID)
 	if err != nil {
+		s.logger.Printf("ctrl: GetTeamPerformanceMembers output: err=%v", err)
 		return nil, err
 	}
 
@@ -38,11 +40,13 @@ func (s *Service) GetTeamPerformanceMembers(ctx context.Context, teamID string) 
 		}
 		out = append(out, row)
 	}
+	s.logger.Printf("ctrl: GetTeamPerformanceMembers output: count=%d", len(out))
 	return out, nil
 }
 
 // GetMemberGoals returns all goals for a team member split into OKRs and KPIs.
 func (s *Service) GetMemberGoals(ctx context.Context, teamID, memberID string) (MemberGoalsResult, error) {
+	s.logger.Printf("ctrl: GetMemberGoals input: teamID=%q memberID=%q", teamID, memberID)
 	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
@@ -52,6 +56,7 @@ func (s *Service) GetMemberGoals(ctx context.Context, teamID, memberID string) (
 		},
 	})
 	if err != nil {
+		s.logger.Printf("ctrl: GetMemberGoals output: err=%v", err)
 		return MemberGoalsResult{OKRs: []GoalRecord{}, KPIs: []GoalRecord{}}, err
 	}
 
@@ -79,16 +84,21 @@ func (s *Service) GetMemberGoals(ctx context.Context, teamID, memberID string) (
 	if kpis == nil {
 		kpis = []GoalRecord{}
 	}
+	s.logger.Printf("ctrl: GetMemberGoals output: okrs=%d kpis=%d", len(okrs), len(kpis))
 	return MemberGoalsResult{OKRs: okrs, KPIs: kpis}, nil
 }
 
 // GetMemberTasks returns all tasks for a team member, optionally filtered.
 func (s *Service) GetMemberTasks(ctx context.Context, teamID, memberID string, filters TaskFilters) ([]LinkedTaskRecord, error) {
-	return s.GetAllTasks(ctx, memberID, teamID, filters)
+	s.logger.Printf("ctrl: GetMemberTasks input: teamID=%q memberID=%q status=%q", teamID, memberID, filters.Status)
+	result, err := s.GetAllTasks(ctx, memberID, teamID, filters)
+	s.logger.Printf("ctrl: GetMemberTasks output: count=%d err=%v", len(result), err)
+	return result, err
 }
 
 // GetMemberMeetings returns all 1-on-1 meetings for a team member, newest first.
 func (s *Service) GetMemberMeetings(ctx context.Context, teamID, memberID string) ([]MeetingRecord, error) {
+	s.logger.Printf("ctrl: GetMemberMeetings input: teamID=%q memberID=%q", teamID, memberID)
 	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
@@ -98,16 +108,19 @@ func (s *Service) GetMemberMeetings(ctx context.Context, teamID, memberID string
 		},
 	})
 	if err != nil {
+		s.logger.Printf("ctrl: GetMemberMeetings output: err=%v", err)
 		return nil, err
 	}
 	var meetings []MeetingRecord
 	attributevalue.UnmarshalListOfMaps(result.Items, &meetings)
 	sort.Slice(meetings, func(i, j int) bool { return meetings[i].Date > meetings[j].Date })
+	s.logger.Printf("ctrl: GetMemberMeetings output: count=%d", len(meetings))
 	return meetings, nil
 }
 
 // GetMemberAppreciations returns all appreciations received by a team member, newest first.
 func (s *Service) GetMemberAppreciations(ctx context.Context, teamID, memberID string) ([]AppreciationRecord, error) {
+	s.logger.Printf("ctrl: GetMemberAppreciations input: teamID=%q memberID=%q", teamID, memberID)
 	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
@@ -117,16 +130,19 @@ func (s *Service) GetMemberAppreciations(ctx context.Context, teamID, memberID s
 		},
 	})
 	if err != nil {
+		s.logger.Printf("ctrl: GetMemberAppreciations output: err=%v", err)
 		return nil, err
 	}
 	var records []AppreciationRecord
 	attributevalue.UnmarshalListOfMaps(result.Items, &records)
 	sort.Slice(records, func(i, j int) bool { return records[i].Date > records[j].Date })
+	s.logger.Printf("ctrl: GetMemberAppreciations output: count=%d", len(records))
 	return records, nil
 }
 
 // GetMemberManagerComments returns all manager-authored comments for a team member, newest first.
 func (s *Service) GetMemberManagerComments(ctx context.Context, teamID, memberID string) ([]ManagerCommentRecord, error) {
+	s.logger.Printf("ctrl: GetMemberManagerComments input: teamID=%q memberID=%q", teamID, memberID)
 	result, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
@@ -136,17 +152,20 @@ func (s *Service) GetMemberManagerComments(ctx context.Context, teamID, memberID
 		},
 	})
 	if err != nil {
+		s.logger.Printf("ctrl: GetMemberManagerComments output: err=%v", err)
 		return nil, err
 	}
 	var records []ManagerCommentRecord
 	attributevalue.UnmarshalListOfMaps(result.Items, &records)
 	sort.Slice(records, func(i, j int) bool { return records[i].CreatedAt > records[j].CreatedAt })
+	s.logger.Printf("ctrl: GetMemberManagerComments output: count=%d", len(records))
 	return records, nil
 }
 
 // GetMemberPerformanceSummary returns a full performance snapshot for a team member:
 // profile info, OKRs, KPIs, meetings, appreciations, and manager comments.
 func (s *Service) GetMemberPerformanceSummary(ctx context.Context, teamID, memberID string) (MemberPerformanceSummary, error) {
+	s.logger.Printf("ctrl: GetMemberPerformanceSummary input: teamID=%q memberID=%q", teamID, memberID)
 	summary := MemberPerformanceSummary{MemberUserName: memberID}
 
 	// Enrich profile from team member record
@@ -178,6 +197,7 @@ func (s *Service) GetMemberPerformanceSummary(ctx context.Context, teamID, membe
 	comments, _ := s.GetMemberManagerComments(ctx, teamID, memberID)
 	summary.Comments = comments
 
+	s.logger.Printf("ctrl: GetMemberPerformanceSummary output: memberID=%q", memberID)
 	return summary, nil
 }
 
