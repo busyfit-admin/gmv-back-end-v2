@@ -9,7 +9,9 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - `manage-performance-goals`: goals, value history, teams, sub-items, ladder-up, tasks
 
 ## Base URL
-`https://{api-id}.execute-api.{region}.amazonaws.com/{stage}/v2`
+`https://{api-id}.execute-api.{region}.amazonaws.com/{stage}`
+
+> All endpoints below are prefixed with `/v2`.
 
 ## Authentication & Authorization
 - Requires Cognito JWT in `Authorization: Bearer <token>`.
@@ -21,7 +23,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 ## Headers
 - `Content-Type: application/json` (for body endpoints)
 - `Authorization: Bearer <token>`
-- `organization-id` or `Organization-Id` (required for `GET/POST /kpis` and `GET/POST /okrs`)
+- `organization-id` or `Organization-Id` (required for `GET/POST /v2/kpis` and `GET/POST /v2/okrs`)
 
 ## Common Response Shapes
 
@@ -47,7 +49,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 
 ## 1) Performance Cycles
 
-### `GET /organizations/{orgId}/performance-cycles`
+### `GET /v2/organizations/{orgId}/performance-cycles`
 - **Purpose:** list cycles for org
 - **Input:** query: `status`, `fiscalYear`, `includeQuarters`, `includeKPIs`, `includeOKRs`, pagination params
 - **Output (200):**
@@ -72,7 +74,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 ```
 - **Errors:** `401`, `403`, `500`
 
-### `POST /organizations/{orgId}/performance-cycles`
+### `POST /v2/organizations/{orgId}/performance-cycles`
 - **Purpose:** create cycle
 - **Input body (typical):**
 ```json
@@ -88,13 +90,13 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - **Output (201):** created cycle object (includes `id`, `organizationId`, timestamps)
 - **Errors:** `400`, `401`, `403`, `422`
 
-### `GET /performance-cycles/{cycleId}`
+### `GET /v2/performance-cycles/{cycleId}`
 - **Purpose:** get cycle details
 - **Input query:** `includeQuarters` (default `true`), `includeKPIs` (default `true`), `includeOKRs` (default `true`), `includeAnalytics` (default `false`)
 - **Output (200):** cycle object with optional `quarters`, `kpis`, `okrs`, `analytics`
 - **Errors:** `401`, `403`, `404`
 
-### `PATCH /performance-cycles/{cycleId}`
+### `PATCH /v2/performance-cycles/{cycleId}`
 - **Purpose:** update cycle fields
 - **Input body:** partial JSON patch
 ```json
@@ -106,12 +108,12 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - **Output (200):** updated cycle object
 - **Errors:** `400`, `401`, `403`, `404`, `500`
 
-### `DELETE /performance-cycles/{cycleId}`
+### `DELETE /v2/performance-cycles/{cycleId}`
 - **Purpose:** delete cycle (with related data cleanup)
 - **Output:** `204`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `GET /performance-cycles/{cycleId}/analytics`
+### `GET /v2/performance-cycles/{cycleId}/analytics`
 - **Purpose:** cycle analytics summary
 - **Output (200):**
 ```json
@@ -137,12 +139,12 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 
 ## 2) Quarters & Meeting Notes
 
-### `GET /performance-cycles/{cycleId}/quarters`
+### `GET /v2/performance-cycles/{cycleId}/quarters`
 - **Purpose:** list quarters for cycle
 - **Output (200):** `{ "quarters": [ ... ] }`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `POST /performance-cycles/{cycleId}/quarters`
+### `POST /v2/performance-cycles/{cycleId}/quarters`
 - **Purpose:** create quarter
 - **Input body (typical):**
 ```json
@@ -156,26 +158,26 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - **Output (201):** created quarter object
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
-### `GET /quarters/{quarterId}`
+### `GET /v2/quarters/{quarterId}`
 - **Input query:** `includeKPIs`, `includeOKRs`, `includeMeetingNotes`, `includePendingReviews`
 - **Output (200):** quarter object + optional nested fields
 - **Errors:** `401`, `403`, `404`
 
-### `PATCH /quarters/{quarterId}`
+### `PATCH /v2/quarters/{quarterId}`
 - **Input:** partial JSON patch
 - **Output (200):** updated quarter object
 - **Errors:** `400`, `401`, `403`, `404`, `500`
 
-### `DELETE /quarters/{quarterId}`
+### `DELETE /v2/quarters/{quarterId}`
 - **Output:** `204`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `GET /quarters/{quarterId}/meeting-notes`
+### `GET /v2/quarters/{quarterId}/meeting-notes`
 - **Input query:** `sortBy`, `order`
 - **Output (200):** `{ "meetingNotes": [ ... ] }`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `POST /quarters/{quarterId}/meeting-notes`
+### `POST /v2/quarters/{quarterId}/meeting-notes`
 - **Input body (typical):**
 ```json
 {
@@ -187,16 +189,16 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - **Output (201):** meeting note object
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
-### `PATCH /meeting-notes/{noteId}`
+### `PATCH /v2/meeting-notes/{noteId}`
 - **Input:** partial patch
 - **Output (200):** updated note object
 - **Errors:** `400`, `401`, `403`, `500`
 
-### `DELETE /meeting-notes/{noteId}`
+### `DELETE /v2/meeting-notes/{noteId}`
 - **Output:** `204`
 - **Errors:** `401`, `500`
 
-### `GET /quarters/{quarterId}/analytics`
+### `GET /v2/quarters/{quarterId}/analytics`
 - **Output (200):** quarter-scoped analytics object
 - **Errors:** `401`, `403`, `404`, `500`
 
@@ -204,7 +206,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 
 ## 3) KPI APIs
 
-### `GET /kpis`
+### `GET /v2/kpis`
 - **Required header:** `organization-id` / `Organization-Id`
 - **Input query:** `cycleId`, `quarterId`, `department`, `owner`, `status`, `parentKpiId`, `includeSubKPIs`, pagination params
 - **Output (200):**
@@ -219,7 +221,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 ```
 - **Errors:** `400`, `401`, `403`, `500`
 
-### `POST /kpis`
+### `POST /v2/kpis`
 - **Required header:** `organization-id` / `Organization-Id`
 - **Input body (required fields):**
 ```json
@@ -242,28 +244,28 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - **Output (201):** created KPI object
 - **Errors:** `400`, `401`, `403`, `422`
 
-### `GET /kpis/{kpiId}`
+### `GET /v2/kpis/{kpiId}`
 - **Input query:** `includeSubKPIs`, `includeValueHistory`
 - **Output (200):** KPI object + optional `subKPIs`, `valueHistory`
 - **Errors:** `401`, `403`, `404`
 
-### `PATCH /kpis/{kpiId}`
+### `PATCH /v2/kpis/{kpiId}`
 - **Input:** partial patch
 - **Output (200):** updated KPI object
 - **Errors:** `400`, `401`, `403`, `404`, `500`
 
-### `DELETE /kpis/{kpiId}`
+### `DELETE /v2/kpis/{kpiId}`
 - **Input query:** `deleteSubKPIs` (bool)
 - **Output:** `204`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `POST /kpis/{kpiId}/sub-kpis`
+### `POST /v2/kpis/{kpiId}/sub-kpis`
 - **Purpose:** create child KPI under parent KPI
 - **Input:** same shape/validation as KPI create
 - **Output (201):** created KPI object with `parentKpiId`
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
-### `POST /kpis/{kpiId}/values`
+### `POST /v2/kpis/{kpiId}/values`
 - **Input body (typical):**
 ```json
 {
@@ -276,11 +278,59 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - **Side effect:** updates KPI `currentValue`
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
+### `GET /v2/kpis/{kpiId}/targets`
+- **Purpose:** list all targets (milestone sub-goals) defined for the KPI
+- **Output (200):**
+```json
+{
+  "targets": [
+    {
+      "id": "kpi-target-...",
+      "kpiId": "kpi-...",
+      "name": "Q1 milestone",
+      "targetValue": 50,
+      "currentValue": 20,
+      "status": "ON_TRACK",
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  ]
+}
+```
+- **Errors:** `401`, `403`, `404`
+
+### `POST /v2/kpis/{kpiId}/targets`
+- **Purpose:** add a new target (milestone sub-goal) to the KPI
+- **Input body (typical):**
+```json
+{
+  "name": "Q1 milestone",
+  "targetValue": 50,
+  "status": "ON_TRACK",
+  "description": "Reach 50% by end of Q1"
+}
+```
+- **Output (201):** created KPI target object
+- **Errors:** `400`, `401`, `403`, `404`, `422`
+
+### `PATCH /v2/kpi-targets/{kpiTargetId}`
+- **Purpose:** update progress or status on a KPI target
+- **Input body (typical):**
+```json
+{
+  "status": "AT_RISK",
+  "currentValue": 18,
+  "comment": "Behind schedule"
+}
+```
+- **Output (200):** updated KPI target object
+- **Errors:** `400`, `401`, `403`, `500`
+
 ---
 
 ## 4) OKR APIs
 
-### `GET /okrs`
+### `GET /v2/okrs`
 - **Required header:** `organization-id` / `Organization-Id`
 - **Input query:** `cycleId`, `quarterId`, `owner`, `status`, `includeKeyResults`, pagination params
 - **Output (200):** paginated OKRs
@@ -295,7 +345,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 ```
 - **Errors:** `400`, `401`, `403`, `500`
 
-### `POST /okrs`
+### `POST /v2/okrs`
 - **Required body:** `cycleId`
 - **Input body (typical):**
 ```json
@@ -313,21 +363,46 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - **Output (201):** created OKR object (with created key results when provided)
 - **Errors:** `400`, `401`, `403`, `422`
 
-### `GET /okrs/{okrId}`
+### `GET /v2/okrs/{okrId}`
 - **Input query:** `includeKeyResults` (default `true`), `includeProgressHistory`
 - **Output (200):** OKR object + optional `keyResults`, `progressHistory`
 - **Errors:** `401`, `403`, `404`
 
-### `PATCH /okrs/{okrId}`
+### `PATCH /v2/okrs/{okrId}`
 - **Input:** partial patch
 - **Output (200):** updated OKR object
 - **Errors:** `400`, `401`, `403`, `404`, `500`
 
-### `DELETE /okrs/{okrId}`
+### `DELETE /v2/okrs/{okrId}`
 - **Output:** `204`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `PATCH /key-results/{keyResultId}`
+### `GET /v2/okrs/{okrId}/key-results`
+- **Purpose:** list all key results for the specified OKR
+- **Output (200):**
+```json
+{
+  "keyResults": [
+    { "id": "kr-...", "name": "KR1", "targetValue": 50, "currentValue": 20, "status": "ON_TRACK", "okrId": "okr-..." }
+  ]
+}
+```
+- **Errors:** `401`, `403`, `404`
+
+### `POST /v2/okrs/{okrId}/key-results`
+- **Purpose:** add a new key result to an existing OKR
+- **Input body (typical):**
+```json
+{
+  "name": "KR2",
+  "targetValue": 100,
+  "status": "ON_TRACK"
+}
+```
+- **Output (201):** created key result object
+- **Errors:** `400`, `401`, `403`, `404`, `422`
+
+### `PATCH /v2/key-results/{keyResultId}`
 - **Input body (typical):**
 ```json
 {
@@ -343,7 +418,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 
 ## 5) Goal APIs
 
-### `GET /goals/{goalId}`
+### `GET /v2/goals/{goalId}`
 - **Input query:**
   - `includeValueHistory`
   - `includeTaggedTeams`
@@ -365,12 +440,12 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 ```
 - **Errors:** `401`, `403`, `404`
 
-### `PATCH /goals/{goalId}`
+### `PATCH /v2/goals/{goalId}`
 - **Input:** partial patch
 - **Output (200):** updated underlying KPI/OKR payload
 - **Errors:** `400`, `401`, `403`, `404`, `500`
 
-### `GET /goals/{goalId}/value-history`
+### `GET /v2/goals/{goalId}/value-history`
 - **Input query:** `startDate`, `endDate`, pagination params
 - **Output (200):**
 ```json
@@ -384,59 +459,60 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 ```
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `POST /goals/{goalId}/value-history`
+### `POST /v2/goals/{goalId}/value-history`
 - **Input body (typical):** `{ "value": 68, "date": "2027-01-20", "comment": "Progress" }`
 - **Output (201):** created history entry
+- **Side effect:** updates `currentValue` on the underlying KPI or OKR to the submitted `value`
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
-### `GET /goals/{goalId}/teams`
+### `GET /v2/goals/{goalId}/teams`
 - **Output (200):** `{ "teams": [ ... ] }`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `POST /goals/{goalId}/teams`
+### `POST /v2/goals/{goalId}/teams`
 - **Required body field:** `teamId`
 - **Input body (typical):** `{ "teamId": "TEAM#...", "alignmentReason": "Supports KPI" }`
 - **Output (201):** tagged team record
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
-### `DELETE /goals/{goalId}/teams/{teamId}`
+### `DELETE /v2/goals/{goalId}/teams/{teamId}`
 - **Output:** `204`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `GET /goals/{goalId}/sub-items`
+### `GET /v2/goals/{goalId}/sub-items`
 - **Output (200):** `{ "subItems": [ ... ] }`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `POST /goals/{goalId}/sub-items`
+### `POST /v2/goals/{goalId}/sub-items`
 - **Input body (typical):** `{ "title": "Sub work", "status": "PLANNING" }`
 - **Output (201):** created sub-item
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
-### `PATCH /sub-items/{subItemId}`
+### `PATCH /v2/sub-items/{subItemId}`
 - **Input:** partial patch
 - **Output (200):** updated sub-item
 - **Errors:** `400`, `401`, `403`, `500`
 
-### `DELETE /sub-items/{subItemId}`
+### `DELETE /v2/sub-items/{subItemId}`
 - **Output:** `204`
 - **Errors:** `401`, `500`
 
-### `GET /goals/{goalId}/ladder-up`
+### `GET /v2/goals/{goalId}/ladder-up`
 - **Input query:** `status`
 - **Output (200):** `{ "ladderUpItems": [ ... ] }`
 - **Errors:** `401`, `403`, `404`, `500`
 
-### `PATCH /ladder-up/{ladderUpId}/approve`
+### `PATCH /v2/ladder-up/{ladderUpId}/approve`
 - **Input body:** optional action metadata
 - **Output (200):** updated ladder-up item (`status: APPROVED`)
 - **Errors:** `400`, `401`, `403`, `404`, `500`
 
-### `PATCH /ladder-up/{ladderUpId}/reject`
+### `PATCH /v2/ladder-up/{ladderUpId}/reject`
 - **Input body:** optional action metadata
 - **Output (200):** updated ladder-up item (`status: REJECTED`)
 - **Errors:** `400`, `401`, `403`, `404`, `500`
 
-### `GET /goals/{goalId}/tasks`
+### `GET /v2/goals/{goalId}/tasks`
 - **Input query:** `status`, pagination params
 - **Output (200):**
 ```json
@@ -452,7 +528,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 ```
 - **Errors:** `401`, `500`
 
-### `POST /goals/{goalId}/tasks`
+### `POST /v2/goals/{goalId}/tasks`
 - **Required body field:** `title`
 - **Input body (typical):**
 ```json
@@ -468,13 +544,13 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 - **Output (201):** created task
 - **Errors:** `400`, `401`, `422`
 
-### `PATCH /goals/{goalId}/tasks/{taskId}`
+### `PATCH /v2/goals/{goalId}/tasks/{taskId}`
 - **Input:** partial patch
 - **Rules:** only task owner can update
 - **Output (200):** updated task
 - **Errors:** `400`, `401`, `403`, `500`
 
-### `DELETE /goals/{goalId}/tasks/{taskId}`
+### `DELETE /v2/goals/{goalId}/tasks/{taskId}`
 - **Rules:** only task owner can delete
 - **Output:** `204`
 - **Errors:** `401`, `403`, `500`

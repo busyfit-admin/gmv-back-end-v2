@@ -393,19 +393,19 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		}
 		switch request.HTTPMethod {
 		case "GET":
-			res, err := svc.perfSVC.GetKPIDetails(kpiID, false, true)
+			res, err := svc.perfSVC.GetKPIDetails(kpiID, false, false, true)
 			if err != nil {
 				return svc.errorResponse(http.StatusNotFound, "KPI not found", err)
 			}
-			return svc.successResponse(http.StatusOK, map[string]interface{}{"valueHistory": res["valueHistory"]})
+			return svc.successResponse(http.StatusOK, map[string]interface{}{"targets": res["targets"]})
 		case "POST":
 			input, err := parseBody(request.Body)
 			if err != nil {
 				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
 			}
-			res, err := svc.perfSVC.AddKPIValue(kpiID, input, userName)
+			res, err := svc.perfSVC.AddKPITarget(kpiID, input)
 			if err != nil {
-				return svc.errorResponse(http.StatusUnprocessableEntity, "Failed to add KPI value entry", err)
+				return svc.errorResponse(http.StatusUnprocessableEntity, "Failed to create KPI target", err)
 			}
 			return svc.successResponse(http.StatusCreated, res)
 		}
@@ -521,6 +521,22 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		res, err := svc.perfSVC.UpdateKeyResult(keyResultID, patch)
 		if err != nil {
 			return svc.errorResponse(http.StatusInternalServerError, "Failed to update key result", err)
+		}
+		if err := svc.ensureOrgAdmin(toString(res["organizationId"]), userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		return svc.successResponse(http.StatusOK, res)
+	}
+
+	if len(parts) == 3 && parts[1] == "kpi-targets" && request.HTTPMethod == "PATCH" {
+		targetID := parts[2]
+		patch, err := parseBody(request.Body)
+		if err != nil {
+			return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+		}
+		res, err := svc.perfSVC.UpdateKPITarget(targetID, patch)
+		if err != nil {
+			return svc.errorResponse(http.StatusInternalServerError, "Failed to update KPI target", err)
 		}
 		if err := svc.ensureOrgAdmin(toString(res["organizationId"]), userName); err != nil {
 			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
@@ -1138,7 +1154,7 @@ func isPathHandledByGroup(parts []string, routeGroup string) bool {
 		}
 		return resource == "performance-cycles" || resource == "quarters" || resource == "meeting-notes"
 	case RouteGroupKPIs:
-		return resource == "kpis"
+		return resource == "kpis" || resource == "kpi-targets"
 	case RouteGroupOKRs:
 		return resource == "okrs" || resource == "key-results"
 	case RouteGroupGoals:

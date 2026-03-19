@@ -23,6 +23,7 @@ const (
 	perfEntityQuarter   = "QUARTER"
 	perfEntityKPI       = "KPI"
 	perfEntityKPIValue  = "KPI_VALUE"
+	perfEntityKPITarget = "KPI_TARGET"
 	perfEntityOKR       = "OKR"
 	perfEntityKeyResult = "KEY_RESULT"
 	perfEntityMeeting   = "MEETING_NOTE"
@@ -800,7 +801,7 @@ func (svc *PerformanceService) ListKPIs(orgID string, filters map[string]string,
 	}, nil
 }
 
-func (svc *PerformanceService) GetKPIDetails(kpiID string, includeSubKPIs bool, includeValueHistory bool) (map[string]interface{}, error) {
+func (svc *PerformanceService) GetKPIDetails(kpiID string, includeSubKPIs bool, includeValueHistory bool, includeTargets ...bool) (map[string]interface{}, error) {
 	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KPI#" + kpiID)
 	if err != nil {
 		return nil, err
@@ -808,6 +809,8 @@ func (svc *PerformanceService) GetKPIDetails(kpiID string, includeSubKPIs bool, 
 	if rec == nil {
 		return nil, fmt.Errorf("kpi not found")
 	}
+
+	wantTargets := len(includeTargets) > 0 && includeTargets[0]
 
 	result := svc.toPayload(rec)
 	if includeSubKPIs || includeValueHistory {
@@ -836,6 +839,13 @@ func (svc *PerformanceService) GetKPIDetails(kpiID string, includeSubKPIs bool, 
 			}
 			result["valueHistory"] = history
 		}
+	}
+	if wantTargets {
+		targets, err := svc.getTargetsForKPI(kpiID, rec.OrganizationId, rec.CycleId)
+		if err != nil {
+			return nil, err
+		}
+		result["targets"] = targets
 	}
 
 	return result, nil
@@ -1085,6 +1095,79 @@ func (svc *PerformanceService) AddKeyResult(okrID string, input map[string]inter
 		return nil, fmt.Errorf("okr not found")
 	}
 	return svc.createKeyResult(*rec, input)
+}
+
+func (svc *PerformanceService) createKPITarget(kpiRecord PerformanceRecord, input map[string]interface{}) (map[string]interface{}, error) {
+	targetID := svc.generateID("kpi-target")
+	now := svc.now()
+	input["id"] = targetID
+	input["kpiId"] = toString(kpiRecord.Data["id"])
+	input["createdAt"] = now
+	input["updatedAt"] = now
+	if input["status"] == nil || toString(input["status"]) == "" {
+		input["status"] = "ON_TRACK"
+	}
+
+	record := PerformanceRecord{
+		PK:             kpiRecord.PK,
+		SK:             fmt.Sprintf("%sCYCLE#%s#KPI#%s#TARGET#%s", perfSKPrefix, kpiRecord.CycleId, toString(kpiRecord.Data["id"]), targetID),
+		GSI1PK:         fmt.Sprintf("%sKPI_TARGET#%s", perfSKPrefix, targetID),
+		GSI1SK:         fmt.Sprintf("%s#KPI#%s", kpiRecord.OrganizationId, toString(kpiRecord.Data["id"])),
+		EntityType:     perfEntityKPITarget,
+		OrganizationId: kpiRecord.OrganizationId,
+		CycleId:        kpiRecord.CycleId,
+		QuarterId:      kpiRecord.QuarterId,
+		ParentId:       toString(kpiRecord.Data["id"]),
+		Status:         toString(input["status"]),
+		CreatedAt:      now,
+		UpdatedAt:      now,
+		Data:           input,
+	}
+
+	if err := svc.putRecord(record); err != nil {
+		return nil, err
+	}
+	return input, nil
+}
+
+func (svc *PerformanceService) getTargetsForKPI(kpiID string, orgID string, cycleID string) ([]map[string]interface{}, error) {
+	related, err := svc.queryByOrgPrefix(orgID, fmt.Sprintf("%sCYCLE#%s#KPI#%s#TARGET#", perfSKPrefix, cycleID, kpiID))
+	if err != nil {
+		return nil, err
+	}
+	results := make([]map[string]interface{}, 0)
+	for _, item := range related {
+		if item.EntityType == perfEntityKPITarget {
+			results = append(results, svc.toPayload(&item))
+		}
+	}
+	return results, nil
+}
+
+func (svc *PerformanceService) AddKPITarget(kpiID string, input map[string]interface{}) (map[string]interface{}, error) {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KPI#" + kpiID)
+	if err != nil {
+		return nil, err
+	}
+	if rec == nil {
+		return nil, fmt.Errorf("kpi not found")
+	}
+	return svc.createKPITarget(*rec, input)
+}
+
+func (svc *PerformanceService) UpdateKPITarget(targetID string, patch map[string]interface{}) (map[string]interface{}, error) {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KPI_TARGET#" + targetID)
+	if err != nil {
+		return nil, err
+	}
+	if rec == nil {
+		return nil, fmt.Errorf("kpi target not found")
+	}
+	updated, err := svc.patchRecord(rec, patch)
+	if err != nil {
+		return nil, err
+	}
+	return svc.toPayload(updated), nil
 }
 
 func (svc *PerformanceService) getKeyResultsForOKR(okrID string, orgID string, cycleID string) ([]map[string]interface{}, error) {

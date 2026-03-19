@@ -1895,6 +1895,74 @@ paths:
       security:
         - UserPool: []
 
+  /v2/kpis/{kpiId}/targets:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List KPI targets
+      description: Returns all targets (milestone sub-goals) defined for the KPI.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add KPI target
+      description: Create a new target (milestone sub-goal) under the KPI.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
+
+  /v2/kpi-targets/{kpiTargetId}:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    patch:
+      summary: Update KPI target progress
+      description: Update a KPI target status, current value, or commentary.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+
   /v2/okrs:
     options:
       summary: CORS preflight request
