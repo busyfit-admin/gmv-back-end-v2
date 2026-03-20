@@ -289,6 +289,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
       "kpiId": "kpi-...",
       "name": "Q1 milestone",
       "targetValue": 50,
+      "targetValueType": "%",
       "currentValue": 20,
       "status": "ON_TRACK",
       "createdAt": "...",
@@ -306,10 +307,12 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 {
   "name": "Q1 milestone",
   "targetValue": 50,
+  "targetValueType": "%",
   "status": "ON_TRACK",
   "description": "Reach 50% by end of Q1"
 }
 ```
+- **`targetValueType`** (optional): unit/type of the target value — e.g. `"%"`, `"count"`, `"users"`, `"revenue"`, or any custom string
 - **Output (201):** created KPI target object
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
@@ -320,11 +323,47 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 {
   "status": "AT_RISK",
   "currentValue": 18,
+  "targetValueType": "%",
   "comment": "Behind schedule"
 }
 ```
 - **Output (200):** updated KPI target object
 - **Errors:** `400`, `401`, `403`, `500`
+
+### `DELETE /v2/kpi-targets/{kpiTargetId}`
+- **Purpose:** permanently delete a KPI target
+- **Output:** `204` (no content)
+- **Errors:** `401`, `403`, `404`, `500`
+
+### `GET /v2/kpi-targets/{kpiTargetId}/comments`
+- **Purpose:** list all comments for the specified KPI target, ordered by creation time
+- **Output (200):**
+```json
+{
+  "comments": [
+    {
+      "id": "comment-...",
+      "targetId": "kpi-target-...",
+      "text": "Looking good this quarter",
+      "addedBy": "user@company.com",
+      "createdAt": "2024-06-01T10:00:00Z"
+    }
+  ]
+}
+```
+- **Errors:** `401`, `403`, `404`, `500`
+
+### `POST /v2/kpi-targets/{kpiTargetId}/comments`
+- **Purpose:** add a comment to a KPI target; `addedBy` is set automatically from the authenticated user
+- **Required body field:** `text`
+- **Input body:**
+```json
+{
+  "text": "Adjusted forecast based on Q2 results"
+}
+```
+- **Output (201):** created comment object
+- **Errors:** `400`, `401`, `403`, `404`, `422`
 
 ---
 
@@ -356,7 +395,7 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
   "owner": "user@company.com",
   "status": "DRAFT",
   "keyResults": [
-    { "name": "KR1", "targetValue": 50 }
+    { "name": "KR1", "targetValue": 50, "targetValueType": "%" }
   ]
 }
 ```
@@ -383,7 +422,15 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 ```json
 {
   "keyResults": [
-    { "id": "kr-...", "name": "KR1", "targetValue": 50, "currentValue": 20, "status": "ON_TRACK", "okrId": "okr-..." }
+    {
+      "id": "kr-...",
+      "name": "KR1",
+      "targetValue": 50,
+      "targetValueType": "%",
+      "currentValue": 20,
+      "status": "ON_TRACK",
+      "okrId": "okr-..."
+    }
   ]
 }
 ```
@@ -396,9 +443,11 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 {
   "name": "KR2",
   "targetValue": 100,
+  "targetValueType": "users",
   "status": "ON_TRACK"
 }
 ```
+- **`targetValueType`** (optional): unit/type of the target value — e.g. `"%"`, `"count"`, `"users"`, `"revenue"`, or any custom string
 - **Output (201):** created key result object
 - **Errors:** `400`, `401`, `403`, `404`, `422`
 
@@ -408,11 +457,47 @@ Org Performance APIs are exposed under `/v2` and implemented via split lambdas i
 {
   "status": "ON_TRACK",
   "currentValue": 20,
+  "targetValueType": "users",
   "comment": "Updated"
 }
 ```
 - **Output (200):** updated key result object
 - **Errors:** `400`, `401`, `403`, `500`
+
+### `DELETE /v2/key-results/{keyResultId}`
+- **Purpose:** permanently delete a key result
+- **Output:** `204` (no content)
+- **Errors:** `401`, `403`, `404`, `500`
+
+### `GET /v2/key-results/{keyResultId}/comments`
+- **Purpose:** list all comments for the specified key result, ordered by creation time
+- **Output (200):**
+```json
+{
+  "comments": [
+    {
+      "id": "comment-...",
+      "keyResultId": "kr-...",
+      "text": "Great progress this week",
+      "addedBy": "user@company.com",
+      "createdAt": "2024-06-01T10:00:00Z"
+    }
+  ]
+}
+```
+- **Errors:** `401`, `403`, `404`, `500`
+
+### `POST /v2/key-results/{keyResultId}/comments`
+- **Purpose:** add a comment to a key result; `addedBy` is set automatically from the authenticated user
+- **Required body field:** `text`
+- **Input body:**
+```json
+{
+  "text": "Completed the user interviews milestone"
+}
+```
+- **Output (201):** created comment object
+- **Errors:** `400`, `401`, `403`, `404`, `422`
 
 ---
 

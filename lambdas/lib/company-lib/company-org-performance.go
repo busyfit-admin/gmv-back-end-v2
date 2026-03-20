@@ -32,6 +32,7 @@ const (
 	perfEntityGoalSub   = "GOAL_SUB_ITEM"
 	perfEntityLadderUp  = "GOAL_LADDER_UP"
 	perfEntityGoalTask  = "GOAL_TASK"
+	perfEntityComment   = "COMMENT"
 	perfGSIIndexName    = "GSI1"
 	perfPKOrgPrefix     = "ORG#"
 	perfSKPrefix        = "PERF#"
@@ -1255,6 +1256,146 @@ func (svc *PerformanceService) UpdateKeyResult(keyResultID string, patch map[str
 		return nil, err
 	}
 	return svc.toPayload(updated), nil
+}
+
+func (svc *PerformanceService) DeleteKeyResult(keyResultID string) error {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KEYRESULT#" + keyResultID)
+	if err != nil {
+		return err
+	}
+	if rec == nil {
+		return fmt.Errorf("key result not found")
+	}
+	return svc.deleteRecord(rec)
+}
+
+func (svc *PerformanceService) DeleteKPITarget(targetID string) error {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KPI_TARGET#" + targetID)
+	if err != nil {
+		return err
+	}
+	if rec == nil {
+		return fmt.Errorf("kpi target not found")
+	}
+	return svc.deleteRecord(rec)
+}
+
+func (svc *PerformanceService) AddKeyResultComment(keyResultID string, text string, userName string) (map[string]interface{}, error) {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KEYRESULT#" + keyResultID)
+	if err != nil {
+		return nil, err
+	}
+	if rec == nil {
+		return nil, fmt.Errorf("key result not found")
+	}
+	commentID := svc.generateID("comment")
+	now := svc.now()
+	data := map[string]interface{}{
+		"id":          commentID,
+		"keyResultId": keyResultID,
+		"text":        text,
+		"addedBy":     userName,
+		"createdAt":   now,
+	}
+	comment := PerformanceRecord{
+		PK:             rec.PK,
+		SK:             rec.SK + "#COMMENT#" + commentID,
+		GSI1PK:         perfSKPrefix + "COMMENT#" + commentID,
+		GSI1SK:         rec.OrganizationId + "#KEYRESULT#" + keyResultID,
+		EntityType:     perfEntityComment,
+		OrganizationId: rec.OrganizationId,
+		CycleId:        rec.CycleId,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+		Data:           data,
+	}
+	if err := svc.putRecord(comment); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (svc *PerformanceService) ListKeyResultComments(keyResultID string) ([]map[string]interface{}, error) {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KEYRESULT#" + keyResultID)
+	if err != nil {
+		return nil, err
+	}
+	if rec == nil {
+		return nil, fmt.Errorf("key result not found")
+	}
+	related, err := svc.queryByOrgPrefix(rec.OrganizationId, rec.SK+"#COMMENT#")
+	if err != nil {
+		return nil, err
+	}
+	comments := make([]map[string]interface{}, 0)
+	for _, r := range related {
+		if r.EntityType == perfEntityComment {
+			comments = append(comments, svc.toPayload(&r))
+		}
+	}
+	sort.SliceStable(comments, func(i, j int) bool {
+		return toString(comments[i]["createdAt"]) < toString(comments[j]["createdAt"])
+	})
+	return comments, nil
+}
+
+func (svc *PerformanceService) AddKPITargetComment(targetID string, text string, userName string) (map[string]interface{}, error) {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KPI_TARGET#" + targetID)
+	if err != nil {
+		return nil, err
+	}
+	if rec == nil {
+		return nil, fmt.Errorf("kpi target not found")
+	}
+	commentID := svc.generateID("comment")
+	now := svc.now()
+	data := map[string]interface{}{
+		"id":        commentID,
+		"targetId":  targetID,
+		"text":      text,
+		"addedBy":   userName,
+		"createdAt": now,
+	}
+	comment := PerformanceRecord{
+		PK:             rec.PK,
+		SK:             rec.SK + "#COMMENT#" + commentID,
+		GSI1PK:         perfSKPrefix + "COMMENT#" + commentID,
+		GSI1SK:         rec.OrganizationId + "#KPI_TARGET#" + targetID,
+		EntityType:     perfEntityComment,
+		OrganizationId: rec.OrganizationId,
+		CycleId:        rec.CycleId,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+		Data:           data,
+	}
+	if err := svc.putRecord(comment); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (svc *PerformanceService) ListKPITargetComments(targetID string) ([]map[string]interface{}, error) {
+	rec, err := svc.getRecordByGSI1(perfSKPrefix + "KPI_TARGET#" + targetID)
+	if err != nil {
+		return nil, err
+	}
+	if rec == nil {
+		return nil, fmt.Errorf("kpi target not found")
+	}
+	related, err := svc.queryByOrgPrefix(rec.OrganizationId, rec.SK+"#COMMENT#")
+	if err != nil {
+		return nil, err
+	}
+	comments := make([]map[string]interface{}, 0)
+	for _, r := range related {
+		if r.EntityType == perfEntityComment {
+			comments = append(comments, svc.toPayload(&r))
+		}
+	}
+	sort.SliceStable(comments, func(i, j int) bool {
+		return toString(comments[i]["createdAt"]) < toString(comments[j]["createdAt"])
+	})
+	return comments, nil
 }
 
 func (svc *PerformanceService) ListMeetingNotes(quarterID string, sortBy string, order string) (map[string]interface{}, error) {

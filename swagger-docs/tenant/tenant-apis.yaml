@@ -1962,6 +1962,61 @@ paths:
             statusCode: "200"
       security:
         - UserPool: []
+    delete:
+      summary: Delete a KPI target
+      description: Permanently delete a KPI target.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/kpi-targets/{kpiTargetId}/comments:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List KPI target comments
+      description: Retrieve all comments for a KPI target, ordered by creation time.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add comment to KPI target
+      description: Post a comment on a KPI target. The author is automatically recorded from the authenticated user.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceKPIsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+      security:
+        - UserPool: []
 
   /v2/okrs:
     options:
@@ -2124,6 +2179,61 @@ paths:
         responses:
           default:
             statusCode: "200"
+      security:
+        - UserPool: []
+    delete:
+      summary: Delete a key result
+      description: Permanently delete a key result from its OKR.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "204"
+      security:
+        - UserPool: []
+
+  /v2/key-results/{keyResultId}/comments:
+    options:
+      summary: CORS preflight request
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+    get:
+      summary: List key result comments
+      description: Retrieve all comments for a key result, ordered by creation time.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+      security:
+        - UserPool: []
+    post:
+      summary: Add comment to key result
+      description: Post a comment on a key result. The author is automatically recorded from the authenticated user.
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_MATCH
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagePerformanceOKRsLambda.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
       security:
         - UserPool: []
 
