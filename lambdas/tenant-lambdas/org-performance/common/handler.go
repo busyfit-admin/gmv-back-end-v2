@@ -382,6 +382,35 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		return svc.successResponse(http.StatusCreated, res)
 	}
 
+	if len(parts) == 4 && parts[1] == "kpis" && parts[3] == "targets" {
+		kpiID := parts[2]
+		kpi, err := svc.perfSVC.GetKPIDetails(kpiID, false, false)
+		if err != nil {
+			return svc.errorResponse(http.StatusNotFound, "KPI not found", err)
+		}
+		if err := svc.ensureOrgAdmin(toString(kpi["organizationId"]), userName); err != nil {
+			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+		}
+		switch request.HTTPMethod {
+		case "GET":
+			res, err := svc.perfSVC.GetKPIDetails(kpiID, false, false, true)
+			if err != nil {
+				return svc.errorResponse(http.StatusNotFound, "KPI not found", err)
+			}
+			return svc.successResponse(http.StatusOK, map[string]interface{}{"targets": res["targets"]})
+		case "POST":
+			input, err := parseBody(request.Body)
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			}
+			res, err := svc.perfSVC.AddKPITarget(kpiID, input)
+			if err != nil {
+				return svc.errorResponse(http.StatusUnprocessableEntity, "Failed to create KPI target", err)
+			}
+			return svc.successResponse(http.StatusCreated, res)
+		}
+	}
+
 	if len(parts) == 2 && parts[1] == "okrs" {
 		orgID := svc.getOrgIDFromHeaders(request)
 		if orgID == "" {
@@ -454,20 +483,133 @@ func (svc *Service) HandleWithGroup(request events.APIGatewayProxyRequest, route
 		}
 	}
 
-	if len(parts) == 3 && parts[1] == "key-results" && request.HTTPMethod == "PATCH" {
-		keyResultID := parts[2]
-		patch, err := parseBody(request.Body)
+	if len(parts) == 4 && parts[1] == "okrs" && parts[3] == "key-results" {
+		okrID := parts[2]
+		okr, err := svc.perfSVC.GetOKRDetails(okrID, false, false)
 		if err != nil {
-			return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			return svc.errorResponse(http.StatusNotFound, "OKR not found", err)
 		}
-		res, err := svc.perfSVC.UpdateKeyResult(keyResultID, patch)
-		if err != nil {
-			return svc.errorResponse(http.StatusInternalServerError, "Failed to update key result", err)
-		}
-		if err := svc.ensureOrgAdmin(toString(res["organizationId"]), userName); err != nil {
+		if err := svc.ensureOrgAdmin(toString(okr["organizationId"]), userName); err != nil {
 			return svc.errorResponse(http.StatusForbidden, "Access denied", err)
 		}
-		return svc.successResponse(http.StatusOK, res)
+		switch request.HTTPMethod {
+		case "GET":
+			res, err := svc.perfSVC.GetOKRDetails(okrID, true, false)
+			if err != nil {
+				return svc.errorResponse(http.StatusNotFound, "OKR not found", err)
+			}
+			return svc.successResponse(http.StatusOK, map[string]interface{}{"keyResults": res["keyResults"]})
+		case "POST":
+			input, err := parseBody(request.Body)
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			}
+			res, err := svc.perfSVC.AddKeyResult(okrID, input)
+			if err != nil {
+				return svc.errorResponse(http.StatusUnprocessableEntity, "Failed to create key result", err)
+			}
+			return svc.successResponse(http.StatusCreated, res)
+		}
+	}
+
+	if len(parts) == 3 && parts[1] == "key-results" {
+		keyResultID := parts[2]
+		switch request.HTTPMethod {
+		case "PATCH":
+			patch, err := parseBody(request.Body)
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			}
+			res, err := svc.perfSVC.UpdateKeyResult(keyResultID, patch)
+			if err != nil {
+				return svc.errorResponse(http.StatusInternalServerError, "Failed to update key result", err)
+			}
+			if err := svc.ensureOrgAdmin(toString(res["organizationId"]), userName); err != nil {
+				return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+			}
+			return svc.successResponse(http.StatusOK, res)
+		case "DELETE":
+			if err := svc.perfSVC.DeleteKeyResult(keyResultID); err != nil {
+				return svc.errorResponse(http.StatusInternalServerError, "Failed to delete key result", err)
+			}
+			return events.APIGatewayProxyResponse{StatusCode: http.StatusNoContent, Headers: RESP_HEADERS, Body: ""}, nil
+		}
+	}
+
+	if len(parts) == 4 && parts[1] == "key-results" && parts[3] == "comments" {
+		keyResultID := parts[2]
+		switch request.HTTPMethod {
+		case "GET":
+			comments, err := svc.perfSVC.ListKeyResultComments(keyResultID)
+			if err != nil {
+				return svc.errorResponse(http.StatusInternalServerError, "Failed to list comments", err)
+			}
+			return svc.successResponse(http.StatusOK, map[string]interface{}{"comments": comments})
+		case "POST":
+			input, err := parseBody(request.Body)
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			}
+			text := toString(input["text"])
+			if text == "" {
+				return svc.errorResponse(http.StatusBadRequest, "text is required", nil)
+			}
+			res, err := svc.perfSVC.AddKeyResultComment(keyResultID, text, userName)
+			if err != nil {
+				return svc.errorResponse(http.StatusUnprocessableEntity, "Failed to add comment", err)
+			}
+			return svc.successResponse(http.StatusCreated, res)
+		}
+	}
+
+	if len(parts) == 3 && parts[1] == "kpi-targets" {
+		targetID := parts[2]
+		switch request.HTTPMethod {
+		case "PATCH":
+			patch, err := parseBody(request.Body)
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			}
+			res, err := svc.perfSVC.UpdateKPITarget(targetID, patch)
+			if err != nil {
+				return svc.errorResponse(http.StatusInternalServerError, "Failed to update KPI target", err)
+			}
+			if err := svc.ensureOrgAdmin(toString(res["organizationId"]), userName); err != nil {
+				return svc.errorResponse(http.StatusForbidden, "Access denied", err)
+			}
+			return svc.successResponse(http.StatusOK, res)
+		case "DELETE":
+			if err := svc.perfSVC.DeleteKPITarget(targetID); err != nil {
+				return svc.errorResponse(http.StatusInternalServerError, "Failed to delete KPI target", err)
+			}
+			return events.APIGatewayProxyResponse{StatusCode: http.StatusNoContent, Headers: RESP_HEADERS, Body: ""}, nil
+		}
+	}
+
+	if len(parts) == 4 && parts[1] == "kpi-targets" && parts[3] == "comments" {
+		targetID := parts[2]
+		switch request.HTTPMethod {
+		case "GET":
+			comments, err := svc.perfSVC.ListKPITargetComments(targetID)
+			if err != nil {
+				return svc.errorResponse(http.StatusInternalServerError, "Failed to list comments", err)
+			}
+			return svc.successResponse(http.StatusOK, map[string]interface{}{"comments": comments})
+		case "POST":
+			input, err := parseBody(request.Body)
+			if err != nil {
+				return svc.errorResponse(http.StatusBadRequest, "Invalid request body", err)
+			}
+			text := toString(input["text"])
+			if text == "" {
+				return svc.errorResponse(http.StatusBadRequest, "text is required", nil)
+			}
+			res, err := svc.perfSVC.AddKPITargetComment(targetID, text, userName)
+			if err != nil {
+				return svc.errorResponse(http.StatusUnprocessableEntity, "Failed to add comment", err)
+			}
+			return svc.successResponse(http.StatusCreated, res)
+		}
 	}
 
 	if len(parts) == 4 && parts[1] == "quarters" && parts[3] == "meeting-notes" {
@@ -1080,7 +1222,7 @@ func isPathHandledByGroup(parts []string, routeGroup string) bool {
 		}
 		return resource == "performance-cycles" || resource == "quarters" || resource == "meeting-notes"
 	case RouteGroupKPIs:
-		return resource == "kpis"
+		return resource == "kpis" || resource == "kpi-targets"
 	case RouteGroupOKRs:
 		return resource == "okrs" || resource == "key-results"
 	case RouteGroupGoals:

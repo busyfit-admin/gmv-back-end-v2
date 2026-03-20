@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -20,12 +21,16 @@ import (
 // GetGoalLadderUp returns the ladder-up request history for an org goal.
 // statusFilter may be "", "pending", "approved", or "rejected".
 func (s *Service) GetGoalLadderUp(goalID, statusFilter string) (map[string]interface{}, error) {
-	return s.perfSVC.GetGoalLadderUp(goalID, statusFilter)
+	s.logger.Printf("ctrl: GetGoalLadderUp input: goalID=%q statusFilter=%q", goalID, statusFilter)
+	result, err := s.perfSVC.GetGoalLadderUp(goalID, statusFilter)
+	s.logger.Printf("ctrl: GetGoalLadderUp output: err=%v", err)
+	return result, err
 }
 
 // GetGoalValueHistory returns value-update history for an org goal.
 // startDate / endDate are ISO-8601 UTC strings; both are optional ("" = no bound).
 func (s *Service) GetGoalValueHistory(goalID, startDate, endDate string) (map[string]interface{}, error) {
+	s.logger.Printf("ctrl: GetGoalValueHistory input: goalID=%q startDate=%q endDate=%q", goalID, startDate, endDate)
 	filters := map[string]string{}
 	if startDate != "" {
 		filters["startDate"] = startDate
@@ -33,23 +38,31 @@ func (s *Service) GetGoalValueHistory(goalID, startDate, endDate string) (map[st
 	if endDate != "" {
 		filters["endDate"] = endDate
 	}
-	return s.perfSVC.GetGoalValueHistory(goalID, filters, companylib.ListQueryOptions{})
+	result, err := s.perfSVC.GetGoalValueHistory(goalID, filters, companylib.ListQueryOptions{})
+	s.logger.Printf("ctrl: GetGoalValueHistory output: err=%v", err)
+	return result, err
 }
 
 // GetOrgGoalTasks returns tasks linked to an org goal.
 // userName limits results to a single user's tasks; leave empty for all.
 // statusFilter may be "", "todo", "in-progress", or "done".
 func (s *Service) GetOrgGoalTasks(goalID, userName, statusFilter string) (map[string]interface{}, error) {
+	s.logger.Printf("ctrl: GetOrgGoalTasks input: goalID=%q userName=%q statusFilter=%q", goalID, userName, statusFilter)
 	filters := map[string]string{}
 	if statusFilter != "" {
 		filters["status"] = statusFilter
 	}
-	return s.perfSVC.GetGoalTasks(goalID, userName, filters, companylib.ListQueryOptions{})
+	result, err := s.perfSVC.GetGoalTasks(goalID, userName, filters, companylib.ListQueryOptions{})
+	s.logger.Printf("ctrl: GetOrgGoalTasks output: err=%v", err)
+	return result, err
 }
 
 // GetGoalTaggedTeams returns the list of teams tagged to an org goal.
 func (s *Service) GetGoalTaggedTeams(goalID string) (map[string]interface{}, error) {
-	return s.perfSVC.GetGoalTeams(goalID)
+	s.logger.Printf("ctrl: GetGoalTaggedTeams input: goalID=%q", goalID)
+	result, err := s.perfSVC.GetGoalTeams(goalID)
+	s.logger.Printf("ctrl: GetGoalTaggedTeams output: err=%v", err)
+	return result, err
 }
 
 // ==================== Direct DDB — UserPerformanceHubTable ====================
@@ -87,11 +100,11 @@ type linkedTaskProjection struct {
 }
 
 // fetchLinkedTasks queries TASK# items on PK whose goalId matches the given goalID.
-func (s *Service) fetchLinkedTasks(pk, goalID string) ([]map[string]interface{}, error) {
+func (s *Service) fetchLinkedTasks(ctx context.Context, pk, goalID string) ([]map[string]interface{}, error) {
 	if s.perfHubTable == "" {
 		return nil, fmt.Errorf("PERF_HUB_TABLE is not configured")
 	}
-	out, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+	out, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :prefix)"),
 		FilterExpression:       aws.String("goalId = :goalId"),
@@ -136,11 +149,13 @@ func (s *Service) fetchLinkedTasks(pk, goalID string) ([]map[string]interface{},
 // return all user-level goals linked to the given org goal, together with each
 // goal's linked tasks and a rolled-up status summary.
 // statusFilter is optional; leave empty to return all statuses.
-func (s *Service) GetUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[string]interface{}, error) {
+func (s *Service) GetUserGoalsForOrgGoal(ctx context.Context, orgGoalID, statusFilter string) (map[string]interface{}, error) {
+	s.logger.Printf("ctrl: GetUserGoalsForOrgGoal input: orgGoalID=%q statusFilter=%q", orgGoalID, statusFilter)
 	if s.perfHubTable == "" {
+		s.logger.Printf("ctrl: GetUserGoalsForOrgGoal output: err=PERF_HUB_TABLE not configured")
 		return nil, fmt.Errorf("PERF_HUB_TABLE is not configured")
 	}
-	out, err := s.ddb.Query(s.ctx, &dynamodb.QueryInput{
+	out, err := s.ddb.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.perfHubTable),
 		IndexName:              aws.String("OrgGoalIdIndex"),
 		KeyConditionExpression: aws.String("orgGoalId = :orgGoalId"),
@@ -149,6 +164,7 @@ func (s *Service) GetUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[st
 		},
 	})
 	if err != nil {
+		s.logger.Printf("ctrl: GetUserGoalsForOrgGoal output: err=%v", err)
 		return nil, fmt.Errorf("OrgGoalIdIndex query failed: %w", err)
 	}
 
@@ -175,7 +191,7 @@ func (s *Service) GetUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[st
 		if idx := strings.LastIndex(g.PK, "#TEAM#"); idx != -1 {
 			teamID = g.PK[idx+6:]
 		}
-		tasks, err := s.fetchLinkedTasks(g.PK, g.GoalID)
+		tasks, err := s.fetchLinkedTasks(ctx, g.PK, g.GoalID)
 		if err != nil {
 			s.logger.Printf("[GetUserGoalsForOrgGoal] warn: tasks for goal %q: %v", g.GoalID, err)
 			tasks = []map[string]interface{}{}
@@ -207,6 +223,7 @@ func (s *Service) GetUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[st
 		})
 	}
 
+	s.logger.Printf("ctrl: GetUserGoalsForOrgGoal output: goalCount=%d", len(goals))
 	return map[string]interface{}{
 		"orgGoalId": orgGoalID,
 		"userGoals": goals,
@@ -218,8 +235,10 @@ func (s *Service) GetUserGoalsForOrgGoal(orgGoalID, statusFilter string) (map[st
 // for building quick-reference directories. Each entry contains userName,
 // displayName, initials (first letter of each word in displayName), and role.
 func (s *Service) GetTeamMemberDirectory(teamID string) ([]map[string]interface{}, error) {
+	s.logger.Printf("ctrl: GetTeamMemberDirectory input: teamID=%q", teamID)
 	members, err := s.teamsSVC.GetTeamMembers(teamID)
 	if err != nil {
+		s.logger.Printf("ctrl: GetTeamMemberDirectory output: err=%v", err)
 		return nil, err
 	}
 	dir := make([]map[string]interface{}, 0, len(members))
@@ -234,6 +253,7 @@ func (s *Service) GetTeamMemberDirectory(teamID string) ([]map[string]interface{
 			"isActive":    m.IsActive,
 		})
 	}
+	s.logger.Printf("ctrl: GetTeamMemberDirectory output: count=%d", len(dir))
 	return dir, nil
 }
 

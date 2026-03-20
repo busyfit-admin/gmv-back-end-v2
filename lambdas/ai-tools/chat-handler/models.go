@@ -1,8 +1,6 @@
-// Package main implements the AI chat handler Lambda.
-// It receives chat messages from the frontend, loads conversation history
-// from DynamoDB, invokes Claude via Bedrock Converse API (with tool use),
-// and returns the assistant's response.
 package main
+
+import "log"
 
 // ChatRequest is the JSON body expected at POST /v2/ai/chat.
 type ChatRequest struct {
@@ -38,6 +36,7 @@ type ChatContext struct {
 	CallerTeamID      string
 	CallerOrgID       string
 	TargetUserID      string
+	Logger            *log.Logger
 }
 
 // chatHistoryRecord is the DynamoDB item shape for chat history.

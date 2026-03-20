@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-xray-sdk-go/instrumentation/awsv2"
-	"github.com/aws/aws-xray-sdk-go/xray"
 
 	ctrl "github.com/busyfit-admin/saas-integrated-apis/lambdas/ai-tools/controllers"
 )
@@ -35,10 +34,7 @@ type Service struct {
 //	EMPLOYEE_TABLE, EMPLOYEE_TABLE_COGNITO_ID_INDEX, EMPLOYEE_TABLE_EMAIL_ID_INDEX
 //	TEAMS_TABLE, ORGANIZATION_TABLE, ORG_PERFORMANCE_TABLE, PERF_HUB_TABLE
 func NewService() (*Service, error) {
-	ctx, seg := xray.BeginSegment(context.TODO(), "ai-chat-service-init")
-	defer seg.Close(nil)
-
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("NewService: load AWS config: %w", err)
 	}

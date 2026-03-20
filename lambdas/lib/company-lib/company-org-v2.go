@@ -1439,3 +1439,10 @@ func (svc *OrgServiceV2) GetUserOrganizationMembership(userName string) (*OrgUse
 
 	return &orgUser, nil
 }
+
+// SetContext replaces the internal context used for DynamoDB calls.
+// Call this at the start of each request to propagate the request-scoped context
+// (e.g. for X-Ray tracing) into the service.
+func (svc *OrgServiceV2) SetContext(ctx context.Context) {
+	svc.ctx = ctx
+}

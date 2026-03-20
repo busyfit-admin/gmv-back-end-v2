@@ -14,6 +14,7 @@ import (
 )
 
 // loadChatHistory fetches the most recent `limit` messages for the given chatId,
+// returning them in chronological order (oldest first). Messages are stored in DDB
 // ordered by SK (ascending — oldest first). Returns Bedrock-ready Message structs.
 func loadChatHistory(ctx context.Context, ddb *dynamodb.Client, table, chatId string, limit int32) ([]bedrocktypes.Message, error) {
 	out, err := ddb.Query(ctx, &dynamodb.QueryInput{

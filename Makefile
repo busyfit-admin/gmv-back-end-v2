@@ -12,6 +12,8 @@ build: $(SUBDIRS)
 
 build-tenant-lambdas:
 	$(MAKE) -C lambdas/tenant-lambdas
+	$(MAKE) -C lambdas/ai-tools
+
 
 tidy-v2:
 	$(MAKE) -C lambdas/tenant-lambdas/org-module tidy
